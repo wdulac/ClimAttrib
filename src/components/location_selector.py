@@ -4,9 +4,7 @@ from dash.exceptions import PreventUpdate
 import dash_leaflet as dl
 import json
 
-import dash_mantine_components as dmc
-
-ZOOM_LEVEL_THRESHOLD = 5
+ZOOM_LEVEL_THRESHOLD = 4
 DEFAULT_ZOOM_LEVEL = 3
 MINIMUM_ZOOM_LEVEL = 2
 MAP_CENTER_POSITION = [47, 2.2]
