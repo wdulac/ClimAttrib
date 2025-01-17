@@ -1,0 +1,5 @@
+src/data/
+.venv/
+.vscode/
+__pycache__/
+*.pyc

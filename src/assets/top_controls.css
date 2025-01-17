@@ -1,0 +1,23 @@
+#top-bar {
+    background-color: #3084a8;
+    padding-bottom: 15px;
+    padding-top: 5px;
+    justify-content: space-around;
+}
+
+.selector-with-label {
+    position: static;
+    gap: 3px;
+    align-items: left;
+}
+
+.mantine-Slider-markLabel {
+    color: white;
+}
+
+#slider-with-label{
+    position: relative;
+    align-items: left;
+    gap: 3;
+    top: -5px;
+}
