@@ -1,12 +1,19 @@
-#top-bar {
+.settings-top-bar {
     background-color: #3084a8;
-    padding-bottom: 15px;
+    padding-bottom: 20px;
     padding-top: 5px;
+}
+
+#settings-row-title {
+    color: white;
+    padding-bottom: 10px;
+}
+
+#inputs-row {
     justify-content: space-around;
 }
 
 .selector-with-label {
-    position: static;
     gap: 3px;
     align-items: left;
 }
@@ -16,8 +23,6 @@
 }
 
 #slider-with-label{
-    position: relative;
     align-items: left;
-    gap: 3;
-    top: -5px;
+    gap: 5px;
 }
