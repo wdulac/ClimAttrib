@@ -4,8 +4,16 @@ from dash import html, callback, Output, Input
 
 from datetime import datetime, date
 
+
+TOP_BAR_INPUTS_LABEL_PROPS = {
+    'c': 'white',
+    'fw': 700,
+    'fz': 18,
+}
+
+
 _extreme_type_segmented = dmc.Stack(children=[
-    dmc.Text("Type d'extrême", c='white', fw=700, fz=18),
+    dmc.Text("Type d'extrême", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
@@ -19,7 +27,7 @@ _extreme_type_segmented = dmc.Stack(children=[
 
 
 _computation_method_segmented = dmc.Stack(children=[
-    dmc.Text("Méthode de calcul", c='white', fw=700, fz=18),
+    dmc.Text("Méthode de calcul", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
         id='input:computation-method',
         data=[
@@ -32,13 +40,11 @@ _computation_method_segmented = dmc.Stack(children=[
 
 
 _date_selector_calendar = dmc.DatePickerInput(
+    # :TODO: 
+    # Make it so it is not possible to select a date in the future
     id='input:date',
     label="Date de l'évènement",
-    labelProps={
-        'c': 'white',
-        'fw': 700,
-        'fz': 18
-    },
+    labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
     value=datetime.now().date(),
     w=250,
     style=dict(
@@ -48,7 +54,7 @@ _date_selector_calendar = dmc.DatePickerInput(
 
 
 _event_duration_slider = dmc.Stack(children=[
-    dmc.Text("Durée de l'évènement en jours", c='white', fw=700, fz=18),
+    dmc.Text("Durée de l'évènement en jours", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.Slider(
         id='duration-slider',
         value=3,
@@ -65,18 +71,27 @@ _event_duration_slider = dmc.Stack(children=[
     id='slider-with-label'
 )
 
+debug_style = {
+    "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
+}
 
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
     html.H4("Définition de l'évènement extrême", id='settings-row-title'),
-    # Note: dmc.Group is a horizontal Flex container
-    dmc.Group(children=[
-        _extreme_type_segmented,
-        _computation_method_segmented,
-        _date_selector_calendar,
-        _event_duration_slider
-        ],
-        id='inputs-row'
-    )],
-    className='settings-top-bar'
-)
+    dmc.Divider(variant='solid'),
+    dmc.Grid(children=[
+        dmc.GridCol(children=[
+            dmc.Group(children=[
+                _extreme_type_segmented,
+                _computation_method_segmented,
+                _date_selector_calendar,
+                _event_duration_slider
+                ], id='inputs-row-left')
+            ], style=debug_style, span=9.5),
+        dmc.GridCol(children=[
+            dmc.Button('Continuer')
+            ],
+            style=debug_style, span='auto'),
+    ], id='inputs-row'
+    )
+], className='settings-top-bar')

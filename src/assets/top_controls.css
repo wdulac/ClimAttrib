@@ -6,10 +6,15 @@
 
 #settings-row-title {
     color: white;
-    padding-bottom: 10px;
+    /* padding-bottom: 3px; */
 }
 
 #inputs-row {
+    padding-top: 20px;
+    /* justify-content: space-around; */
+}
+
+#inputs-row-left {
     justify-content: space-around;
 }
 

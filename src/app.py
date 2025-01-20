@@ -21,7 +21,8 @@ application = Dash(
     external_stylesheets=[
         dmc.styles.NOTIFICATIONS,
         dmc.styles.DATES,
-        dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
+        dbc.themes.BOOTSTRAP, # Needed for row and columns to work as expected in dbc
+        dmc.styles.ALL
     ]
 )
 
