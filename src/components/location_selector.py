@@ -6,8 +6,9 @@ import json
 
 ZOOM_LEVEL_THRESHOLD = 4
 DEFAULT_ZOOM_LEVEL = 3
-MINIMUM_ZOOM_LEVEL = 2
-MAP_CENTER_POSITION = [47, 2.2]
+MINIMUM_ZOOM_LEVEL = 3
+MAP_CENTER_POSITION = [40, 0]
+MAP_MAX_BOUNDS = [[-70, -180], [83, -180], [83, 180], [-70, 180]]
 
 
 _grid = dl.GeoJSON(
@@ -42,6 +43,7 @@ location_selector = html.Div(
             center=MAP_CENTER_POSITION,
             zoom=DEFAULT_ZOOM_LEVEL,
             minZoom=MINIMUM_ZOOM_LEVEL,
+            maxBounds=MAP_MAX_BOUNDS,
             id='map',
             className='map-container'
         ),
