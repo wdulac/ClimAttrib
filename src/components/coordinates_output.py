@@ -3,12 +3,12 @@ from .location_selector import *
 import json
 
 coordinates_output = html.Div(
-    id='selected-point:output',
+    id='output:selected-point',
 )
 
 @callback(
-    Output('selected-point:output', 'children'),
-    Input('selected-point:input', 'data')
+    Output('output:selected-point', 'children'),
+    Input('input:selected-point', 'data')
 )
 def update_text(data):
     if data is not None:

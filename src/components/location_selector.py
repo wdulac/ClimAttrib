@@ -47,7 +47,7 @@ location_selector = html.Div(
             id='map',
             className='map-container'
         ),
-        dcc.Store(id='selected-point:input', data=None)
+        dcc.Store(id='input:selected-point', data=None)
     ],
     className='parent-container'
 )
@@ -82,7 +82,7 @@ def show_grid(current_zoom_level, grid_state):
 
 @callback(
         Output("marker", "children"),
-        Output("selected-point:input", "data"),
+        Output("input:selected-point", "data"),
         Input("geojson", "clickData"),
         Input("map", "zoom"),
         State("marker", "children")
@@ -107,7 +107,7 @@ def place_marker(click_data, zoom_level, marker_state):
             )
             return marker, json.dumps([poly_centre])
         else:
-            return None, None
+            raise PreventUpdate
     # Handle clearing out the marker when zooming out
     elif marker_state is not None:
         return None, None
