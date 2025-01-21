@@ -1,0 +1,17 @@
+.header-parent-div {
+    background-color: #18a7e4;
+    width: 100%;
+}
+
+#page-title {
+    text-align: left;
+    font-size: 100;
+    padding: 15px;
+    margin: 0;
+}
+
+#header-right {
+    display: flex;
+    justify-content: right;
+    align-items: middle;
+}
