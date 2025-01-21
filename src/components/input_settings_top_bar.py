@@ -17,10 +17,10 @@ _extreme_type_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
-            "Chaud",
-            "Froid"
+            {"value": "hot", "label": "Chaud"},
+            {"value": "col", "label": "Froid"}
         ],
-        value="Chaud"
+        value="hot"
     )],
     className='selector-with-label'
 )
@@ -30,10 +30,11 @@ _computation_method_segmented = dmc.Stack(children=[
     dmc.Text("Méthode de calcul", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
         id='input:computation-method',
-        data=[
-            "Max. annuel",
-            "Calendaire"
+        data= [
+            {"value": "maximum", "label": "Max. annuel"},
+            {"value": "calendar", "label": "Calendaire"}
         ],
+        value="maximum"
     )],
     className='selector-with-label'
 )
@@ -56,7 +57,7 @@ _date_selector_calendar = dmc.DatePickerInput(
 _event_duration_slider = dmc.Stack(children=[
     dmc.Text("Durée de l'évènement en jours", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.Slider(
-        id='duration-slider',
+        id='input:event-duration',
         value=3,
         min=1,
         max=7,
