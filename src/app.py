@@ -13,6 +13,7 @@ _dash_renderer._set_react_version("18.2.0")
 from components import location_selector
 from components import coordinates_output as selected_point
 from components import input_settings_top_bar
+from components import trigger_tester
 
 # Initialize
 server = Flask(__name__)
@@ -31,7 +32,7 @@ layout = html.Div([
     html.H1("Mon application avec carte interactive", style={'textAlign': 'center'}),
     input_settings_top_bar,
     location_selector,
-    selected_point,
+    trigger_tester
     ]
 )
 
