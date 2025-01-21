@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, callback, Output, Input, State
 from dash.exceptions import PreventUpdate
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -44,10 +44,10 @@ _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
     label="Date de l'évènement",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
-    value=datetime.now().date(),
+    value=date(1994, 11, 8),
     w=250,
     highlightToday=True,
-    maxDate=(datetime.now() + timedelta(7)).date(),
+    maxDate=date(2024, 12, 31),
     style=dict(
         zIndex=2
     )
