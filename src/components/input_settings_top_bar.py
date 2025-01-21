@@ -2,7 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, callback, Output, Input, State
 from dash.exceptions import PreventUpdate
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -41,13 +41,13 @@ _computation_method_segmented = dmc.Stack(children=[
 
 
 _date_selector_calendar = dmc.DatePickerInput(
-    # :TODO: 
-    # Make it so it is not possible to select a date in the future
     id='input:date',
     label="Date de l'évènement",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
     value=datetime.now().date(),
     w=250,
+    highlightToday=True,
+    maxDate=(datetime.now() + timedelta(7)).date(),
     style=dict(
         zIndex=2
     )
