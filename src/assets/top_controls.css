@@ -4,28 +4,46 @@
     padding-top: 5px;
 }
 
+
 #settings-row-title {
     color: white;
     /* padding-bottom: 3px; */
 }
+
 
 #inputs-row {
     padding-top: 20px;
     /* justify-content: space-around; */
 }
 
+
 #inputs-row-left {
     justify-content: space-around;
 }
+
+
+ #right-column {
+    display: flex;
+    justify-content: center;
+ }
+
+
+#inputs-row-right {
+    position: relative;
+    left: 50px;
+}
+
 
 .selector-with-label {
     gap: 3px;
     align-items: left;
 }
 
+
 .mantine-Slider-markLabel {
     color: white;
 }
+
 
 #slider-with-label{
     align-items: left;

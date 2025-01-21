@@ -1,8 +1,7 @@
-import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash import html, callback, Output, Input
 
-from datetime import datetime, date
+from datetime import datetime
 
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -87,11 +86,11 @@ input_settings_top_bar = html.Div(children=[
                 _date_selector_calendar,
                 _event_duration_slider
                 ], id='inputs-row-left')
-            ], style=debug_style, span=9.5),
+            ],  span=9.5),
         dmc.GridCol(children=[
-            dmc.Button('Continuer')
-            ],
-            style=debug_style, span='auto'),
-    ], id='inputs-row'
-    )
+            dmc.Group(children=[
+                dmc.Button('Poursuivre', size='lg', variant='gradient')
+            ], id='inputs-row-right')],
+            span='auto', id='right-column'),
+    ], id='inputs-row')
 ], className='settings-top-bar')
