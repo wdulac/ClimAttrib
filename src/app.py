@@ -14,6 +14,7 @@ from components import location_selector
 from components import coordinates_output as selected_point
 from components import input_settings_top_bar
 from components import trigger_tester
+from components import header
 
 # Initialize
 server = Flask(__name__)
@@ -29,7 +30,7 @@ application = Dash(
 # Define the page layout
 layout = html.Div([
     dmc.NotificationProvider(),
-    html.H1("Mon application avec carte interactive", style={'textAlign': 'center'}),
+    header,
     input_settings_top_bar,
     location_selector,
     trigger_tester
