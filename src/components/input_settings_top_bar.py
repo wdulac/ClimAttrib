@@ -18,7 +18,7 @@ _extreme_type_segmented = dmc.Stack(children=[
         id='input:extreme-type',
         data=[
             {"value": "hot", "label": "Chaud"},
-            {"value": "col", "label": "Froid"}
+            {"value": "cold", "label": "Froid"}
         ],
         value="hot"
     )],
