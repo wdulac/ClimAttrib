@@ -27,6 +27,7 @@ application = Dash(
 
 # Define the page layout
 layout = html.Div([
+    dmc.NotificationProvider(),
     html.H1("Mon application avec carte interactive", style={'textAlign': 'center'}),
     input_settings_top_bar,
     location_selector,

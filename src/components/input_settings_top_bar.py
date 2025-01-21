@@ -1,5 +1,6 @@
 import dash_mantine_components as dmc
-from dash import html, callback, Output, Input
+from dash import html, callback, Output, Input, State
+from dash.exceptions import PreventUpdate
 
 from datetime import datetime
 
@@ -70,6 +71,14 @@ _event_duration_slider = dmc.Stack(children=[
     id='slider-with-label'
 )
 
+_continue_button = dmc.Button(
+    'Poursuivre',
+    size='lg',
+    variant='gradient',
+    id='trigger:continue-btn'
+)
+    
+
 debug_style = {
     "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
 }
@@ -86,11 +95,32 @@ input_settings_top_bar = html.Div(children=[
                 _date_selector_calendar,
                 _event_duration_slider
                 ], id='inputs-row-left')
-            ],  span=9.5),
+            ], span=9.5),
         dmc.GridCol(children=[
             dmc.Group(children=[
-                dmc.Button('Poursuivre', size='lg', variant='gradient')
-            ], id='inputs-row-right')],
-            span='auto', id='right-column'),
+                html.Div(id='button-notification-container'),
+                _continue_button
+                ], id='inputs-row-right')
+            ], span='auto', id='right-column'),
     ], id='inputs-row')
 ], className='settings-top-bar')
+
+
+#~~~~~~~ Callbacks
+
+@callback(
+    Output('button-notification-container', 'children'),
+    Input('trigger:continue-btn', 'n_clicks'),
+    State('input:selected-point', 'data'),
+    prevent_initial_call=True
+)
+def notify_user(n_clicks, selected_point_data):
+    if selected_point_data is None:
+        return dmc.Notification(
+            title="Oups !",
+            message="Veuillez sélectionner un point de grille avant de poursuivre",
+            action="show",
+            autoClose=3500
+        )
+    else:
+        raise PreventUpdate
