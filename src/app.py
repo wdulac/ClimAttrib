@@ -15,6 +15,7 @@ from components import location_selector
 from components import input_settings_top_bar
 from components import trigger_tester
 from components import header
+from components import footer
 
 # Initialize
 server = Flask(__name__)
@@ -35,7 +36,8 @@ layout = html.Div([
     header,
     input_settings_top_bar,
     location_selector,
-    trigger_tester
+    trigger_tester,
+    footer
     ]
 )
 
