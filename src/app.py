@@ -25,7 +25,8 @@ application = Dash(
         dmc.styles.DATES,
         dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
     ],
-    update_title=None
+    update_title=None,
+    title="EET"
 )
 
 # Define the page layout
