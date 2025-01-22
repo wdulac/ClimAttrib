@@ -86,7 +86,7 @@ debug_style = {
 
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
-    html.H4("Définition de l'évènement extrême", id='settings-row-title'),
+    html.H5("Définition de l'évènement extrême", id='settings-row-title'),
     dmc.Divider(variant='solid'),
     dmc.Grid(children=[
         dmc.GridCol(children=[

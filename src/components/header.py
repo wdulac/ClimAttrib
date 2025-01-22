@@ -14,24 +14,65 @@ header = html.Div(
                 dmc.GridCol(
                     children=[
                         html.H1("Extreme Event Tracker", id='page-title')
-                    ], style=debug_style, span=6
+                    ], style=None, span=6
                 ),
                 dmc.GridCol(
                     children=[
                         dmc.Group(
                             children=[
-                                dmc.Text("1"),
-                                dmc.Text("2"),
-                                dmc.Text("3")
+                                dmc.Group(
+                                    children=[
+                                        html.A(
+                                            href="",
+                                            children=[
+                                                dmc.Button("À propos", variant='subtle')
+                                            ]
+                                        ),
+                                        # dmc.Space(w='xs'),
+                                        dmc.Menu(
+                                            children=[
+                                                dmc.MenuTarget(dmc.Button("EN / FR", variant='subtle')),
+                                                dmc.MenuDropdown(
+                                                    children=[
+                                                        dmc.MenuItem(
+                                                            "English",
+                                                            href=""
+                                                        ),
+                                                        dmc.MenuItem(
+                                                            "Français",
+                                                            href=""
+                                                        )
+                                                    ]
+                                                )
+                                            ],
+                                            trigger='hover',
+                                            openDelay=100,
+                                            closeDelay=400,
+                                            id='language-menu'
+                                        ),
+                                        dmc.Space(w='s'),
+                                        html.A(
+                                            href='https://github.com/wdulac/EET-app',
+                                            target='_blank',
+                                            className='github-logo',
+                                            children=[
+                                                dmc.ActionIcon(
+                                                    variant='subtle',
+                                                    children=[
+                                                        dmc.Image(src='/assets/logos/github.svg', w=30)
+                                                    ],
+                                                    size="lg"
+                                                )
+                                            ]
+                                        )
+                                    ], id='header-buttons'
+                                )
                             ], id="header-right"
                         )
-                    ], style=debug_style, span=6
+                    ], style=None, span=6
                 )
             ]
         )
     ],
-    # children=[
-    #     html.H1("Extreme Event Tracker", id='page-title')
-    # ],
     className='header-parent-div'
 )

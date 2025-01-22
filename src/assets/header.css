@@ -1,11 +1,18 @@
 .header-parent-div {
-    background-color: #18a7e4;
+    /* background-color: #18a7e4; */
+    background-image: linear-gradient(90deg, #effaff 0%, #d9e7ff 100%);
     width: 100%;
 }
 
 #page-title {
     text-align: left;
-    font-size: 100;
+    font-size: 150;
+    font-family: fantasy;
+    font-style: italic;
+    font-weight: 200;
+    background: linear-gradient(45deg, #004a9f, #3cff00 80%);
+    background-clip: text;
+    color: transparent;
     padding: 15px;
     margin: 0;
 }
@@ -15,3 +22,12 @@
     justify-content: right;
     align-items: middle;
 }
+
+#header-buttons {
+    display: flex;
+    justify-content: space-around;
+    position: relative;
+    top: 20px;
+    right: 25px;
+}
+

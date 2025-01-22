@@ -8,6 +8,8 @@
 #settings-row-title {
     color: white;
     /* padding-bottom: 3px; */
+    position: relative;
+    left: 5px;
 }
 
 
