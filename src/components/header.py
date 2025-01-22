@@ -7,7 +7,7 @@ debug_style = {
     "textAlign": "center"
 }
 
-header = html.Div(
+header = html.Header(
     children=[
         dmc.Grid(
             children=[
