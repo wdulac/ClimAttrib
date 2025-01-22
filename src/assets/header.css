@@ -27,5 +27,6 @@
 #header-buttons {
     position: relative;
     right: 25px;
+    gap: 10px;
 }
 

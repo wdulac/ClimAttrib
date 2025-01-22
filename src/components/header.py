@@ -50,7 +50,7 @@ header = html.Div(
                                             closeDelay=400,
                                             id='language-menu'
                                         ),
-                                        dmc.Space(w='s'),
+                                        dmc.Space(w='10px'),
                                         html.A(
                                             href='https://github.com/wdulac/EET-app',
                                             target='_blank',
