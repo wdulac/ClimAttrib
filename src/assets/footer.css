@@ -1,3 +1,6 @@
 .footer-parent {
     background-color: aquamarine;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
 }
