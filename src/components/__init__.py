@@ -1,5 +1,5 @@
 from .location_selector import location_selector
-from .coordinates_output import coordinates_output
+# from .coordinates_output import coordinates_output
 from .input_settings_top_bar import input_settings_top_bar
 from .debug_button_trigger_test import trigger_tester
 from .header import header

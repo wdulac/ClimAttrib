@@ -11,7 +11,7 @@ import dash_mantine_components as dmc
 _dash_renderer._set_react_version("18.2.0")
 # Custom components for the layout
 from components import location_selector
-from components import coordinates_output as selected_point
+# from components import coordinates_output as selected_point
 from components import input_settings_top_bar
 from components import trigger_tester
 from components import header
