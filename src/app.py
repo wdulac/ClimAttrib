@@ -38,7 +38,7 @@ layout = html.Div([
     location_selector,
     trigger_tester,
     footer
-    ]
+    ], className='site-container'
 )
 
 application.layout = dmc.MantineProvider(layout)
