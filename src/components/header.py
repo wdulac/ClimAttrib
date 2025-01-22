@@ -1,4 +1,4 @@
-from dash import html, callback, Input, Output
+from dash import html
 import dash_mantine_components as dmc
 
 
@@ -74,5 +74,5 @@ header = html.Header(
             ]
         )
     ],
-    className='header-parent-div'
+    className='header-parent'
 )
