@@ -21,13 +21,11 @@
     display: flex;
     justify-content: right;
     align-items: middle;
+    height: 100%;
 }
 
 #header-buttons {
-    display: flex;
-    justify-content: space-around;
     position: relative;
-    top: 20px;
     right: 25px;
 }
 
