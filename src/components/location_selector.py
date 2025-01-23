@@ -39,6 +39,7 @@ location_selector = html.Div(
                 dl.TileLayer(noWrap=True),
                 dl.LayerGroup(id='marker'),
                 dl.LayerGroup(id='grid'),
+                html.Div(id='zoom-to-select', children="Zoomer pour sélectionner un point")
             ],
             center=MAP_CENTER_POSITION,
             zoom=DEFAULT_ZOOM_LEVEL,
@@ -47,13 +48,33 @@ location_selector = html.Div(
             id='map',
             className='map-container'
         ),
-        dcc.Store(id='input:selected-point', data=None)
+        dcc.Store(id='input:selected-point', data=None),
+        
     ],
-    className='parent-container'
+    className='map-parent-container'
 )
  
 
 #~~~~~~~ Callbacks
+
+@callback(
+        Output('zoom-to-select', 'hidden'),
+        Input('map', 'zoom'),
+        State('zoom-to-select', 'hidden'),
+        prevent_initial_call=True
+)
+def zoom_to_select(zoom_level, is_hidden):
+    if zoom_level >= ZOOM_LEVEL_THRESHOLD:
+        if is_hidden:
+            raise PreventUpdate
+        else:
+            return True
+    else:
+        if is_hidden:
+            return False
+        else:
+            raise PreventUpdate
+
 
 @callback(
     Output('grid', 'children'),

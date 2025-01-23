@@ -1,4 +1,4 @@
-from dash import html, callback, Input, Output, State, ctx, dash_table
+from dash import html, callback, Input, Output, State, ctx, dash_table, no_update
 from dash.exceptions import PreventUpdate
 from .input_settings_top_bar import *
 import pandas as pd
@@ -36,6 +36,8 @@ def trigger_button(n_clicks,
             Component_value=values
         )
         df = pd.DataFrame.from_dict(out, orient='index')
-        return dash_table.DataTable(data=df.to_dict('records'))
+        print(df)
+        # return dash_table.DataTable(data=df.to_dict('records'))
+        return no_update
     else:
         raise PreventUpdate

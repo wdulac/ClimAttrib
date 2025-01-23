@@ -1,9 +1,30 @@
-.parent-container {
+.map-parent-container {
+    display: block;
     position: static;
+    height: 72vh;
 }
 
 .map-container {
-    height: 60vh;
+    height: 100%;
     border: 0px solid rgb(0, 0, 0);
     z-index: 1;
+}
+
+#zoom-to-select {
+    position: absolute;
+    z-index: 1000;
+    /* Positionning */
+    top: 50px;
+    left: 50% ;
+    transform: translate(-50%, 0);
+
+    /* Styling */
+    font-weight: 500;
+    font-size: large;
+    cursor: pointer;
+    color: #fff;
+    background-color: #063575;
+    border-color: #063575;
+    border-radius: 2rem;
+    padding: .5rem 1rem;
 }
