@@ -60,9 +60,9 @@ _event_duration_slider = dmc.Stack(children=[
         id='input:event-duration',
         value=3,
         min=1,
-        max=7,
+        max=10,
         restrictToMarks=True,
-        marks=[{"value": _, "label": str(_)} for _ in range(1, 8)],
+        marks=[{"value": _, "label": str(_)} for _ in [1, 2, 3, 4, 5, 6, 7, 10]],
         label=None,
         size=10,
         classNames=dict(
