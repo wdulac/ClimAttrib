@@ -100,37 +100,47 @@ def show_grid(current_zoom_level, grid_state):
         # The grid is not displayed but we are not at the threshold; no need to update
         raise PreventUpdate
 
+    
+# Attempt to fix the notification that gets incorrectly triggered on zoom-level
+# Idea : Make the selected point input independant of zoom level.
+# Implication : Need to clear out the selected point data from another callback
 
 @callback(
-        Output("marker", "children"),
-        Output("input:selected-point", "data"),
-        Input("geojson", "clickData"),
-        Input("map", "zoom"),
-        State("marker", "children")
+    Output('marker', 'children'),
+    Output('input:selected-point', 'data'),
+    Input('geojson', 'clickData')
 )
-def place_marker(click_data, zoom_level, marker_state):
-    """
-    Place marker on the clicked polygon
-    """
+def select_point(click_data):
 
     def center_from_polygon(coordinates):
         lon_min, lon_max = coordinates[0][0], coordinates[2][0]
         lat_min, lat_max = coordinates[0][1], coordinates[1][1]
         return [lat_min + (lat_max - lat_min)/2, lon_min + (lon_max - lon_min)/2]
 
-    if zoom_level >= ZOOM_LEVEL_THRESHOLD:
-        if click_data is not None:
-            clicked_poly = click_data['geometry']['coordinates'][0]
-            poly_centre = center_from_polygon(clicked_poly)
-            marker = dl.Marker(
-                position=poly_centre,
-                icon=_custom_icon
-            )
-            return marker, json.dumps([poly_centre])
+    if click_data is not None:
+        clicked_poly = click_data['geometry']['coordinates'][0]
+        poly_centre = center_from_polygon(clicked_poly)
+        marker = dl.Marker(
+            position=poly_centre,
+            icon=_custom_icon
+        )
+        return marker, json.dumps([poly_centre])
+    else:
+        raise PreventUpdate
+
+
+@callback(
+    Output('marker', 'children', allow_duplicate=True),
+    Output('input:selected-point', 'data', allow_duplicate=True),
+    Input('map', 'zoom'),
+    State('marker', 'children'),
+    prevent_initial_call=True
+)
+def clear_point_data(zoom_level, marker_state):
+    if zoom_level < ZOOM_LEVEL_THRESHOLD:
+        if marker_state is not None:
+            return None, None
         else:
             raise PreventUpdate
-    # Handle clearing out the marker when zooming out
-    elif marker_state is not None:
-        return None, None
     else:
         raise PreventUpdate
