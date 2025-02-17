@@ -1,7 +1,6 @@
 .map-parent-container {
-    display: block;
-    position: static;
-    height: 72vh;
+    flex-grow: 1;
+    height: 0px; /* Hack needed for the container to be able to extend */
 }
 
 .map-container {
