@@ -27,7 +27,7 @@ application = Dash(
         dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
     ],
     update_title=None,
-    title="EET"
+    title="Nom de l'application"
 )
 
 # Define the page layout

@@ -39,7 +39,7 @@ location_selector = html.Div(
                 dl.TileLayer(noWrap=True),
                 dl.LayerGroup(id='marker'),
                 dl.LayerGroup(id='grid'),
-                html.Div(id='zoom-to-select', children="Zoomer pour sélectionner un point")
+                html.Div(id='zoom-to-select', children="Zoomer pour sélectionner un point de grille")
             ],
             center=MAP_CENTER_POSITION,
             zoom=DEFAULT_ZOOM_LEVEL,

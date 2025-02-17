@@ -1,7 +1,7 @@
 .map-parent-container {
     display: block;
     position: static;
-    height: 74vh;
+    height: 72vh;
 }
 
 .map-container {
@@ -14,8 +14,8 @@
     position: absolute;
     z-index: 1000;
     /* Positionning */
-    top: 50px;
-    left: 50% ;
+    top: 25px;
+    left: 50%;
     transform: translate(-50%, 0);
 
     /* Styling */

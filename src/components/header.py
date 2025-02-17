@@ -13,7 +13,7 @@ header = html.Header(
             children=[
                 dmc.GridCol(
                     children=[
-                        html.H1("Extreme Event Tracker", id='page-title')
+                        html.H1("Nom de l'application", id='page-title')
                     ], style=None, span=6
                 ),
                 dmc.GridCol(
