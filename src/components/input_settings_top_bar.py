@@ -2,6 +2,7 @@ import dash_mantine_components as dmc
 from dash import html, callback, Output, Input, State, dcc
 from dash.exceptions import PreventUpdate
 from .location_selector import *
+import json
 
 from datetime import datetime, timedelta, date
 
@@ -127,14 +128,31 @@ def notify_user(n_clicks, selected_point_data):
             )
         else:
             raise PreventUpdate
-    
+
+
 @callback(
     Output('dynamic-link', 'children'),
     Input('input:selected-point', 'data'),
+    Input('input:extreme-type', 'value'),
+    Input('input:computation-method', 'value'),
+    Input('input:date', 'value'),
+    Input('input:event-duration', 'value')
 )
-def update_link(grid_point):
-    print('hello')
+def update_link(grid_point, extreme_type, computation_method, date, duration):
+    
+    def compose_href(grid_point, extreme_type, computation_method, date, duration):
+        coords = json.loads(grid_point)[0]
+        lat, lon = coords[0], coords[1]
+        href = (f"/analysis?extreme_type={extreme_type}"
+                f"&method={computation_method}"
+                f"&date={date}"
+                f"&duration={duration}"
+                f"&loc={str(lat)}_{str(lon)}")
+        return href
+
     if grid_point is not None:
-        return dcc.Link(children=_continue_button, href='/analysis')
+        return dcc.Link(children=_continue_button,
+                        href=compose_href(grid_point, extreme_type,
+                                          computation_method, date, duration))
     else:
         return _continue_button
