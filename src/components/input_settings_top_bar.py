@@ -117,15 +117,16 @@ input_settings_top_bar = html.Div(children=[
     prevent_initial_call=True
 )
 def notify_user(n_clicks, selected_point_data):
-    if selected_point_data is None:
-        return dmc.Notification(
-            title="Oups !",
-            message="Veuillez sélectionner un point de grille avant de poursuivre",
-            action="show",
-            autoClose=3500
-        )
-    else:
-        raise PreventUpdate
+    if n_clicks:
+        if selected_point_data is None:
+            return dmc.Notification(
+                title="Oups !",
+                message="Veuillez sélectionner un point de grille avant de poursuivre",
+                action="show",
+                autoClose=3500
+            )
+        else:
+            raise PreventUpdate
     
 @callback(
     Output('dynamic-link', 'children'),
