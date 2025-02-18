@@ -1,6 +1,7 @@
 import dash_mantine_components as dmc
-from dash import html, callback, Output, Input, State
+from dash import html, callback, Output, Input, State, dcc
 from dash.exceptions import PreventUpdate
+from .location_selector import *
 
 from datetime import datetime, timedelta, date
 
@@ -100,7 +101,7 @@ input_settings_top_bar = html.Div(children=[
         dmc.GridCol(children=[
             dmc.Group(children=[
                 html.Div(id='button-notification-container'),
-                _continue_button
+                html.Div(id='dynamic-link')
                 ], id='inputs-row-right')
             ], span='auto', id='right-column'),
     ], id='inputs-row')
@@ -125,3 +126,14 @@ def notify_user(n_clicks, selected_point_data):
         )
     else:
         raise PreventUpdate
+    
+@callback(
+    Output('dynamic-link', 'children'),
+    Input('input:selected-point', 'data'),
+)
+def update_link(grid_point):
+    print('hello')
+    if grid_point is not None:
+        return dcc.Link(children=_continue_button, href='/analysis')
+    else:
+        return _continue_button
