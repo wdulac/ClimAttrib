@@ -1,6 +1,6 @@
 # Essentials
 from flask import Flask
-from dash import Dash, html
+from dash import Dash, html, page_container
 # App settings
 from utils.settings import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
 # Bootstrap
@@ -10,10 +10,6 @@ from dash import _dash_renderer
 import dash_mantine_components as dmc
 _dash_renderer._set_react_version("18.2.0")
 # Custom components for the layout
-from components import location_selector
-# from components import coordinates_output as selected_point
-from components import input_settings_top_bar
-from components import trigger_tester
 from components import header
 from components import footer
 
@@ -27,16 +23,15 @@ application = Dash(
         dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
     ],
     update_title=None,
-    title="Nom de l'application"
+    title="Nom de l'application",
+    suppress_callback_exceptions=True,
+    use_pages=True
 )
 
 # Define the page layout
 layout = html.Div([
-    dmc.NotificationProvider(),
     header,
-    input_settings_top_bar,
-    location_selector,
-    trigger_tester,
+    page_container, # Page content loaded from `pages` folder
     footer
     ], className='site-container'
 )
