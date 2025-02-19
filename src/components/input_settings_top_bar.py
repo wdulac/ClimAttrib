@@ -33,10 +33,10 @@ _computation_method_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:computation-method',
         data= [
-            {"value": "maximum", "label": "Max. annuel"},
+            {"value": "yearmax", "label": "Max. annuel"},
             {"value": "calendar", "label": "Calendaire"}
         ],
-        value="maximum"
+        value="yearmax"
     )],
     className='selector-with-label'
 )
