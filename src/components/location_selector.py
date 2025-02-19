@@ -64,6 +64,11 @@ location_selector = html.Div(
         prevent_initial_call=True
 )
 def zoom_to_select(zoom_level, is_hidden):
+    """
+    Uses zoom level to determine wether or not to hide the large
+    "Zoom to select a grid point" indicator on the leaflet map.
+    """
+
     if zoom_level >= ZOOM_LEVEL_THRESHOLD:
         if is_hidden:
             raise PreventUpdate
@@ -83,7 +88,7 @@ def zoom_to_select(zoom_level, is_hidden):
 )
 def show_grid(current_zoom_level, grid_state):
     """
-    Show the grid passed a certain zoom level
+    Show the geojson grid passed a certain zoom level.
     """
 
     if grid_state is not None:
@@ -101,16 +106,16 @@ def show_grid(current_zoom_level, grid_state):
         raise PreventUpdate
 
     
-# Attempt to fix the notification that gets incorrectly triggered on zoom-level
-# Idea : Make the selected point input independant of zoom level.
-# Implication : Need to clear out the selected point data from another callback
-
 @callback(
     Output('marker', 'children'),
     Output('input:selected-point', 'data'),
     Input('geojson', 'clickData')
 )
 def select_point(click_data):
+    """
+    Place a marker on the selected geojson grid point and return its coordinates
+    (the center) to the Store unit (i.e the browser's memory)
+    """
 
     def center_from_polygon(coordinates):
         lon_min, lon_max = coordinates[0][0], coordinates[2][0]
@@ -137,6 +142,11 @@ def select_point(click_data):
     prevent_initial_call=True
 )
 def clear_point_data(zoom_level, marker_state):
+    """
+    Clear out both the marker and the stored value when zooming out
+    passed the the globally set zoom level threshold.
+    """
+
     if zoom_level < ZOOM_LEVEL_THRESHOLD:
         if marker_state is not None:
             return None, None

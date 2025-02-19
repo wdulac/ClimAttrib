@@ -116,6 +116,11 @@ input_settings_top_bar = html.Div(children=[
     prevent_initial_call=True
 )
 def notify_user(n_clicks, selected_point_data):
+    """
+    Notify the user to select a grid point if they try to proceed without
+    having selected a grid point.
+    """
+
     if n_clicks:
         if selected_point_data is None:
             return dmc.Notification(
@@ -137,6 +142,11 @@ def notify_user(n_clicks, selected_point_data):
     Input('input:event-duration', 'value')
 )
 def update_link(grid_point, extreme_type, computation_method, date, duration):
+    """
+    Create and assign a Link (for multi-page) to the main button based on the
+    selected input settings.
+    If no point is selected, the button is made inoperative.
+    """
     
     def compose_href(grid_point, extreme_type, computation_method, date, duration):
         coords = json.loads(grid_point)[0]
