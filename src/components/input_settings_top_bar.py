@@ -74,11 +74,15 @@ _event_duration_slider = dmc.Stack(children=[
     id='slider-with-label'
 )
 
-_continue_button = dmc.Button(
-    'Poursuivre',
-    size='lg',
-    variant='gradient',
-    id='trigger:continue-btn'
+_continue_button = dcc.Link(
+    children=dmc.Button(
+        'Poursuivre',
+        size='lg',
+        variant='gradient',
+        id='trigger:continue-btn'
+    ),
+    href=None,
+    id='dynamic-link'
 )
     
 
@@ -101,7 +105,7 @@ input_settings_top_bar = html.Div(children=[
             ], span=9.5),
         dmc.GridCol(children=[
             html.Div(id='button-notification-container'),
-            html.Div(id='dynamic-link')
+            _continue_button
         ], span='auto', id='right-column'),
     ], id='inputs-row')
 ], className='settings-top-bar')
@@ -134,7 +138,7 @@ def notify_user(n_clicks, selected_point_data):
 
 
 @callback(
-    Output('dynamic-link', 'children'),
+    Output('dynamic-link', 'href'),
     Input('input:selected-point', 'data'),
     Input('input:extreme-type', 'value'),
     Input('input:computation-method', 'value'),
@@ -143,12 +147,13 @@ def notify_user(n_clicks, selected_point_data):
 )
 def update_link(grid_point, extreme_type, computation_method, date, duration):
     """
-    Create and assign a Link (for multi-page) to the main button based on the
+    Update the href of the the main button based on the
     selected input settings.
     If no point is selected, the button is made inoperative.
     """
     
-    def compose_href(grid_point, extreme_type, computation_method, date, duration):
+    if grid_point is not None:
+        # Compose the href based on the input settings
         coords = json.loads(grid_point)[0]
         lat, lon = coords[0], coords[1]
         href = (f"/analysis?extreme_type={extreme_type}"
@@ -156,11 +161,8 @@ def update_link(grid_point, extreme_type, computation_method, date, duration):
                 f"&date={date}"
                 f"&duration={duration}"
                 f"&loc={str(lat)}_{str(lon)}")
+        
         return href
-
-    if grid_point is not None:
-        return dcc.Link(children=_continue_button,
-                        href=compose_href(grid_point, extreme_type,
-                                          computation_method, date, duration))
     else:
-        return _continue_button
+        # If no grid point is selected, turn off the href
+        return None
