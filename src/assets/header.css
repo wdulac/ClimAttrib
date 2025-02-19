@@ -4,6 +4,7 @@
     width: 100%;
 }
 
+
 #page-title {
     text-align: left;
     font-size: 150;
@@ -17,6 +18,7 @@
     margin: 0;
 }
 
+
 #header-right {
     display: flex;
     justify-content: right;
@@ -24,9 +26,9 @@
     height: 100%;
 }
 
+
 #header-buttons {
     position: relative;
     right: 25px;
     gap: 10px;
 }
-

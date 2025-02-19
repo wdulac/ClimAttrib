@@ -3,10 +3,12 @@
     height: 0px; /* Hack needed for the container to be able to extend */
 }
 
+
 .map-container {
     height: 100%;
     z-index: 1;
 }
+
 
 #zoom-to-select {
     position: absolute;
