@@ -1,4 +1,5 @@
 from dash import register_page, html
+from science import attribution # To make sure scientific packages import OK
 
 register_page(__name__, path='/analysis')
 
