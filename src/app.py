@@ -1,8 +1,6 @@
 # Essentials
 from flask import Flask
 from dash import Dash, html, page_container
-# App settings
-from utils.settings import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
 # Bootstrap
 import dash_bootstrap_components as dbc
 # Mantine
@@ -28,6 +26,7 @@ application = Dash(
     use_pages=True
 )
 
+
 # Define the page layout
 layout = html.Div([
     header,
@@ -37,6 +36,10 @@ layout = html.Div([
 )
 
 application.layout = dmc.MantineProvider(layout)
+
+# imports from utils need to take place after initialization of the app
+from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
+from utils import redirects
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.
