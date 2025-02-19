@@ -19,21 +19,17 @@
 }
 
 
-#inputs-row-left {
+#left-column {
     justify-content: space-around;
+    align-items: center;
 }
 
 
 #right-column {
     display: flex;
     justify-content: center;
+    align-items: center;
  }
-
-
-#inputs-row-right {
-    position: relative;
-    left: 50px;
-}
 
 
 .selector-with-label {

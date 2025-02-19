@@ -97,14 +97,12 @@ input_settings_top_bar = html.Div(children=[
                 _computation_method_segmented,
                 _date_selector_calendar,
                 _event_duration_slider
-                ], id='inputs-row-left')
+                ], id='left-column')
             ], span=9.5),
         dmc.GridCol(children=[
-            dmc.Group(children=[
-                html.Div(id='button-notification-container'),
-                html.Div(id='dynamic-link')
-                ], id='inputs-row-right')
-            ], span='auto', id='right-column'),
+            html.Div(id='button-notification-container'),
+            html.Div(id='dynamic-link')
+        ], span='auto', id='right-column'),
     ], id='inputs-row')
 ], className='settings-top-bar')
 
