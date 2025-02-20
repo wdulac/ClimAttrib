@@ -13,6 +13,7 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
     'fz': 18,
 }
 
+LINK_DEFAULT_HREF = '/'
 
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Type d'extrême", **TOP_BAR_INPUTS_LABEL_PROPS),
@@ -81,7 +82,7 @@ _continue_button = dcc.Link(
         variant='gradient',
         id='trigger:continue-btn'
     ),
-    href=None,
+    href=LINK_DEFAULT_HREF,
     id='dynamic-link'
 )
     
@@ -156,7 +157,8 @@ def update_link(grid_point, extreme_type, computation_method, date, duration):
         # Compose the href based on the input settings
         coords = json.loads(grid_point)[0]
         lat, lon = coords[0], coords[1]
-        href = (f"/analysis?extreme_type={extreme_type}"
+        href = ("/analysis?"
+                f"extreme_type={extreme_type}"
                 f"&method={computation_method}"
                 f"&date={date}"
                 f"&duration={duration}"
@@ -164,5 +166,5 @@ def update_link(grid_point, extreme_type, computation_method, date, duration):
         
         return href
     else:
-        # If no grid point is selected, turn off the href
-        return None
+        # If no grid point is selected, revert to default href
+        return LINK_DEFAULT_HREF
