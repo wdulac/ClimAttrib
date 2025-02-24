@@ -20,4 +20,4 @@ def analysis():
         if '' in request.args.values():
             return redirect(HOMEPAGE)
 
-        # :TODO: Check each parameter value against a set of allowed values
+        # TODO Check each parameter value against a set of allowed values
