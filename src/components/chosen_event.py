@@ -10,15 +10,16 @@ def chosen_event(parameters):
     extreme_event = dmc.Table(
         data={
             # "caption": "Event defined with the selected parameters",
-            "head": ["Extreme Type", "Computation Method", "Event's date", "Event Duration", "Latitude", "Longitude"],
+            "head": ["Extreme Type", "Computation Method", "Event's date",
+                     "Event Duration", "Latitude", "Longitude"],
             "body": [
                 [
                     parameters['extreme_type'],
                     parameters['method'],
                     parameters['date'],
                     parameters['duration'],
-                    parameters['loc'][0],
-                    parameters['loc'][1]
+                    parameters['lat'],
+                    parameters['lon']
                  ]
 
             ]

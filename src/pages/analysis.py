@@ -10,8 +10,9 @@ def layout(extreme_type=None,
            duration=None,
            loc=None):
     """
-    Note: It is good practice to catch unexpected query event here through **kwargs
-    However in our case it is already handled through redirection rules in utils/redirects.py
+    Note: It is good practice to catch unexpected query event here through 
+    **kwargs However in our case it is already handled through redirection
+    rules in utils/redirects.py
     """
     
     event = locals()
@@ -20,7 +21,9 @@ def layout(extreme_type=None,
 
     # Split lat_lon string into a (lat, lon) float tuple
     _lat, _lon = [float(_) for _ in loc.split('_')]
-    event['loc'] = (_lat, _lon)
+    event['lat'], event['lon'] = _lat, _lon
+    # Remove original loc query parameter from event dict
+    event.pop('loc')
 
     # Read duration as int
     event['duration'] = int(event['duration'])
