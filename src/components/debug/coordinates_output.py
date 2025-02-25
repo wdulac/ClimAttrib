@@ -1,5 +1,5 @@
 from dash import html, callback, Input, Output
-from .location_selector import *
+from ..home.location_selector import *
 import json
 
 coordinates_output = html.Div(

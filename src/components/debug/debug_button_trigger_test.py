@@ -1,6 +1,6 @@
 from dash import html, callback, Input, Output, State, ctx, dash_table, no_update
 from dash.exceptions import PreventUpdate
-from .input_settings_top_bar import *
+from ..home.input_settings_top_bar import *
 import pandas as pd
 
 trigger_tester = html.Div(
