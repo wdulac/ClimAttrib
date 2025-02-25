@@ -74,7 +74,15 @@ header = html.Header(
             children=[
                 dmc.GridCol(
                     children=[
-                        html.H1("Nom de l'application", id='page-title')
+                        html.A(
+                            # TODO Restrict clickable zone to the actual title
+                            href="/",
+                            children=html.H1(
+                                "Nom de l'application",
+                                id='page-title'
+                            ),
+                            id='title-anchor'
+                        )
                     ],
                     style=None,
                     span=6
