@@ -26,7 +26,7 @@ elif current_dir == 'app':
 # load.
 # Note : Make sure the land-sea mask is consistent with the Geojson grid
 mask_full  = xr.open_dataset(
-    path_to_data_parent_dir + "data/land_sea_mask_IPCC_antarctica.nc"
+    path_to_science_dir + "data/land_sea_mask_IPCC_antarctica.nc"
 )
 mask = mask_full.land_sea_mask
 lat = mask.lat
