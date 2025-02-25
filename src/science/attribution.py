@@ -189,6 +189,6 @@ def compute_event_stats(event: dict) -> tuple:
     ).T
 
     ## Compute probability ratio
-    stats_pr = stats.loc[:,:,"pF"] / stats.loc[:,:,"pC"]
+    stats.loc[:, :, 'PR'] = stats.loc[:,:,"pF"] / stats.loc[:,:,"pC"]
 
-    return stats, stats_pr, climMM, climCXCB
+    return stats, climMM, climCXCB
