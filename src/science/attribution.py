@@ -30,7 +30,6 @@ lon = mask.lon
 
 # Global parameters used for the calculations
 time_reference = np.arange(1961, 1991, 1, dtype=int )
-bayes_kwargs = { "n_mcmc_drawn_min" : 2500 , "n_mcmc_drawn_max" : 5000 }
 n_sample = 1000
 ns_law = ns.models.GEV()
 verbose = "--not-verbose"
@@ -48,7 +47,9 @@ def load_obs(lat: float, lon: float) -> tuple:
     lon = lon % 360 # Convert to 0 -- 360°
 
     ## Load covariate
-    dXo_full = pd.read_csv(path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.csv')
+    dXo_full = pd.read_csv(
+        path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.csv'
+    )
     year_Xo = dXo_full.loc[:,"Time"].array
     dXo_sub = dXo_full.drop(
         ["Fraction of area represented", "Coverage uncertainty (1 sigma)"],
@@ -69,7 +70,7 @@ def load_obs(lat: float, lon: float) -> tuple:
     return Xo, Yo
 
 
-def attribute_event(event: dict) -> tuple:
+def compute_attribution(event: dict) -> tuple:
     """
     TODO Docstring
     """
@@ -92,6 +93,99 @@ def attribute_event(event: dict) -> tuple:
     climMM_file = path_to_data_parent_dir + \
         'data/climMM/' + \
         f'climMM_lat{idx_lat}_lon{idx_lon}.nc'
-    # climMM = ns.Climatology.from_netcdf(climMM_file, ns_law)
+    climMM = ns.Climatology.from_netcdf(climMM_file, ns_law)
 
+    # Constrain the multi-model synthesis covariate X with observed Xo
+    climCX = ns.constrain_covariate(
+        climMM,
+        Xo,
+        time_reference,
+        assume_good_scale=True,
+        verbose=verbose
+    )
 
+    # Constrain with observed variable Yo
+    bayes_kwargs = {
+        "n_ess": int(10000/(len(climCX.data.sample)-1)) # 10000 tirages
+    } 
+    climCXCB = ns.stan_constrain(
+        climCX,
+        Yo,
+        'stan_files/GEV_non_stationary.stan',
+        **bayes_kwargs
+    )
+
+    ## Stats
+    ny = climCXCB.n_time
+    nsample_MCMC = climCXCB.data.sample_MCMC.shape[0]
+    samples_MCMC = climCXCB.data.sample_MCMC
+
+    To_anomaly = To-bias_Yo
+
+    ## Output
+    n_stat = 3
+    stats = xr.DataArray(
+                np.zeros((ny,nsample_MCMC,n_stat)),
+                coords=[climCXCB.X.time, samples_MCMC, ["pC","pF", "PR"]],
+                dims = ["time","sample_MCMC","stats"]
+            )
+    XF = xr.DataArray(
+                np.tile(
+                    climCXCB.X.loc[:,"BE","F","Multi_Synthesis"],
+                    (nsample_MCMC, 1)
+                ).T,
+                coords=[climCXCB.X.time, samples_MCMC],
+                dims = ["time","sample_MCMC"]
+            )
+    XC = xr.DataArray(
+                np.tile(
+                    climCXCB.X.loc[:,"BE","C","Multi_Synthesis"],
+                    (nsample_MCMC, 1)
+                ).T,
+                coords=[climCXCB.X.time, samples_MCMC],
+                dims = ["time","sample_MCMC"]
+            )
+
+    ## Build non-stationnary GEV parameters in both factual and counter-factual
+    # Factual
+    locF  = climCXCB.law_coef.loc["loc0",:,"Multi_Synthesis"] +\
+        XF * climCXCB.law_coef.loc["loc1",:,"Multi_Synthesis"]
+
+    scaleF = np.exp(
+        climCXCB.law_coef.loc["scale0",:,"Multi_Synthesis"] +\
+            XF * climCXCB.law_coef.loc["scale1",:,"Multi_Synthesis"]
+    )
+    
+    # Counter-factual
+    locC  = climCXCB.law_coef.loc["loc0",:,"Multi_Synthesis"] +\
+        XC * climCXCB.law_coef.loc["loc1",:,"Multi_Synthesis"]
+    
+    scaleC = np.exp(
+        climCXCB.law_coef.loc["scale0",:,"Multi_Synthesis"] +\
+            XC * climCXCB.law_coef.loc["scale1",:,"Multi_Synthesis"]
+    )
+
+    # TODO Verify that the shape is assumed unchanged between F/C
+    shape = climCXCB.law_coef.loc["shape0",:,"Multi_Synthesis"] +\
+        xr.zeros_like(locF)
+
+    ## Compute probability with time
+    # Factual
+    stats.loc[:,:,"pF"] = sc.genextreme.sf(
+        To_anomaly,
+        loc=locF,
+        scale=scaleF,
+        c=-shape
+    ).T
+
+    # Counter-factual
+    stats.loc[:,:,"pC"] = sc.genextreme.sf(
+        To_anomaly,
+        loc=locC,
+        scale=scaleC,c=-shape
+    ).T
+
+    ## Compute probability ratio
+    stats_pr = stats.loc[:,:,"pF"] / stats.loc[:,:,"pC"]
+
+    return stats, stats_pr, climMM, climCXCB
