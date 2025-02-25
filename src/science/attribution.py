@@ -5,16 +5,20 @@ import scipy.stats as sc
 import SDFC as sd
 import NSSEA as ns
 
-# Evaluate relative path to the directory right above `data` This mostly serves
-# as a compatibility patch for VsCode interactive mode as the cwd in production
-# mode should always be `app/`
+# Evaluate both relative path to the directory right above the main data
+# directory and also to the science dir (parent to another data folder)
+# 
+# This mostly serves as a compatibility patch for VsCode interactive mode as
+# the cwd in production mode should always be `app/`
 import os
 
 current_dir = os.path.basename(os.getcwd())
 if current_dir == 'science':
     path_to_data_parent_dir = '../../'
+    path_to_science_dir = './'
 elif current_dir == 'app':
     path_to_data_parent_dir = './'
+    path_to_science_dir = './src/science/'
 
 
 # Read latitudes and longitudes from the land-sea Mask
