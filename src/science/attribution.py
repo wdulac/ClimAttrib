@@ -16,7 +16,11 @@ current_dir = os.path.basename(os.getcwd())
 if current_dir == 'science':
     path_to_data_parent_dir = '../../'
     path_to_science_dir = './'
-elif current_dir == 'app':
+# elif current_dir == 'app':
+elif current_dir == 'src':
+    path_to_data_parent_dir = '../'
+    path_to_science_dir = './science/'
+else:
     path_to_data_parent_dir = './'
     path_to_science_dir = './src/science/'
 
