@@ -25,22 +25,20 @@ elif current_dir == 'app':
 # This in turn is used to itentify the correct multi-model synthesis file to
 # load.
 # Note : Make sure the land-sea mask is consistent with the Geojson grid
-mask_full  = xr.open_dataset(
+_mask_full  = xr.open_dataset(
     path_to_science_dir + "data/land_sea_mask_IPCC_antarctica.nc"
 )
-mask = mask_full.land_sea_mask
-lat = mask.lat
-lon = mask.lon
+_lat = _mask_full.lat.data
+_lon = _mask_full.lon.data
 
 # Global parameters used for the calculations
-time_reference = np.arange(1961, 1991, 1, dtype=int )
-n_sample = 1000
-ns_law = ns.models.GEV()
-verbose = "--not-verbose"
-ci = 0.05
+TIME_REFERENCE = np.arange(1961, 1991, 1, dtype=int )
+NS_LAW = ns.models.GEV()
+VERBOSE = "--not-verbose"
+CONDIFENCE_INTERVAL = 0.05
 
 
-def load_obs(lat: float, lon: float) -> tuple:
+def _load_obs(lat: float, lon: float) -> tuple:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
@@ -74,38 +72,39 @@ def load_obs(lat: float, lon: float) -> tuple:
     return Xo, Yo
 
 
-def compute_attribution(event: dict) -> tuple:
+def compute_event_stats(event: dict) -> tuple:
     """
-    TODO Docstring
+    Computes the probability in both factual and counter-factual worlds for the
+    given event.
     """
 
     # Load obs and retrieve event intensity To
-    Xo, Yo = load_obs(event['lat'], event['lon'])
+    Xo, Yo = _load_obs(event['lat'], event['lon'])
     To = Yo.loc[event['Date'].year]
 
-    # Convert Yo to anomaly w.r.t :time_reference:
-    bias_Yo = Yo.loc[time_reference].mean()
-    bias_Xo = Xo.loc[time_reference].mean()
+    # Convert Yo to anomaly w.r.t :TIME_REFERENCE:
+    bias_Yo = Yo.loc[TIME_REFERENCE].mean()
+    bias_Xo = Xo.loc[TIME_REFERENCE].mean()
     Yo -= bias_Yo
     Xo -= bias_Xo
     
     ## Load muli-model synthesis
     # Find out indice of lat / lon
-    idx_lat = list(lat.data).index(event['lat'])
-    idx_lon = list(lon.data).index(event['lon'] % 360) # Convert to 0 - 360
+    idx_lat = list(_lat).index(event['lat'])
+    idx_lon = list(_lon).index(event['lon'] % 360) # Convert to 0 - 360
     # Load file
     climMM_file = path_to_data_parent_dir + \
         'data/climMM/' + \
         f'climMM_lat{idx_lat}_lon{idx_lon}.nc'
-    climMM = ns.Climatology.from_netcdf(climMM_file, ns_law)
+    climMM = ns.Climatology.from_netcdf(climMM_file, NS_LAW)
 
     # Constrain the multi-model synthesis covariate X with observed Xo
     climCX = ns.constrain_covariate(
         climMM,
         Xo,
-        time_reference,
+        TIME_REFERENCE,
         assume_good_scale=True,
-        verbose=verbose
+        verbose=VERBOSE
     )
 
     # Constrain with observed variable Yo
@@ -119,20 +118,20 @@ def compute_attribution(event: dict) -> tuple:
         **bayes_kwargs
     )
 
-    ## Stats
+    ## Output
     ny = climCXCB.n_time
     nsample_MCMC = climCXCB.data.sample_MCMC.shape[0]
     samples_MCMC = climCXCB.data.sample_MCMC
-
     To_anomaly = To-bias_Yo
-
-    ## Output
     n_stat = 3
+
+    # Initialize output array
     stats = xr.DataArray(
-                np.zeros((ny,nsample_MCMC,n_stat)),
+                np.zeros((ny, nsample_MCMC, n_stat)),
                 coords=[climCXCB.X.time, samples_MCMC, ["pC","pF", "PR"]],
                 dims = ["time","sample_MCMC","stats"]
             )
+    # Repeat covariate's best estimate nsample_MCMC times
     XF = xr.DataArray(
                 np.tile(
                     climCXCB.X.loc[:,"BE","F","Multi_Synthesis"],
