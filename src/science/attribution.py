@@ -80,7 +80,7 @@ def compute_event_stats(event: dict) -> tuple:
 
     # Load obs and retrieve event intensity To
     Xo, Yo = _load_obs(event['lat'], event['lon'])
-    To = Yo.loc[event['Date'].year]
+    To = Yo.loc[event['date'].year]
 
     # Convert Yo to anomaly w.r.t :TIME_REFERENCE:
     bias_Yo = Yo.loc[TIME_REFERENCE].mean()
@@ -114,7 +114,7 @@ def compute_event_stats(event: dict) -> tuple:
     climCXCB = ns.stan_constrain(
         climCX,
         Yo,
-        'stan_files/GEV_non_stationary.stan',
+        path_to_science_dir + 'stan_files/GEV_non_stationary.stan',
         **bayes_kwargs
     )
 
