@@ -1,8 +1,8 @@
 from dash import register_page, html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
+from datetime import datetime as dt
 from components import chosen_event
 from components import event_stats
-from datetime import datetime as dt
 
 register_page(__name__, path='/analysis')
 
@@ -37,28 +37,34 @@ def layout(extreme_type=None,
     rules in utils/redirects.py
     """
     
-    # parameters = locals()
-
+    # Equivalent to event = locals() but more explanatory
     event = {
         "extreme_type": extreme_type,
         "method": method,
         "date": date,  
-        "duration": str(duration),  
+        "duration": duration,  
         "loc": loc  
     }
 
+    # Beware not to modify the original event dict
     parsed_event = _parse_event(event.copy())
 
     # Compose and return layout
     layout = html.Div([
         html.Div('Bienvenue sur cette page', id='analysis-welcome'),
-        chosen_event(parsed_event),
-        dcc.Store(id='event-data', data=event),
+        chosen_event(parsed_event), # Dummy component with event's description
+        dcc.Store(id='event-data', data=event), # Serialize dict into JSON
         html.Div('Calcul en cours...', id='loading-message'),
+        # Use empty div for the results so that the page can load before
+        # running the calculation
         html.Div(id='results-container')
         ], className='analysis-container'
     )
     return layout
+
+
+#~~~~~~~ Callbacks
+
 
 @callback(
     Output('results-container', 'children'),
@@ -66,10 +72,17 @@ def layout(extreme_type=None,
     Input('event-data', 'data')
 )
 def compute_results(event):
+    """
+    Trigger computation once the page has loaded and the event's data has been
+    stored into memory.
+
+    Return stats into `results-container` div and remove the "loading" message.
+    """
+
     if not event:
         raise PreventUpdate
     
     event = _parse_event(event)
+    stats = event_stats(event).__repr__()
 
-    test = event_stats(event).__repr__()
-    return test, ""
+    return stats, ""

@@ -9,18 +9,17 @@ import NSSEA as ns
 # directory and also to the science dir (parent to another data folder)
 # 
 # This mostly serves as a compatibility patch for VsCode interactive mode as
-# the cwd in production mode should always be `app/`
+# the cwd in production should always be `app/`
 import os
 
 current_dir = os.path.basename(os.getcwd())
 if current_dir == 'science':
     path_to_data_parent_dir = '../../'
     path_to_science_dir = './'
-# elif current_dir == 'app':
 elif current_dir == 'src':
     path_to_data_parent_dir = '../'
     path_to_science_dir = './science/'
-else:
+else: # Root of the app (hopefully).
     path_to_data_parent_dir = './'
     path_to_science_dir = './src/science/'
 
@@ -36,7 +35,7 @@ _lat = _mask_full.lat.data
 _lon = _mask_full.lon.data
 
 # Global parameters used for the calculations
-TIME_REFERENCE = np.arange(1961, 1991, 1, dtype=int )
+TIME_REFERENCE = np.arange(1961, 1991, 1, dtype=int)
 NS_LAW = ns.models.GEV()
 VERBOSE = "--not-verbose"
 CONDIFENCE_INTERVAL = 0.05
