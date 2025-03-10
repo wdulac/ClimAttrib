@@ -2,7 +2,8 @@ from dash import register_page, html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
 from datetime import datetime as dt
 from components import chosen_event
-from components import event_stats
+# from components import event_stats
+from components import probability_plot
 
 register_page(__name__, path='/analysis')
 
@@ -83,6 +84,7 @@ def compute_results(event):
         raise PreventUpdate
     
     event = _parse_event(event)
-    stats = event_stats(event).__repr__()
+    # stats = event_stats(event).__repr__()
+    fig = probability_plot(event)
 
-    return stats, ""
+    return fig, ""
