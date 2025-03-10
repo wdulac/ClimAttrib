@@ -82,6 +82,7 @@ def compute_event_stats(event: dict) -> tuple:
     """
 
     # Load obs and retrieve event intensity To
+    # TODO Read intensity from ERA5 using selected date
     Xo, Yo = _load_obs(event['lat'], event['lon'])
     To = Yo.loc[event['date'].year]
 
@@ -171,7 +172,8 @@ def compute_event_stats(event: dict) -> tuple:
             XC * climCXCB.law_coef.loc["scale1",:,"Multi_Synthesis"]
     )
 
-    # TODO Verify that the shape is assumed unchanged between F/C
+    # Stationary shape param, implies unchanged between F/C since not dependant
+    # on the covariate 
     shape = climCXCB.law_coef.loc["shape0",:,"Multi_Synthesis"] +\
         xr.zeros_like(locF)
 
@@ -188,10 +190,12 @@ def compute_event_stats(event: dict) -> tuple:
     stats.loc[:,:,"pC"] = sc.genextreme.sf(
         To_anomaly,
         loc=locC,
-        scale=scaleC,c=-shape
+        scale=scaleC,
+        c=-shape
     ).T
 
     ## Compute probability ratio
     stats.loc[:, :, 'PR'] = stats.loc[:,:,"pF"] / stats.loc[:,:,"pC"]
 
-    return stats, climMM, climCXCB
+    # Note : returning climMM and climCXCB is only useful to plot GEV params
+    return stats
