@@ -38,7 +38,6 @@ _lon = _mask_full.lon.data
 TIME_REFERENCE = np.arange(1961, 1991, 1, dtype=int)
 NS_LAW = ns.models.GEV()
 VERBOSE = "--not-verbose"
-CONDIFENCE_INTERVAL = 0.05
 
 
 def _load_obs(lat: float, lon: float) -> tuple:
