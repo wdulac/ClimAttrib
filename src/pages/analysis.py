@@ -54,37 +54,7 @@ def layout(extreme_type=None,
     layout = html.Div([
         html.Div('Bienvenue sur cette page', id='analysis-welcome'),
         chosen_event(parsed_event), # Dummy component with event's description
-        dcc.Store(id='event-data', data=event), # Serialize dict into JSON
-        html.Div('Calcul en cours...', id='loading-message'),
-        # Use empty div for the results so that the page can load before
-        # running the calculation
-        html.Div(id='results-container')
+        probability_plot(parsed_event) # Simple static img plot component
         ], className='analysis-container'
     )
     return layout
-
-
-#~~~~~~~ Callbacks
-
-
-@callback(
-    Output('results-container', 'children'),
-    Output('loading-message', 'children'),
-    Input('event-data', 'data')
-)
-def compute_results(event):
-    """
-    Trigger computation once the page has loaded and the event's data has been
-    stored into memory.
-
-    Return stats into `results-container` div and remove the "loading" message.
-    """
-
-    if not event:
-        raise PreventUpdate
-    
-    event = _parse_event(event)
-    # stats = event_stats(event).__repr__()
-    fig = probability_plot(event)
-
-    return fig, ""
