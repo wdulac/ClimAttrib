@@ -11,13 +11,14 @@ def chosen_event(parameters):
         data={
             # "caption": "Event defined with the selected parameters",
             "head": ["Extreme Type", "Computation Method", "Event's date",
-                     "Event Duration", "Latitude", "Longitude"],
+                     "Event Duration", "Event intensity", "Latitude", "Longitude"],
             "body": [
                 [
                     parameters['extreme_type'],
                     parameters['method'],
                     parameters['date'],
                     parameters['duration'],
+                    parameters['event_intensity'] - 273.15,
                     parameters['lat'],
                     parameters['lon']
                  ]

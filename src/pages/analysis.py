@@ -5,6 +5,9 @@ from components import chosen_event
 # from components import event_stats
 from components import probability_plot
 
+import xarray as xr
+import os
+
 register_page(__name__, path='/analysis')
 
 def _parse_event(event: dict) -> dict:
@@ -25,6 +28,33 @@ def _parse_event(event: dict) -> dict:
     event['duration'] = int(event['duration'])
 
     return event
+
+
+def _read_intensity_from_date(event: dict) -> float:
+    """
+    TODO Docstring
+    """
+
+    current_dir = os.path.basename(os.getcwd())
+    if current_dir == 'pages':
+        path_to_data_parent_dir = '../../'
+    elif current_dir == 'src':
+        path_to_data_parent_dir = '../'
+    else: # Root of the app (hopefully).
+        path_to_data_parent_dir = './'
+
+    if event['extreme_type'] == 'hot':
+        var = 'tasmax'
+    elif event['extreme_type'] == 'cold':
+        var = 'tasmin'
+
+    To = xr.open_dataset(
+        path_to_data_parent_dir + f"data/daily/era5_sfc_{var}_G025.nc"
+    )[var].\
+        sel(time=event['date'], method='nearest').\
+        sel(lat=event['lat'], lon=event['lon'] % 360).data
+
+    return To    
 
 
 def layout(extreme_type=None,
@@ -49,6 +79,7 @@ def layout(extreme_type=None,
 
     # Beware not to modify the original event dict
     parsed_event = _parse_event(event.copy())
+    parsed_event['event_intensity'] = _read_intensity_from_date(parsed_event)
 
     # Compose and return layout
     layout = html.Div([

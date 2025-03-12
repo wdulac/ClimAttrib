@@ -83,7 +83,8 @@ def compute_event_stats(event: dict) -> tuple:
     # Load obs and retrieve event intensity To
     # TODO Read intensity from ERA5 using selected date
     Xo, Yo = _load_obs(event['lat'], event['lon'])
-    To = Yo.loc[event['date'].year]
+    # To = Yo.loc[event['date'].year]
+    To = event['event_intensity'] # Kelvin by default
 
     # Convert Yo to anomaly w.r.t :TIME_REFERENCE:
     bias_Yo = Yo.loc[TIME_REFERENCE].mean()
