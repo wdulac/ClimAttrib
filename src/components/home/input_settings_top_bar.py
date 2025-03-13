@@ -49,7 +49,9 @@ _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
     label="Date de l'évènement",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
-    value=date(2019, 7, 25),
+    type='range',
+    value=[date(2019, 7, 24), date(2019, 7, 26)],
+    allowSingleDateInRange=True,
     w=250,
     highlightToday=True,
     maxDate=date(2024, 12, 31),
@@ -103,7 +105,7 @@ input_settings_top_bar = html.Div(children=[
                 _extreme_type_segmented,
                 _computation_method_segmented,
                 _date_selector_calendar,
-                _event_duration_slider
+                # _event_duration_slider
                 ], id='left-column')
             ], span=9.5),
         dmc.GridCol(children=[
