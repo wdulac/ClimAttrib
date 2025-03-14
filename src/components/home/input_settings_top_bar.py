@@ -6,6 +6,10 @@ import json
 
 from datetime import datetime, timedelta, date
 
+import os
+import xarray as xr
+import datetime as dt
+
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
@@ -89,6 +93,13 @@ _continue_button = dcc.Link(
 )
     
 
+_temperature_readout = dmc.Stack(children=[
+    dmc.Text("Intensité de l'évènement sélectionné", **TOP_BAR_INPUTS_LABEL_PROPS),
+    dmc.Box(id='temp-readout-field', children=None,
+            fz=18, c='white', bd='solid white 1px')
+], gap=0)
+
+
 debug_style = {
     "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
 }
@@ -103,7 +114,7 @@ input_settings_top_bar = html.Div(children=[
                 _extreme_type_segmented,
                 _computation_method_segmented,
                 _date_selector_calendar,
-                # _event_duration_slider
+                _temperature_readout
                 ], id='left-column')
             ], span=9.5),
         dmc.GridCol(children=[
@@ -115,6 +126,34 @@ input_settings_top_bar = html.Div(children=[
 
 
 #~~~~~~~ Callbacks
+
+@callback(
+        Output('temp-readout-field', 'children'),
+        Input('input:selected-point', 'data'),
+        Input('input:extreme-type', 'value'),
+        Input('input:date', 'value'),
+)
+def update_temperature(grid_point: str, extreme_type: str, date: list) -> str:
+    if not None in date:
+        if grid_point is not None:
+            lat, lon = json.loads(grid_point)[0]
+            start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
+                            for _ in date]
+            if extreme_type == 'hot':
+                var = 'tasmax'
+            elif extreme_type == 'cold':
+                var = 'tasmin'
+            To = xr.open_dataset(
+                f"./data/daily/era5_sfc_{var}_G025.nc"
+            )[var].\
+                sel(time=slice(start, stop + dt.timedelta(days=1))).\
+                sel(lat=lat, lon=lon % 360).\
+                mean('time').data
+            return f"{To-273.15:.1f}°C"
+        return "Select a grid point"
+    else:
+        return "Select a date range"
+
 
 @callback(
     Output('button-notification-container', 'children'),
