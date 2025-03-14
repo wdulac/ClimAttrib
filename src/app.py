@@ -21,7 +21,7 @@ application = Dash(
         dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
     ],
     update_title=None,
-    title="Nom de l'application",
+    title="Clim@Ribes",
     suppress_callback_exceptions=True,
     use_pages=True
 )
