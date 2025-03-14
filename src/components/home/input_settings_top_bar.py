@@ -43,8 +43,6 @@ _computation_method_segmented = dmc.Stack(children=[
 )
 
 
-# TODO Merge duration selection into the calendar, e.g allow selection of a
-# time range directly in the calendar component
 _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
     label="Date de l'évènement",
