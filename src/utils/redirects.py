@@ -1,7 +1,18 @@
 from app import server
 from flask import request, redirect
+import datetime as dt
 
 HOMEPAGE = '/'
+ALLOWED_QUERY_VALUES = {
+    'extreme_type': ['hot', 'cold'],
+    'method': ['yearmax', 'calendar'],
+    'date': {
+        'MIN_DATE': dt.date(1940, 1, 1),
+        'MAX_DATE': dt.date(2022, 12, 31)
+    },
+    'duration': [1, 2, 3, 4, 5, 6, 7, 10],
+    'loc': []
+}
 
 # Redirect incorrect analysis requests back to homepage
 @server.before_request
