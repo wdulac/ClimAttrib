@@ -1,7 +1,7 @@
 from dash import html
 import dash_mantine_components as dmc
 
-def chosen_event(parameters):
+def chosen_event(event):
     """
     Early prototype for a dynamic component that presents
     the settings chosen by the user
@@ -9,18 +9,17 @@ def chosen_event(parameters):
     
     extreme_event = dmc.Table(
         data={
-            # "caption": "Event defined with the selected parameters",
-            "head": ["Extreme Type", "Computation Method", "Event's date",
+            "head": ["Extreme Type", "Computation Method", "Event's Date",
                      "Event Duration", "Event intensity", "Latitude", "Longitude"],
             "body": [
                 [
-                    parameters['extreme_type'],
-                    parameters['method'],
-                    parameters['date'],
-                    parameters['duration'],
-                    parameters['event_intensity'] - 273.15,
-                    parameters['lat'],
-                    parameters['lon']
+                    event['extreme_type'],
+                    event['method'],
+                    event['date'],
+                    event['duration'],
+                    event['intensity'] - 273.15,
+                    event['lat'],
+                    event['lon']
                  ]
 
             ]
