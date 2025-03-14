@@ -1,6 +1,6 @@
 from dash import register_page, html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
-from datetime import datetime as dt
+import datetime as dt
 from components import chosen_event
 # from components import event_stats
 from components import probability_plot
@@ -10,27 +10,43 @@ import os
 
 register_page(__name__, path='/analysis')
 
-def _parse_event(event: dict) -> dict:
+def _parse_event(query: dict) -> dict:
     """
     Convert values from the query string to their correct data types
     """
 
+    event = dict()
+
+    event['method'], event['extreme_type'] = query['method'], query['extreme_type']
+
     # Read date string as datetime object
-    event['date'] = dt.strptime(event['date'], '%Y-%m-%d').date()
+    event['date_start'], event['date_stop'] = [
+        dt.datetime.strptime(_, '%Y-%m-%d').date() for _ in query['date'].split('_')
+    ]
+
+    # Evaluate middle date
+    event['date'] = event['date_start'] + (event['date_stop'] - event['date_start'])/2
+
+    # Evaluate event duration in days
+    event['duration'] = (event['date_stop'] - event['date_start']).days + 1
 
     # Split lat_lon string into a (lat, lon) float tuple
-    _lat, _lon = [float(_) for _ in event['loc'].split('_')]
-    event['lat'], event['lon'] = _lat, _lon
-    # Remove original loc query parameter from event dict
-    event.pop('loc')
+    event['lat'], event['lon'] = [float(_) for _ in query['loc'].split('_')]
 
-    # Read duration as int
-    event['duration'] = int(event['duration'])
+    # Read intensity in ERA5 from date
+    event['intensity'] = _read_intensity_from_dates(
+        event['date_start'], event['date_stop'],
+        event['lat'], event['lon'],
+        event['extreme_type']
+    )
 
     return event
 
 
-def _read_intensity_from_date(event: dict) -> float:
+def _read_intensity_from_dates(
+        start: dt.date, stop: dt.date,
+        lat: float, lon: float,
+        extreme_type: str) -> float:
     """
     TODO Docstring
     """
@@ -43,16 +59,17 @@ def _read_intensity_from_date(event: dict) -> float:
     else: # Root of the app (hopefully).
         path_to_data_parent_dir = './'
 
-    if event['extreme_type'] == 'hot':
+    if extreme_type == 'hot':
         var = 'tasmax'
-    elif event['extreme_type'] == 'cold':
+    elif extreme_type == 'cold':
         var = 'tasmin'
 
     To = xr.open_dataset(
         path_to_data_parent_dir + f"data/daily/era5_sfc_{var}_G025.nc"
     )[var].\
-        sel(time=event['date'], method='nearest').\
-        sel(lat=event['lat'], lon=event['lon'] % 360).data
+        sel(time=slice(start, stop + dt.timedelta(days=1))).\
+        sel(lat=lat, lon=lon % 360).\
+        mean('time').data
 
     return To    
 
@@ -69,7 +86,7 @@ def layout(extreme_type=None,
     """
     
     # Equivalent to event = locals() but more explanatory
-    event = {
+    query_dict = {
         "extreme_type": extreme_type,
         "method": method,
         "date": date,  
@@ -78,8 +95,7 @@ def layout(extreme_type=None,
     }
 
     # Beware not to modify the original event dict
-    parsed_event = _parse_event(event.copy())
-    parsed_event['event_intensity'] = _read_intensity_from_date(parsed_event)
+    parsed_event = _parse_event(query_dict.copy())
 
     # Compose and return layout
     layout = html.Div([
