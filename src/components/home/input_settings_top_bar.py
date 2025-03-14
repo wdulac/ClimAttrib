@@ -148,9 +148,8 @@ def notify_user(n_clicks, selected_point_data):
     Input('input:extreme-type', 'value'),
     Input('input:computation-method', 'value'),
     Input('input:date', 'value'),
-    Input('input:event-duration', 'value')
 )
-def update_link(grid_point, extreme_type, computation_method, date, duration):
+def update_link(grid_point, extreme_type, computation_method, date):
     """
     Update the href of the the main button based on the
     selected input settings.
@@ -164,8 +163,7 @@ def update_link(grid_point, extreme_type, computation_method, date, duration):
         href = ("/analysis?"
                 f"extreme_type={extreme_type}"
                 f"&method={computation_method}"
-                f"&date={date}"
-                f"&duration={duration}"
+                f"&date={date[0].__str__()}_{date[1].__str__()}"
                 f"&loc={str(lat)}_{str(lon)}")
         
         return href
