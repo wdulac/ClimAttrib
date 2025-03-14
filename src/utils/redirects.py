@@ -10,7 +10,6 @@ ALLOWED_QUERY_VALUES = {
         'MIN_DATE': dt.date(1940, 1, 1),
         'MAX_DATE': dt.date(2022, 12, 31)
     },
-    'duration': [1, 2, 3, 4, 5, 6, 7, 10],
     'loc': []
 }
 
@@ -23,7 +22,7 @@ def analysis():
             return redirect(HOMEPAGE)
         
         # Check if any query parameter key is unexpected
-        if not all([param in ['extreme_type', 'method', 'date', 'duration', 'loc']\
+        if not all([param in ['extreme_type', 'method', 'date', 'loc']\
                         for param in request.args.keys()]):
             return redirect(HOMEPAGE)
         
