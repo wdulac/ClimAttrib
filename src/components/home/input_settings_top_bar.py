@@ -140,17 +140,30 @@ def calendar_error(dates: list):
     """
 
     try:
-        start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
-                        for _ in dates]
-    except TypeError:
-        # Happens when the date is being picked as the second item in the list
-        # is None. In which case we don't update the error bc the range is not
-        # specified
-        raise PreventUpdate
-
-    time_range = (stop - start) + dt.timedelta(days=1)
-    
-    return "Please select a 3 day length range" if time_range.days != 3 else ""
+        assert sum([isinstance(d, str) for d in dates]) > 0
+    except AssertionError:
+        # Edge case where you open the calendar, select the start of the range
+        # then click out of it. Results in an empty range and dates being
+        # [None, None]
+        return "Date range cannot be empty"
+    else:
+        try:
+            start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
+                            for _ in dates]
+        except TypeError:
+            # Happens when the date is being picked as the second item in the
+            # list is None. In which case we don't update the error bc the
+            # range is not specified
+            return ""
+        else:
+            # At this point we should have a list of two datetime objects.
+            # We evaluate the duration in days between start and stop date
+            duration = ((stop - start) + dt.timedelta(days=1)).days
+            
+            if duration != 3:
+                return "Please select a day time range"
+            else:
+                return ""
 
 
 @callback(
@@ -211,25 +224,30 @@ def notify_user(n_clicks, selected_point_data):
     Input('input:extreme-type', 'value'),
     Input('input:computation-method', 'value'),
     Input('input:date', 'value'),
+    Input('input:date', 'error')
 )
-def update_link(grid_point, extreme_type, computation_method, date):
+def update_link(grid_point, extreme_type, computation_method, date, date_error):
     """
     Update the href of the the main button based on the
     selected input settings.
     If no point is selected, the button is made inoperative.
+    A valid time range is required to produce a valid href
     """
     
-    if grid_point is not None:
-        # Compose the href based on the input settings
-        coords = json.loads(grid_point)[0]
-        lat, lon = coords[0], coords[1]
-        href = ("/analysis?"
-                f"extreme_type={extreme_type}"
-                f"&method={computation_method}"
-                f"&date={date[0].__str__()}_{date[1].__str__()}"
-                f"&loc={str(lat)}_{str(lon)}")
-        
-        return href
+    if not date_error:
+        if grid_point is not None:
+            # Compose the href based on the input settings
+            coords = json.loads(grid_point)[0]
+            lat, lon = coords[0], coords[1]
+            href = ("/analysis?"
+                    f"extreme_type={extreme_type}"
+                    f"&method={computation_method}"
+                    f"&date={date[0].__str__()}_{date[1].__str__()}"
+                    f"&loc={str(lat)}_{str(lon)}")
+            
+            return href
+        else:
+            # If no grid point is selected, revert to default href
+            return LINK_DEFAULT_HREF
     else:
-        # If no grid point is selected, revert to default href
         return LINK_DEFAULT_HREF
