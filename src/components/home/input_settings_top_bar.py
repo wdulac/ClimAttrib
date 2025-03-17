@@ -134,7 +134,7 @@ input_settings_top_bar = html.Div(children=[
 )
 def calendar_error(dates: list):
     """
-    Write error message for unallowed range length.
+    Update the calendar's error property depending on selected date range.
     For the time being (development ungoing), the only valid range length is
     3 days
     """
@@ -152,8 +152,9 @@ def calendar_error(dates: list):
                             for _ in dates]
         except TypeError:
             # Happens when the date is being picked as the second item in the
-            # list is None. In which case we don't update the error bc the
-            # range is not specified
+            # list is None. This isn't considered an error as the next step
+            # is to either select an end date (see below), or click out
+            # (see above)
             return ""
         else:
             # At this point we should have a list of two datetime objects.
