@@ -106,6 +106,7 @@ debug_style = {
 
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
+    dcc.Store(id='data:intensity', data=None),
     html.H5("Définition de l'évènement extrême", id='settings-row-title'),
     dmc.Divider(variant='solid'),
     dmc.Grid(children=[
@@ -169,6 +170,7 @@ def calendar_error(dates: list):
 
 @callback(
         Output('temp-readout-field', 'children'),
+        Output('data:intensity', 'data'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
         Input('input:date', 'value'),
@@ -189,10 +191,10 @@ def update_temperature(grid_point: str, extreme_type: str, date: list) -> str:
                 sel(time=slice(start, stop + dt.timedelta(days=1))).\
                 sel(lat=lat, lon=lon % 360).\
                 mean('time').data
-            return f"{To-273.15:.1f}°C"
-        return "Select a grid point"
+            return f"{To-273.15:.1f}°C", f"{To:.2f}"
+        return "Select a grid point", None
     else:
-        return "Select a date range"
+        return "Select a date range", None
 
 
 @callback(
@@ -221,13 +223,21 @@ def notify_user(n_clicks, selected_point_data):
 
 @callback(
     Output('dynamic-link', 'href'),
-    Input('input:selected-point', 'data'),
+    State('input:selected-point', 'data'),
     Input('input:extreme-type', 'value'),
     Input('input:computation-method', 'value'),
-    Input('input:date', 'value'),
-    Input('input:date', 'error')
+    State('input:date', 'value'),
+    Input('input:date', 'error'),
+    Input('data:intensity', 'data')
 )
-def update_link(grid_point, extreme_type, computation_method, date, date_error):
+def update_link(
+    grid_point: str, # JSON serialized
+    extreme_type: str,
+    computation_method: str,
+    date: list,
+    date_error: str,
+    intensity: str #JSON serialized
+) -> str:
     """
     Update the href of the the main button based on the
     selected input settings.
@@ -240,10 +250,12 @@ def update_link(grid_point, extreme_type, computation_method, date, date_error):
             # Compose the href based on the input settings
             coords = json.loads(grid_point)[0]
             lat, lon = coords[0], coords[1]
+            To = json.loads(intensity)
             href = ("/analysis?"
                     f"extreme_type={extreme_type}"
                     f"&method={computation_method}"
                     f"&date={date[0].__str__()}_{date[1].__str__()}"
+                    f"&To={To}"
                     f"&loc={str(lat)}_{str(lon)}")
             
             return href
