@@ -171,7 +171,14 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                     var = 'tasmax'
                 elif extreme_type == 'cold':
                     var = 'tasmin'
-                To = xr.open_dataset(f"./data/daily/era5_sfc_{var}_G025.nc")[var].\
+
+                cwd = os.path.basename(os.getcwd())
+                if cwd == 'src':
+                    path_fix = '../data/daily/'
+                elif cwd == 'app':
+                    path_fix = './data/daily/'
+                
+                To = xr.open_dataset(path_fix + f"era5_sfc_{var}_G025.nc")[var].\
                     sel(
                         time=slice(start, stop + dt.timedelta(days=1)),
                         lat=lat, lon=lon % 360
