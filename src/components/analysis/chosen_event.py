@@ -17,7 +17,7 @@ def chosen_event(event):
                     event['method'],
                     event['date'],
                     event['duration'],
-                    event['intensity'] - 273.15,
+                    f"{event['intensity'] - 273.15:.2f}",
                     event['lat'],
                     event['lon']
                  ]
