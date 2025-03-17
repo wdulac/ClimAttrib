@@ -56,7 +56,8 @@ _date_selector_calendar = dmc.DatePickerInput(
     allowSingleDateInRange=True,
     w=300,
     highlightToday=True,
-    maxDate=date(2024, 12, 31),
+    minDate=date(1940, 1, 1),
+    maxDate=date(2022, 12, 31),
     style=dict(
         zIndex=2
     )
@@ -145,7 +146,7 @@ def calendar_error(dates: list):
             duration = ((stop - start) + dt.timedelta(days=1)).days
             
             if duration != 3:
-                return "Please select a day time range"
+                return "Please select a valid time range"
             else:
                 return ""
 
@@ -156,25 +157,29 @@ def calendar_error(dates: list):
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
         Input('input:date', 'value'),
+        Input('input:date', 'error')
 )
-def update_temperature(grid_point: str, extreme_type: str, date: list) -> str:
+def update_temperature(grid_point: str, extreme_type: str, date: list,
+                        date_error) -> str:
     if not None in date:
-        if grid_point is not None:
-            lat, lon = json.loads(grid_point)[0]
-            start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
-                            for _ in date]
-            if extreme_type == 'hot':
-                var = 'tasmax'
-            elif extreme_type == 'cold':
-                var = 'tasmin'
-            To = xr.open_dataset(f"./data/daily/era5_sfc_{var}_G025.nc")[var].\
-                sel(
-                    time=slice(start, stop + dt.timedelta(days=1)),
-                    lat=lat, lon=lon % 360
-                ).\
-                mean('time').data
-            return f"{To-273.15:.1f}°C", f"{To:.2f}"
-        return "Select a grid point", None
+        if not date_error:
+            if grid_point is not None:
+                lat, lon = json.loads(grid_point)[0]
+                start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
+                                for _ in date]
+                if extreme_type == 'hot':
+                    var = 'tasmax'
+                elif extreme_type == 'cold':
+                    var = 'tasmin'
+                To = xr.open_dataset(f"./data/daily/era5_sfc_{var}_G025.nc")[var].\
+                    sel(
+                        time=slice(start, stop + dt.timedelta(days=1)),
+                        lat=lat, lon=lon % 360
+                    ).\
+                    mean('time').data
+                return f"{To-273.15:.1f}°C", f"{To:.2f}"
+            return "Select a grid point", None
+        return "Select a valid date range", None
     else:
         return "Select a date range", None
 
@@ -226,23 +231,24 @@ def update_link(
     If no point is selected, the button is made inoperative.
     A valid time range is required to produce a valid href
     """
-    
-    if not date_error:
-        if grid_point is not None:
-            # Compose the href based on the input settings
-            coords = json.loads(grid_point)[0]
-            lat, lon = coords[0], coords[1]
-            To = json.loads(intensity)
-            href = ("/analysis?"
-                    f"extreme_type={extreme_type}"
-                    f"&method={computation_method}"
-                    f"&date={date[0].__str__()}_{date[1].__str__()}"
-                    f"&To={To}"
-                    f"&loc={str(lat)}_{str(lon)}")
-            
-            return href
-        else:
-            # If no grid point is selected, revert to default href
-            return LINK_DEFAULT_HREF
+    if not None in date:
+        if not date_error:
+            if grid_point is not None:
+                # Compose the href based on the input settings
+                coords = json.loads(grid_point)[0]
+                lat, lon = coords[0], coords[1]
+                To = json.loads(intensity)
+                href = ("/analysis?"
+                        f"extreme_type={extreme_type}"
+                        f"&method={computation_method}"
+                        f"&date={date[0].__str__()}_{date[1].__str__()}"
+                        f"&To={To}"
+                        f"&loc={str(lat)}_{str(lon)}")
+                
+                return href
+            else:
+                # If no grid point is selected, revert to default href
+                return LINK_DEFAULT_HREF
+        return LINK_DEFAULT_HREF
     else:
         return LINK_DEFAULT_HREF
