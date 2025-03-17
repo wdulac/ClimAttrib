@@ -175,7 +175,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                 cwd = os.path.basename(os.getcwd())
                 if cwd == 'src':
                     path_fix = '../data/daily/'
-                elif cwd == 'app':
+                elif cwd == 'app' or cwd == 'EET-app':
                     path_fix = './data/daily/'
                 
                 To = xr.open_dataset(path_fix + f"era5_sfc_{var}_G025.nc")[var].\
