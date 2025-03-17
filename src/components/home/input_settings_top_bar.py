@@ -221,7 +221,6 @@ def notify_user(n_clicks, selected_point_data):
             raise PreventUpdate
 
 
-# TODO Pass To in query string to avoid having to compute it again
 @callback(
     Output('dynamic-link', 'href'),
     State('input:selected-point', 'data'),
