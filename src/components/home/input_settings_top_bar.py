@@ -63,24 +63,6 @@ _date_selector_calendar = dmc.DatePickerInput(
 )
 
 
-_event_duration_slider = dmc.Stack(children=[
-    dmc.Text("Durée de l'évènement en jours", **TOP_BAR_INPUTS_LABEL_PROPS),
-    dmc.Slider(
-        id='input:event-duration',
-        value=3,
-        min=1,
-        max=10,
-        restrictToMarks=True,
-        marks=[{"value": _, "label": str(_)} for _ in [1, 2, 3, 4, 5, 6, 7, 10]],
-        label=None,
-        size=10,
-        classNames=dict(
-            markLabel='duration-slider-markLabel'
-        )
-    )],
-    id='slider-with-label'
-)
-
 _continue_button = dcc.Link(
     children=dmc.Button(
         'Poursuivre',
