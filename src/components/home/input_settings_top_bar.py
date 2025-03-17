@@ -128,6 +128,32 @@ input_settings_top_bar = html.Div(children=[
 #~~~~~~~ Callbacks
 
 @callback(
+        Output('input:date', 'error'),
+        Input('input:date', 'value'),
+        prevent_initial_call=True
+)
+def calendar_error(dates: list):
+    """
+    Write error message for unallowed range length.
+    For the time being (development ungoing), the only valid range length is
+    3 days
+    """
+
+    try:
+        start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
+                        for _ in dates]
+    except TypeError:
+        # Happens when the date is being picked as the second item in the list
+        # is None. In which case we don't update the error bc the range is not
+        # specified
+        raise PreventUpdate
+
+    time_range = (stop - start) + dt.timedelta(days=1)
+    
+    return "Please select a 3 day length range" if time_range.days != 3 else ""
+
+
+@callback(
         Output('temp-readout-field', 'children'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
