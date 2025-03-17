@@ -185,11 +185,11 @@ def update_temperature(grid_point: str, extreme_type: str, date: list) -> str:
                 var = 'tasmax'
             elif extreme_type == 'cold':
                 var = 'tasmin'
-            To = xr.open_dataset(
-                f"./data/daily/era5_sfc_{var}_G025.nc"
-            )[var].\
-                sel(time=slice(start, stop + dt.timedelta(days=1))).\
-                sel(lat=lat, lon=lon % 360).\
+            To = xr.open_dataset(f"./data/daily/era5_sfc_{var}_G025.nc")[var].\
+                sel(
+                    time=slice(start, stop + dt.timedelta(days=1)),
+                    lat=lat, lon=lon % 360
+                ).\
                 mean('time').data
             return f"{To-273.15:.1f}°C", f"{To:.2f}"
         return "Select a grid point", None
@@ -221,6 +221,7 @@ def notify_user(n_clicks, selected_point_data):
             raise PreventUpdate
 
 
+# TODO Pass To in query string to avoid having to compute it again
 @callback(
     Output('dynamic-link', 'href'),
     State('input:selected-point', 'data'),
