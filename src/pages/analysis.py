@@ -33,51 +33,16 @@ def _parse_event(query: dict) -> dict:
     # Split lat_lon string into a (lat, lon) float tuple
     event['lat'], event['lon'] = [float(_) for _ in query['loc'].split('_')]
 
-    # Read intensity in ERA5 from date
-    event['intensity'] = _read_intensity_from_dates(
-        event['date_start'], event['date_stop'],
-        event['lat'], event['lon'],
-        event['extreme_type']
-    )
+    # Parse query intensity into float
+    event['intensity'] = float(query['To'])
 
     return event
-
-
-def _read_intensity_from_dates(
-        start: dt.date, stop: dt.date,
-        lat: float, lon: float,
-        extreme_type: str) -> float:
-    """
-    TODO Docstring
-    """
-
-    current_dir = os.path.basename(os.getcwd())
-    if current_dir == 'pages':
-        path_to_data_parent_dir = '../../'
-    elif current_dir == 'src':
-        path_to_data_parent_dir = '../'
-    else: # Root of the app (hopefully).
-        path_to_data_parent_dir = './'
-
-    if extreme_type == 'hot':
-        var = 'tasmax'
-    elif extreme_type == 'cold':
-        var = 'tasmin'
-
-    To = xr.open_dataset(
-        path_to_data_parent_dir + f"data/daily/era5_sfc_{var}_G025.nc"
-    )[var].\
-        sel(time=slice(start, stop + dt.timedelta(days=1))).\
-        sel(lat=lat, lon=lon % 360).\
-        mean('time').data
-
-    return To    
 
 
 def layout(extreme_type=None,
            method=None,
            date=None,
-           duration=None,
+           To=None,
            loc=None):
     """
     Note: It is good practice to catch unexpected query event here through 
@@ -90,7 +55,7 @@ def layout(extreme_type=None,
         "extreme_type": extreme_type,
         "method": method,
         "date": date,  
-        "duration": duration,  
+        "To": To,  
         "loc": loc  
     }
 
