@@ -58,9 +58,7 @@ _date_selector_calendar = dmc.DatePickerInput(
     highlightToday=False,
     minDate=date(1940, 1, 1),
     maxDate=date(2022, 12, 31),
-    style=dict(
-        zIndex=2
-    )
+    className='datepicker-container'
 )
 
 

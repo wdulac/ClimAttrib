@@ -38,12 +38,32 @@
 }
 
 
-.mantine-Slider-markLabel {
-    color: white;
+.datepicker-container {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-items: left;
+    width: 300px;
+    gap: 3px;
+    height: 66.9px;
 }
 
 
-#slider-with-label{
-    align-items: left;
-    gap: 5px;
+.mantine-DatePickerInput-error {
+    position: absolute;
+    bottom: -19px;
+    left: 3px;
+    right: 0;
+    text-align: left;
+    color: white;
+    font-size: 14px;
+    font-weight: 300;
+}  
+
+.mantine-DatePickerInput-error::before {
+    content: "⚠ "; /* Icône d'avertissement */
+    color: #ff2d2d; /* Rouge vif */
+    font-weight: bold;
+    font-size: 18px;
+    vertical-align: -1px;
 }
