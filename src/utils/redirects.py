@@ -22,7 +22,7 @@ def analysis():
             return redirect(HOMEPAGE)
         
         # Check if any query parameter key is unexpected
-        if not all([param in ['extreme_type', 'method', 'date', 'loc']\
+        if not all([param in ['extreme_type', 'method', 'date', 'To', 'loc']\
                         for param in request.args.keys()]):
             return redirect(HOMEPAGE)
         
