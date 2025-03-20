@@ -95,6 +95,7 @@ import scipy.stats as sc
 import pandas as pd
 import xarray as xr
 from cmdstanpy import CmdStanModel
+from cmdstanpy import set_cmdstan_path
 
 
 from.__multi_model import MultiModel
@@ -671,7 +672,7 @@ def constraint_C0( climIn , Yo , verbose = False ): ##{{{
 
 # Version originale Contrainte STAN
 #Only for GEV original (covariable for mu and sigma, exponential sigma)
-def stan_constrain(climIn,Yo,stan_file, **kwargs):
+def stan_constrain(climIn,Yo,stan_file, install_dir=None, **kwargs):
 	"""
 	NSSEA.constrain_law
 	===================
@@ -723,6 +724,9 @@ def stan_constrain(climIn,Yo,stan_file, **kwargs):
 	newDF = pd.DataFrame() #creates a new dataframe that's empty
 	samples = clim.X.loc[Yo.index,:,"F","Multi_Synthesis"].sample.values.squeeze()[1::]
 
+	# Set path to CmdStan if specified
+	if install_dir:
+		set_cmdstan_path(install_dir)
 	#compile stan file
 	model = CmdStanModel(stan_file=stan_file)
 	#Run constraint with varying covariable
