@@ -81,6 +81,7 @@ def zoom_to_select(zoom_level, is_hidden):
             raise PreventUpdate
 
 
+# TODO Try to make the grid faster (Client-side callback with custom JS ?)
 @callback(
     Output('grid', 'children'),
     Input('map', 'zoom'),

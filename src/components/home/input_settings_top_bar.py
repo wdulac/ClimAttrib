@@ -149,6 +149,7 @@ def calendar_error(dates: list):
                 return ""
 
 
+# TODO Make data retrieval async (maybe ThreadPoolExecutor)
 @callback(
         Output('temp-readout-field', 'children'),
         Output('data:intensity', 'data'),
