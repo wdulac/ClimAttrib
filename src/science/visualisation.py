@@ -18,6 +18,7 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
+# TODO Make interactive plot
 def plot_probability(stats: xr.DataArray) -> tuple[
 	matplotlib.figure.Figure,
     plt.Axes

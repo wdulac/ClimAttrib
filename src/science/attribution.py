@@ -114,6 +114,8 @@ def compute_event_stats(event: dict) -> tuple:
     bayes_kwargs = {
         "n_ess": int(10000/(len(climCX.data.sample)-1)) # 10000 tirages
     } 
+    # TODO Improve init of STAN
+    # https://github.com/yrobink/ANKIALE/commit/01bd1147efb520d33ac1585b9de191155282dcd5
     climCXCB = ns.stan_constrain(
         climCX,
         Yo,
