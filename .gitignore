@@ -4,3 +4,4 @@ data/
 __pycache__/
 *.pyc
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL
+src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL.stan
