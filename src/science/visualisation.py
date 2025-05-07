@@ -18,8 +18,7 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
-# TODO Make interactive plot
-def plot_probability(stats: xr.DataArray) -> tuple[
+def plot_probability(stats: xr.Dataset) -> tuple[
 	matplotlib.figure.Figure,
     plt.Axes
 ]:
@@ -27,16 +26,6 @@ def plot_probability(stats: xr.DataArray) -> tuple[
     TODO Docstring
 	"""
 	
-    # Compute probability lower/median/upper bounds for plotting  
-    qstats = stats.\
-	    quantile(
-		    [0.5*CONFIDENCE_INTERVAL, 0.5, 1-0.5*CONFIDENCE_INTERVAL],
-		    dim="sample_MCMC"
-	    ).\
-		assign_coords(
-			quantile=['ql', 'be', 'qu']
-        )
-
     mm     = 1. / 25.4
     ratio  = 16 / 11
     nrow   = 1
@@ -52,9 +41,9 @@ def plot_probability(stats: xr.DataArray) -> tuple[
 
     fig = plt.figure( figsize = (width,height) )
     ax  = fig.add_subplot( nrow , ncol , 1 )
-    for iqp,qp in enumerate([qstats.loc[:,:,"pF"],qstats.loc[:,:,"pC"]]):
-        ax.plot( qp.time , plink(qp.loc["be",:]) , color = colors[iqp] )
-        ax.fill_between( qp.time , plink(qp.loc["ql",:]) , plink(qp.loc["qu",:]) , color = colors[iqp] , alpha = 0.5 )
+    for iqp,qp in enumerate([stats['pF'], stats["pC"]]):
+        ax.plot( qp.time , plink(qp.sel(quantile='BE')) , color = colors[iqp] )
+        ax.fill_between( qp.time , plink(qp.sel(quantile='QL')) , plink(qp.sel(quantile='QU')) , color = colors[iqp] , alpha = 0.5 )
     ax.set_yticks(plink(yticks))
     ax.set_yticklabels(yticklabelsL)
     ax.set_ylabel("Probability")

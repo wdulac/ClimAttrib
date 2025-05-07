@@ -3,5 +3,4 @@ data/
 .vscode/
 __pycache__/
 *.pyc
-src/science/stan_files/GEV_non_stationary
-!src/science/data
+src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL

@@ -1,2 +1,2 @@
-from .attribution import compute_event_stats
+from .attribution import attribute_event
 from .visualisation import plot_probability

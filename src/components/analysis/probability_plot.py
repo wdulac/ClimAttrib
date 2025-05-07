@@ -2,7 +2,7 @@ from dash import html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
 from datetime import datetime as dt
 
-from science import compute_event_stats
+from science import attribute_event
 from science import plot_probability
 
 import matplotlib.pyplot as plt
@@ -71,7 +71,7 @@ def update_result(event):
 
     parsed_event = _deserialize_event(event)
 
-    stats = compute_event_stats(parsed_event)
+    stats = attribute_event(parsed_event)
     fig, ax = plot_probability(stats)
 
     return html.Img(src=_fig_to_uri(fig))

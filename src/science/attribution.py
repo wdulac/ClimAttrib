@@ -1,9 +1,15 @@
 import numpy as np
 import xarray as xr
 import pandas as pd
-import scipy.stats as sc
-import SDFC as sd
-import NSSEA as ns
+
+import datetime as dt
+
+import ANKIALE as ank
+# Specific imports
+from ANKIALE.cmd.__cmd_constrain import zgaussian_conditionning
+from ANKIALE.cmd.__cmd_constrain import zmcmc
+from ANKIALE.cmd.__cmd_attribute import zattribute_event
+from ANKIALE.__linalg import mean_cov_hpars
 
 # Evaluate both relative path to the directory right above the main data
 # directory and also to the science dir (parent to another data folder)
@@ -23,180 +29,157 @@ else: # Root of the app (hopefully).
     path_to_data_parent_dir = './'
     path_to_science_dir = './src/science/'
 
+## Paramètres généraux
 
-# Read latitudes and longitudes from the land-sea Mask
-# This in turn is used to itentify the correct multi-model synthesis file to
-# load.
-# Note : Make sure the land-sea mask is consistent with the Geojson grid
-_mask_full  = xr.open_dataset(
-    path_to_science_dir + "data/land_sea_mask_IPCC_antarctica.nc"
-)
-_lat = _mask_full.lat.data
-_lon = _mask_full.lon.data
+# Pour la contrainte X
+METHOD = 'INDEPENDANT'
 
-# Global parameters used for the calculations
-TIME_REFERENCE = np.arange(1961, 1991, 1, dtype=int)
-NS_LAW = ns.models.GEV()
-VERBOSE = "--not-verbose"
+# Pour la contrainte Y
+N_SAMPLES_COV = 100 # Tirages de covariables
+SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
+USE_STAN = True
+
+# Pour l'attribution
+N_SAMPLES_ATTRIB = 1000 # Nombre de valeurs de hpars à tirer pour l'intervalle de confiance
+SIDE = 'right'
+MODE = 'quantile'
+CI = 0.05
 
 
-def _load_obs(lat: float, lon: float) -> tuple:
-    """
-    Return observed covariate (GSAT timeseries) and the observed variable
-    timeseries at the given grid point.
+def _projection_operator(clim, times):
+    ## Build projection operator for the covariable
+    time = clim.time
+    spl,lin,_,_ = clim.build_design_XFC()
+    nper = len(clim.dpers)
 
-    TODO Add support for more variables than tx3d
-    """
+    design_ = []
+    for nameX in clim.namesX:
+        if nameX == clim.cname:
+            design_ = design_ + [spl for _ in range(nper)] + [nper * lin]
+        else:
+            design_ = design_ + [np.zeros_like(spl) for _ in range(nper)] + [np.zeros_like(lin)]
+    design_ = design_ + [np.zeros( (time.size,clim.sizeY) )]
+    design_ = np.hstack(design_)
 
-    lon = lon % 360 # Convert to 0 -- 360°
+    T = xr.DataArray( np.identity(design_.shape[0]) , dims = ["timeA","timeB"] , coords = [time,time] ).loc[times,time].values
+    A = T @ design_ / nper
 
-    ## Load covariate
-    dXo_full = pd.read_csv(
-        path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.csv'
-    )
-    year_Xo = dXo_full.loc[:,"Time"].array
-    dXo_sub = dXo_full.drop(
-        ["Fraction of area represented", "Coverage uncertainty (1 sigma)"],
-        axis=1
-    )
-    # Median over 200 realizations
-    dXo = dXo_sub.median(axis=1)
-    dXo.index = year_Xo
-    Xo = pd.DataFrame(dXo)
+    return A
 
-    # Load variable at chosen grid point
-    dYo_full   = xr.open_dataset(
-        path_to_data_parent_dir + "data/Yo/tx3d/tx3d_era5_1940-2022_g025.nc" 
-    )
-    dYo = dYo_full.sel(lat=lat, lon=lon) # Do not use method='nearest' for now
-    Yo = pd.DataFrame(dYo.tasmax, index=dYo.time.dt.year)
 
+def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
+
+    # Convert to 0 -- 360°
+    lon = lon % 360
+
+    Xo_file = path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.nc'
+    Yo_file = path_to_data_parent_dir + 'data/Yo/tx3d/tx3d_era5_1940-2022_g025.nc'
+
+    Xo = xr.open_dataset(Xo_file)['tas']
+    Yo = xr.open_dataset(Yo_file)['tasmax'].sel(lat=lat, lon=lon)
+
+    # On remplace l'axe du temps par les années
+    Xo = xr.DataArray(Xo.values, dims=Xo.dims,
+                      coords=[Xo.time.dt.year.values] + [Xo.coords[d] for d in Xo.dims[1:]])
+    Yo = xr.DataArray(Yo.values, dims=Yo.dims,
+                      coords = [Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
+    
     return Xo, Yo
 
 
-def compute_event_stats(event: dict) -> tuple:
-    """
-    Computes the probability in both factual and counter-factual worlds for the
-    given event.
-    """
+def attribute_event(event:dict) -> xr.Dataset:
 
-    # Load obs and retrieve event intensity To
+    clim_file = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
+    clim = ank.Climatology.init_from_file(clim_file)
+
+    # hpar et hcov du prior
+    hpar_prior = clim.hpar.sel(lat=event['lat'], lon=event['lon'] % 360,
+                               drop=False)
+    hcov_prior = clim.hcov.sel(lat=event['lat'], lon=event['lon'] % 360,
+                               drop=False)
+
+    # La loi statistique utilisée (ici GEV)
+    nslaw = clim._nslaw_class
+
+    # L'axe du temps de référence
+    time = clim.time
+
+    # Période de référence pour le calcul du biais
+    bper = clim.bper
+
+    # Matrices de projection factuel / contre-factuel
+    projF, projC = clim.projection()
+
+    # Lecture des observations
     Xo, Yo = _load_obs(event['lat'], event['lon'])
-    # To = Yo.loc[event['date'].year]
-    To = event['intensity'] # Kelvin by default
 
-    # Convert Yo to anomaly w.r.t :TIME_REFERENCE:
-    bias_Yo = Yo.loc[TIME_REFERENCE].mean()
-    bias_Xo = Xo.loc[TIME_REFERENCE].mean()
-    Yo -= bias_Yo
-    Xo -= bias_Xo
-    
-    ## Load muli-model synthesis
-    # Find out indice of lat / lon
-    idx_lat = list(_lat).index(event['lat'])
-    idx_lon = list(_lon).index(event['lon'] % 360) # Convert to 0 - 360
-    # Load file
-    climMM_file = path_to_data_parent_dir + \
-        'data/climMM/' + \
-        f'climMM_lat{idx_lat}_lon{idx_lon}.nc'
-    climMM = ns.Climatology.from_netcdf(climMM_file, NS_LAW)
+    # Calcul du biais. On pourrait utiliser la valeur stockée dans :clim: mais elle est légèrement différente.
+    bias_arr = Yo.sel( time = slice(*[str(y) for y in bper]) ).mean('time')
 
-    # Constrain the multi-model synthesis covariate X with observed Xo
-    climCX = ns.constrain_covariate(
-        climMM,
-        Xo,
-        TIME_REFERENCE,
-        assume_good_scale=True,
-        verbose=VERBOSE
-    )
+    # Expression de la variable en anomalie
+    Yo_anom = Yo - bias_arr
 
-    # Constrain with observed variable Yo
-    bayes_kwargs = {
-        "n_ess": int(10000/(len(climCX.data.sample)-1)) # 10000 tirages
-    } 
-    # TODO Improve init of STAN
-    # https://github.com/yrobink/ANKIALE/commit/01bd1147efb520d33ac1585b9de191155282dcd5
-    climCXCB = ns.stan_constrain(
-        climCX,
-        Yo,
-        path_to_science_dir + 'stan_files/GEV_non_stationary.stan',
-        **bayes_kwargs
-    )
+    ### Contrainte par la covariable
 
-    ## Output
-    ny = climCXCB.n_time
-    nsample_MCMC = climCXCB.data.sample_MCMC.shape[0]
-    samples_MCMC = climCXCB.data.sample_MCMC
-    To_anomaly = To-bias_Yo
-    n_stat = 3
+    # Paramètres de la fonction de conditionnement
+    ihpar = hpar_prior.transpose('lat', 'lon', 'hpar').values
+    ihcov = hcov_prior.transpose('lat', 'lon', 'hpar0', 'hpar1').values
+    iXo = Xo.values[np.newaxis, np.newaxis, :] # On ajoute deux dimensions pour représenter (lat, lon) en mono point de grille
+    timeXo = Xo.time
+    A_Xo = _projection_operator(clim, timeXo)
 
-    # Initialize output array
-    stats = xr.DataArray(
-                np.zeros((ny, nsample_MCMC, n_stat)),
-                coords=[climCXCB.X.time, samples_MCMC, ["pC","pF", "PR"]],
-                dims = ["time","sample_MCMC","stats"]
-            )
-    # Repeat covariate's best estimate nsample_MCMC times
-    XF = xr.DataArray(
-                np.tile(
-                    climCXCB.X.loc[:,"BE","F","Multi_Synthesis"],
-                    (nsample_MCMC, 1)
-                ).T,
-                coords=[climCXCB.X.time, samples_MCMC],
-                dims = ["time","sample_MCMC"]
-            )
-    XC = xr.DataArray(
-                np.tile(
-                    climCXCB.X.loc[:,"BE","C","Multi_Synthesis"],
-                    (nsample_MCMC, 1)
-                ).T,
-                coords=[climCXCB.X.time, samples_MCMC],
-                dims = ["time","sample_MCMC"]
-            )
+    # Application de la contrainte par la covariable
+    hpar_CX, hcov_CX = zgaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
 
-    ## Build non-stationnary GEV parameters in both factual and counter-factual
-    # Factual
-    locF  = climCXCB.law_coef.loc["loc0",:,"Multi_Synthesis"] +\
-        XF * climCXCB.law_coef.loc["loc1",:,"Multi_Synthesis"]
+    ### Contrainte par les observations de la variable
 
-    scaleF = np.exp(
-        climCXCB.law_coef.loc["scale0",:,"Multi_Synthesis"] +\
-            XF * climCXCB.law_coef.loc["scale1",:,"Multi_Synthesis"]
-    )
-    
-    # Counter-factual
-    locC  = climCXCB.law_coef.loc["loc0",:,"Multi_Synthesis"] +\
-        XC * climCXCB.law_coef.loc["loc1",:,"Multi_Synthesis"]
-    
-    scaleC = np.exp(
-        climCXCB.law_coef.loc["scale0",:,"Multi_Synthesis"] +\
-            XC * climCXCB.law_coef.loc["scale1",:,"Multi_Synthesis"]
-    )
+    # Initialisation de Stan dans un répertoire fixe
+    stan_work_dir = path_to_science_dir + './stan_files/'
+    nslaw().init_stan(tmp=stan_work_dir, force_compile=False) # On compile uniquement si les fichiers sont absents
 
-    # Stationary shape param, implies unchanged between F/C since not dependant
-    # on the covariate 
-    shape = climCXCB.law_coef.loc["shape0",:,"Multi_Synthesis"] +\
-        xr.zeros_like(locF)
+    # Paramètres de la fonction mcmc
+    ihpar = hpar_CX[:,:, np.newaxis, :] # (lat, lon, sample, hpar)
+    ihcov = hcov_CX[:,:, np.newaxis, :, :] # (lat, lon, sample, hpar0, hpar1)
+    iYo_anom = Yo_anom.values[np.newaxis, np.newaxis, np.newaxis, :] # (lat, lon, sample, time)
+    samples = np.arange(N_SAMPLES_COV)
+    A_Yo = _projection_operator(clim, Yo.time)
 
-    ## Compute probability with time
-    # Factual
-    stats.loc[:,:,"pF"] = sc.genextreme.sf(
-        To_anomaly,
-        loc=locF,
-        scale=scaleF,
-        c=-shape
-    ).T
+    # On applique la contrainte Y
+    ohpars = zmcmc(ihpar, ihcov, iYo_anom, samples, A_Yo, SIZE_CHAIN, nslaw, USE_STAN, stan_work_dir)
+    # On transpose pour avoir (lat, lon, hpar, sample, chain)
+    ohpars = ohpars.transpose(0, 1, 3, 2, 4)
+    hpar_CXCB, hcov_CXCB = mean_cov_hpars(ohpars) # Calcul des paramètres de la distribution des tirages MCMC
 
-    # Counter-factual
-    stats.loc[:,:,"pC"] = sc.genextreme.sf(
-        To_anomaly,
-        loc=locC,
-        scale=scaleC,
-        c=-shape
-    ).T
+    ### Attribution de l'évènement
 
-    ## Compute probability ratio
-    stats.loc[:, :, 'PR'] = stats.loc[:,:,"pF"] / stats.loc[:,:,"pC"]
+    # Paramètre de la fonction d'attribution
+    ihpar = hpar_CXCB[:, :, np.newaxis, :] # (lat, lon, period, hpar).
+    ihcov = hcov_CXCB[:, :, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
+    bias = bias_arr.values[np.newaxis, np.newaxis, np.newaxis] # (lat, lon, period)
+    To = event['intensity'] - bias # idem
+    iprojF = projF.values
+    iprojC = projC.values
+    idx_event = int(np.argwhere(time == event['date'].year).ravel())
 
-    # Note : returning climMM and climCXCB is only useful to plot GEV params
-    return stats
+    # Calcul des statistiques de l'évènement
+    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, nslaw, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
+    keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
+    out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
+
+    # Conversion en xr.Dataset
+    modes =np.array(["QL","BE","QU"])
+
+    data_arrays = []
+
+    for key, value in out_CXCB.items():
+        da = xr.DataArray(
+            value,
+            coords=[time, modes],
+            dims=['time', 'quantile'],
+            name=key
+        )
+        data_arrays.append(da)
+
+    dataset = xr.Dataset({da.name: da for da in data_arrays})
+
+    return dataset
