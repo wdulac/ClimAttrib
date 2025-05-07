@@ -46,27 +46,33 @@ MODE = 'quantile'
 CI = 0.05
 
 # Loading the prior
-clim_file = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
-clim = ank.Climatology.init_from_file(clim_file)
+_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
+CLIM = ank.Climatology.init_from_file(_CLIM_FILE)
 # Initializing CmdStan local work directory
-stan_work_dir = path_to_science_dir + './stan_files/'
-nslaw = clim._nslaw_class
-nslaw().init_stan(tmp=stan_work_dir, force_compile=False)
+STAN_WORK_DIR = path_to_science_dir + './stan_files/'
+NSLAW = CLIM._nslaw_class
+NSLAW().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
+# Total time axis (1850 -- 2100)
+TIME = CLIM.time
+# Reference period for bias
+BPER = CLIM.bper
+# Matrices de projection factuel / contre-factuel
+PROJF, PROJC = CLIM.projection()
 
 
-def _projection_operator(clim, times):
+def _projection_operator(times):
     ## Build projection operator for the covariable
-    time = clim.time
-    spl,lin,_,_ = clim.build_design_XFC()
-    nper = len(clim.dpers)
+    time = CLIM.time
+    spl,lin,_,_ = CLIM.build_design_XFC()
+    nper = len(CLIM.dpers)
 
     design_ = []
-    for nameX in clim.namesX:
-        if nameX == clim.cname:
+    for nameX in CLIM.namesX:
+        if nameX == CLIM.cname:
             design_ = design_ + [spl for _ in range(nper)] + [nper * lin]
         else:
             design_ = design_ + [np.zeros_like(spl) for _ in range(nper)] + [np.zeros_like(lin)]
-    design_ = design_ + [np.zeros( (time.size,clim.sizeY) )]
+    design_ = design_ + [np.zeros( (time.size,CLIM.sizeY) )]
     design_ = np.hstack(design_)
 
     T = xr.DataArray( np.identity(design_.shape[0]) , dims = ["timeA","timeB"] , coords = [time,time] ).loc[times,time].values
@@ -104,28 +110,18 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 def attribute_event(event:dict) -> xr.Dataset:
 
     # hpar et hcov du prior
-    hpar_prior = clim.hpar.sel(lat=event['lat'], lon=event['lon'] % 360,
+    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360,
                                drop=False)
-    hcov_prior = clim.hcov.sel(lat=event['lat'], lon=event['lon'] % 360,
+    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360,
                                drop=False)
 
-    # La loi statistique utilisée (ici GEV)
-    nslaw = clim._nslaw_class
 
-    # L'axe du temps de référence
-    time = clim.time
-
-    # Période de référence pour le calcul du biais
-    bper = clim.bper
-
-    # Matrices de projection factuel / contre-factuel
-    projF, projC = clim.projection()
 
     # Lecture des observations
     Xo, Yo = _load_obs(event['lat'], event['lon'])
 
-    # Calcul du biais. On pourrait utiliser la valeur stockée dans :clim: mais elle est légèrement différente.
-    bias_arr = Yo.sel( time = slice(*[str(y) for y in bper]) ).mean('time')
+    # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
+    bias_arr = Yo.sel( time = slice(*[str(y) for y in BPER]) ).mean('time')
 
     # Expression de la variable en anomalie
     Yo_anom = Yo - bias_arr
@@ -137,7 +133,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     ihcov = hcov_prior.transpose('lat', 'lon', 'hpar0', 'hpar1').values
     iXo = Xo.values[np.newaxis, np.newaxis, :] # On ajoute deux dimensions pour représenter (lat, lon) en mono point de grille
     timeXo = Xo.time
-    A_Xo = _projection_operator(clim, timeXo)
+    A_Xo = _projection_operator(timeXo)
 
     # Application de la contrainte par la covariable
     hpar_CX, hcov_CX = zgaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
@@ -149,10 +145,10 @@ def attribute_event(event:dict) -> xr.Dataset:
     ihcov = hcov_CX[:,:, np.newaxis, :, :] # (lat, lon, sample, hpar0, hpar1)
     iYo_anom = Yo_anom.values[np.newaxis, np.newaxis, np.newaxis, :] # (lat, lon, sample, time)
     samples = np.arange(N_SAMPLES_COV)
-    A_Yo = _projection_operator(clim, Yo.time)
+    A_Yo = _projection_operator(Yo.time)
 
     # On applique la contrainte Y
-    ohpars = zmcmc(ihpar, ihcov, iYo_anom, samples, A_Yo, SIZE_CHAIN, nslaw, USE_STAN, stan_work_dir)
+    ohpars = zmcmc(ihpar, ihcov, iYo_anom, samples, A_Yo, SIZE_CHAIN, NSLAW, USE_STAN, STAN_WORK_DIR)
     # On transpose pour avoir (lat, lon, hpar, sample, chain)
     ohpars = ohpars.transpose(0, 1, 3, 2, 4)
     hpar_CXCB, hcov_CXCB = mean_cov_hpars(ohpars) # Calcul des paramètres de la distribution des tirages MCMC
@@ -164,12 +160,12 @@ def attribute_event(event:dict) -> xr.Dataset:
     ihcov = hcov_CXCB[:, :, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
     bias = bias_arr.values[np.newaxis, np.newaxis, np.newaxis] # (lat, lon, period)
     To = event['intensity'] - bias # idem
-    iprojF = projF.values
-    iprojC = projC.values
-    idx_event = int(np.argwhere(time == event['date'].year).ravel())
+    iprojF = PROJF.values
+    iprojC = PROJC.values
+    idx_event = int(np.argwhere(TIME == event['date'].year).ravel())
 
     # Calcul des statistiques de l'évènement
-    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, nslaw, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
+    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, NSLAW, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
     out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
 
@@ -181,7 +177,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     for key, value in out_CXCB.items():
         da = xr.DataArray(
             value,
-            coords=[time, modes],
+            coords=[TIME, modes],
             dims=['time', 'quantile'],
             name=key
         )
