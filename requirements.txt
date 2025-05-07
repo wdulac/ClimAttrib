@@ -1,28 +1,11 @@
-# Packages needed by NSSEA and SDFC
-seaborn
-arviz
-xarray
-netCDF4
-numpy
-scipy
-cmdstanpy
-pandas
-tabulate
-pygam
-statsmodels
-# Install the following three packages separately if SDFC fails to install due to missing pybind11. Then rerun pip on the requirements.txt
-wheel
-setuptools
-pybind11
-
-# Local packages
-./libraries/SDFC
-./libraries/NSSEA
-
 dash
 dash_bootstrap_components
 dash_mantine_components
 dash-leaflet
 plotly
-
 python-dotenv
+pygam
+
+./libraries/SDFC-python
+./libraries/zxarray
+./libraries/ANKIALE
