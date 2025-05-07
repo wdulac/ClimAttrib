@@ -45,6 +45,14 @@ SIDE = 'right'
 MODE = 'quantile'
 CI = 0.05
 
+# Loading the prior
+clim_file = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
+clim = ank.Climatology.init_from_file(clim_file)
+# Initializing CmdStan local work directory
+stan_work_dir = path_to_science_dir + './stan_files/'
+nslaw = clim._nslaw_class
+nslaw().init_stan(tmp=stan_work_dir, force_compile=False)
+
 
 def _projection_operator(clim, times):
     ## Build projection operator for the covariable
@@ -89,9 +97,6 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 
 def attribute_event(event:dict) -> xr.Dataset:
 
-    clim_file = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
-    clim = ank.Climatology.init_from_file(clim_file)
-
     # hpar et hcov du prior
     hpar_prior = clim.hpar.sel(lat=event['lat'], lon=event['lon'] % 360,
                                drop=False)
@@ -132,10 +137,6 @@ def attribute_event(event:dict) -> xr.Dataset:
     hpar_CX, hcov_CX = zgaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
 
     ### Contrainte par les observations de la variable
-
-    # Initialisation de Stan dans un répertoire fixe
-    stan_work_dir = path_to_science_dir + './stan_files/'
-    nslaw().init_stan(tmp=stan_work_dir, force_compile=False) # On compile uniquement si les fichiers sont absents
 
     # Paramètres de la fonction mcmc
     ihpar = hpar_CX[:,:, np.newaxis, :] # (lat, lon, sample, hpar)
