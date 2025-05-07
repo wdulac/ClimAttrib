@@ -76,6 +76,12 @@ def _projection_operator(clim, times):
 
 
 def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
+    """
+    Return observed covariate (GSAT timeseries) and the observed variable
+    timeseries at the given grid point.
+
+    TODO Add support for more variables than tx3d
+    """
 
     # Convert to 0 -- 360°
     lon = lon % 360
