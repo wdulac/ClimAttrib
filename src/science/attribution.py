@@ -6,8 +6,8 @@ import datetime as dt
 
 import ANKIALE as ank
 # Specific imports
-from ANKIALE.cmd.__cmd_constrain import zgaussian_conditionning
-from ANKIALE.cmd.__cmd_constrain import zmcmc
+from ANKIALE.stats.__constraint import gaussian_conditionning
+from ANKIALE.stats.__constraint import mcmc
 from ANKIALE.cmd.__cmd_attribute import zattribute_event
 from ANKIALE.__linalg import mean_cov_hpars
 
@@ -110,12 +110,8 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 def attribute_event(event:dict) -> xr.Dataset:
 
     # hpar et hcov du prior
-    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360,
-                               drop=False)
-    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360,
-                               drop=False)
-
-
+    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360)
+    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360)
 
     # Lecture des observations
     Xo, Yo = _load_obs(event['lat'], event['lon'])
@@ -129,35 +125,38 @@ def attribute_event(event:dict) -> xr.Dataset:
     ### Contrainte par la covariable
 
     # Paramètres de la fonction de conditionnement
-    ihpar = hpar_prior.transpose('lat', 'lon', 'hpar').values
-    ihcov = hcov_prior.transpose('lat', 'lon', 'hpar0', 'hpar1').values
-    iXo = Xo.values[np.newaxis, np.newaxis, :] # On ajoute deux dimensions pour représenter (lat, lon) en mono point de grille
+    ihpar = hpar_prior.values
+    ihcov = hcov_prior.values
+    iXo = Xo.values # On ajoute deux dimensions pour représenter (lat, lon) en mono point de grille
     timeXo = Xo.time
     A_Xo = _projection_operator(timeXo)
 
     # Application de la contrainte par la covariable
-    hpar_CX, hcov_CX = zgaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
+    hpar_CX, hcov_CX = gaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
 
     ### Contrainte par les observations de la variable
 
     # Paramètres de la fonction mcmc
-    ihpar = hpar_CX[:,:, np.newaxis, :] # (lat, lon, sample, hpar)
-    ihcov = hcov_CX[:,:, np.newaxis, :, :] # (lat, lon, sample, hpar0, hpar1)
-    iYo_anom = Yo_anom.values[np.newaxis, np.newaxis, np.newaxis, :] # (lat, lon, sample, time)
+    iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
     A_Yo = _projection_operator(Yo.time)
 
-    # On applique la contrainte Y
-    ohpars = zmcmc(ihpar, ihcov, iYo_anom, samples, A_Yo, SIZE_CHAIN, NSLAW, USE_STAN, STAN_WORK_DIR)
-    # On transpose pour avoir (lat, lon, hpar, sample, chain)
-    ohpars = ohpars.transpose(0, 1, 3, 2, 4)
-    hpar_CXCB, hcov_CXCB = mean_cov_hpars(ohpars) # Calcul des paramètres de la distribution des tirages MCMC
+    # Initialisation du résultat
+    ohpars = np.zeros((ihpar.size, samples.size, SIZE_CHAIN)) + np.nan
+    # Boucle sur les tirages de covariable
+    mcmc_args = [SIZE_CHAIN, NSLAW, USE_STAN, STAN_WORK_DIR]
+    for s in samples:
+        oh = mcmc(hpar_CX, hcov_CX, iYo_anom, A_Yo, *mcmc_args)
+        ohpars[:,s,:] = oh
+    
+    # calcul des paramètres de la distribution des tirages MCMC
+    hpar_CXCB, hcov_CXCB = mean_cov_hpars(ohpars)
 
     ### Attribution de l'évènement
 
     # Paramètre de la fonction d'attribution
-    ihpar = hpar_CXCB[:, :, np.newaxis, :] # (lat, lon, period, hpar).
-    ihcov = hcov_CXCB[:, :, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
+    ihpar = hpar_CXCB[np.newaxis, np.newaxis, np.newaxis, :] # (lat, lon, period, hpar).
+    ihcov = hcov_CXCB[np.newaxis, np.newaxis, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
     bias = bias_arr.values[np.newaxis, np.newaxis, np.newaxis] # (lat, lon, period)
     To = event['intensity'] - bias # idem
     iprojF = PROJF.values
