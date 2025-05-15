@@ -39,6 +39,10 @@ def plot_probability(stats: xr.DataArray):
 
     names = ['pF', 'pC']
     trace_names = ['Factual', 'Counter-factual']
+
+    fill_traces = []
+    median_traces = []
+
     for i, (name, tn) in enumerate(zip(names, trace_names)):
         qp = qstats.loc[:, :, name]
         time = qp.time.values
@@ -46,8 +50,8 @@ def plot_probability(stats: xr.DataArray):
         ql = qp.sel(quantile='ql').values
         qu = qp.sel(quantile='qu').values
 
-        # Bande inférieure
-        fig.add_trace(go.Scatter(
+        # Trace inférieure
+        lower = go.Scatter(
             x=time,
             y=plink(ql),
             mode='lines',
@@ -55,23 +59,22 @@ def plot_probability(stats: xr.DataArray):
             showlegend=False,
             hoverinfo='skip',
             fill=None
-        ))
-
-        # Bande supérieure
-        fig.add_trace(go.Scatter(
+        )
+        # Trace supérieure avec fill
+        upper = go.Scatter(
             x=time,
             y=plink(qu),
             mode='lines',
             line=dict(color=colors[i], width=0),
             fill='tonexty',
             fillcolor=colors[i],
-            # opacity=0.3,
             showlegend=False,
             hoverinfo='skip'
-        ))
+        )
+        fill_traces.extend([lower, upper])
 
         # Courbe médiane
-        fig.add_trace(go.Scatter(
+        median = go.Scatter(
             x=time,
             y=plink(be),
             customdata=np.stack([
@@ -85,7 +88,7 @@ def plot_probability(stats: xr.DataArray):
             mode='lines',
             line=dict(color=colors[i], width=2),
             name=tn,
-            hovertemplate = (
+            hovertemplate=(
                 "<b>Year</b> : %{x}<br>" +
                 "<b>Probability</b> : %{customdata[0]:.2f}<br>" +
                 "<b>Confidence</b> : From %{customdata[1]:.2f} to %{customdata[2]:.2f}<br>" +
@@ -93,7 +96,15 @@ def plot_probability(stats: xr.DataArray):
                 "<b>Confidence</b> : From %{customdata[4]:.1f} to %{customdata[5]:.1f} years" +
                 "<extra></extra>"
             )
-        ))
+        )
+        median_traces.append(median)
+
+    # Ajout des traces dans le bon ordre
+    fig = go.Figure()
+    for trace in fill_traces:
+        fig.add_trace(trace)
+    for trace in median_traces:
+        fig.add_trace(trace)
 
     # Adding bare minimum trace to get a secondary axis
     fig.add_trace(go.Scatter(
