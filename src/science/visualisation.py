@@ -15,13 +15,15 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
-def _safe_str(value, fmt=".2f", max_val=1e6, min_val=1e-12, inf_str="∞", zero_str="0"):
+def _safe_str(value, fmt=".2f", max_val=1e6, min_val=1e-12, inf_str="Inf", zero_str="0"):
     if np.isnan(value):
         return "NaN"
     elif np.isinf(value) or value >= max_val:
         return inf_str
     elif value <= min_val:
         return zero_str
+    elif value <= 1e-2:
+        return "< 0.01"
     else:
         return format(value, fmt)
 
@@ -142,6 +144,8 @@ def plot_probability(stats: xr.DataArray):
             showline=True,
             linecolor='black',
             gridcolor='lightgrey',
+            tickfont=dict(size=14, color='black'),
+            title_font=dict(size=16, color='black', family='Arial')
         ),
         yaxis2=dict(
             title="Return period",
@@ -153,6 +157,8 @@ def plot_probability(stats: xr.DataArray):
             showline=True,
             range=[plink(0), plink(1)],
             linecolor='black',
+            tickfont=dict(size=14, color='black'),
+            title_font=dict(size=16, color='black', family='Arial')
         ),
         xaxis=dict(
             title="Time",
@@ -161,9 +167,14 @@ def plot_probability(stats: xr.DataArray):
             showline=True,
             linecolor='black',
             gridcolor='lightgrey',
-            mirror=True
+            mirror=True,
+            tickfont=dict(size=14, color='black'),
+            title_font=dict(size=16, color='black', family='Arial')
         ),
         plot_bgcolor='white',
+        legend=dict(
+            font=dict(size=14)  # taille en pixels
+        )
     )
 
     return fig
