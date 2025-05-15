@@ -53,4 +53,4 @@ def update_result(event):
     stats = compute_event_stats(parsed_event)
     fig = plot_probability(stats)
 
-    return dcc.Graph(figure=fig)
+    return dcc.Graph(figure=fig, config=dict(displaylogo=False))
