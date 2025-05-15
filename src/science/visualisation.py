@@ -27,7 +27,7 @@ def plot_probability(stats: xr.DataArray):
     # 2. Définition des tailles
     mm = 1. / 25.4
     ratio = 16 / 11
-    width = 180 * mm * 128  # 96 dpi
+    width = 180 * mm * 110  # 96 dpi
     height = width / ratio
 
     colors = ['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)']
@@ -88,6 +88,7 @@ def plot_probability(stats: xr.DataArray):
             mode='lines',
             line=dict(color=colors[i], width=2),
             name=tn,
+            legendrank=1-i,
             hovertemplate=(
                 "<b>Year</b> : %{x}<br>" +
                 "<b>Probability</b> : %{customdata[0]:.2f}<br>" +
