@@ -5,11 +5,6 @@ from datetime import datetime as dt
 from science import compute_event_stats
 from science import plot_probability
 
-import matplotlib.pyplot as plt
-import matplotlib.figure
-from io import BytesIO
-import base64
-
 
 # Fancy trick from ChatGPT to behave as if data-types were preserved
 # through JSON conversion after getting stored into a dcc.Store component.
@@ -27,22 +22,6 @@ def _deserialize_event(event):
     event_copy["date"] = dt.fromisoformat(event_copy["date"])  # Reconversion ISO -> datetime
     event_copy["lat"], event_copy["lon"] = event_copy.pop("lat_lon")  # Liste -> Tuple
     return event_copy
-
-
-def _fig_to_uri(in_fig: matplotlib.figure.Figure, close_all=True, **save_args) -> str:
-    """
-    Save a figure as a URI
-    :param in_fig:
-    :return:
-    """
-    out_img = BytesIO()
-    in_fig.savefig(out_img, format='png', **save_args)
-    if close_all:
-        in_fig.clf()
-        plt.close('all')
-    out_img.seek(0)  # rewind file
-    encoded = base64.b64encode(out_img.read()).decode("ascii").replace("\n", "")
-    return "data:image/png;base64,{}".format(encoded)
 
 
 def probability_plot(event: dict):
@@ -72,6 +51,6 @@ def update_result(event):
     parsed_event = _deserialize_event(event)
 
     stats = compute_event_stats(parsed_event)
-    fig, ax = plot_probability(stats)
+    fig = plot_probability(stats)
 
-    return html.Img(src=_fig_to_uri(fig))
+    return dcc.Graph(figure=fig)
