@@ -15,6 +15,17 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
+def _safe_str(value, fmt=".2f", max_val=1e6, min_val=1e-12, inf_str="∞", zero_str="0"):
+    if np.isnan(value):
+        return "NaN"
+    elif np.isinf(value) or value >= max_val:
+        return inf_str
+    elif value <= min_val:
+        return zero_str
+    else:
+        return format(value, fmt)
+
+
 # TODO Make interactive plot
 def plot_probability(stats: xr.DataArray):
 
@@ -78,12 +89,12 @@ def plot_probability(stats: xr.DataArray):
             x=time,
             y=plink(be),
             customdata=np.stack([
-                be,
-                ql,
-                qu,
-                1/be,
-                1/qu,
-                1/ql
+                [_safe_str(p, ".2f") for p in be],
+                [_safe_str(p, ".2f") for p in ql],
+                [_safe_str(p, ".2f") for p in qu],
+                [_safe_str(1/p, ".1f") for p in be],
+                [_safe_str(1/p, ".1f") for p in qu],
+                [_safe_str(1/p, ".1f") for p in ql]
             ], axis=-1),
             mode='lines',
             line=dict(color=colors[i], width=2),
@@ -91,10 +102,10 @@ def plot_probability(stats: xr.DataArray):
             legendrank=1-i,
             hovertemplate=(
                 "<b>Year</b> : %{x}<br>" +
-                "<b>Probability</b> : %{customdata[0]:.2f}<br>" +
-                "<b>Confidence</b> : From %{customdata[1]:.2f} to %{customdata[2]:.2f}<br>" +
-                "<b>Return period</b> : %{customdata[3]:.1f} years<br>" +
-                "<b>Confidence</b> : From %{customdata[4]:.1f} to %{customdata[5]:.1f} years" +
+                "<b>Probability</b> : %{customdata[0]}<br>" +
+                "<b>Confidence</b> : From %{customdata[1]} to %{customdata[2]}<br>" +
+                "<b>Return period</b> : %{customdata[3]} years<br>" +
+                "<b>Confidence</b> : From %{customdata[4]} to %{customdata[5]} years" +
                 "<extra></extra>"
             )
         )
