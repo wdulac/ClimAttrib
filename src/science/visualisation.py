@@ -174,7 +174,8 @@ def plot_probability(stats: xr.DataArray):
         plot_bgcolor='white',
         legend=dict(
             font=dict(size=14)  # taille en pixels
-        )
+        ),
+        modebar_remove=['select', 'lasso2d']
     )
 
     return fig
