@@ -127,7 +127,7 @@ window.fetch = new Proxy(window.fetch, {
         const result = fetch.apply(that, args);
         result.then((response) => {
             if (args[0] == '/_dash-update-component') {
-                setTimeout(addToModbar, 200);
+                setTimeout(addToModbar, 500);
             }
         });
         return result;
