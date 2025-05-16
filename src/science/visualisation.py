@@ -25,13 +25,19 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
     Handles infinite confidence interval.
 
     :value: Either a probability in [0, 1] or a return period in [1, ∞]
+
     :fp: Desired floating point precision for the value to be displayed
+
     :max_T_val: Value above which display switches to :inf_str:
+
     :min_p_val: Value below which display switches to :zero_str:
+
     :inf_str: String to display when T is virtually infinite
     (or simply larger than max_T_val)
+
     :zero_str: String to display when p is virtually null
     (or simply smaller than min_p_val)
+
     :unit: Optional unit
     """
     
@@ -45,8 +51,11 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
     # Only p can be smaller than 1
     elif value <= min_p_val:
         return " ".join([zero_str, unit])
+    # When p is smaller than the desired floating point precision, yet not
+    # virtually 0 either
     elif value <= pow(10, -fp):
         return " ".join([f"< {pow(10, -fp)}", unit])
+    # Default : format with desired precision and optional unit
     else:
         return " ".join([format(value, fmt), unit])
         
