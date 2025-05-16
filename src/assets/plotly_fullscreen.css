@@ -19,15 +19,3 @@
     vertical-align: middle;
     overflow: hidden;
 }
-
-:fullscreen .dash-graph,
-:-webkit-full-screen .dash-graph {
-    width: 100vw;
-    height: 100vh;
-}
-
-:fullscreen .js-plotly-plot,
-:-webkit-full-screen .js-plotly-plot {
-    width: 100% !important;
-    height: 100% !important;
-}
