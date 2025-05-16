@@ -72,7 +72,9 @@ def plot_probability(stats: xr.DataArray):
     width = 180 * mm * 110  # 96 dpi
     height = width / ratio
 
-    colors = ['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)']
+    colors_fill =  ['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)']
+    colors_line =  ['rgba(255,0,0,0.8)', 'rgba(0,0,255,0.8)']
+    colors_hl_bg = ['rgba(255,0,0,0.3)', 'rgba(0,0,255,0.3)']
     yticks = np.array([0,1e-12,1e-6,1e-3,1e-2,1/30,1/10,0.2,0.5,1])
     yticklabelsL = ["0", "10⁻¹²", "10⁻⁶", "10⁻³", "10⁻²", "1/30", "1/10", "1/5", "1/2", "1"]
     yticklabelsR = ["∞", "", "", "1000", "100", "30", "10", "5", "2", "1"]
@@ -94,7 +96,7 @@ def plot_probability(stats: xr.DataArray):
             x=time,
             y=plink(ql),
             mode='lines',
-            line=dict(color=colors[i], width=0),
+            line=dict(width=0),
             fill=None,
             showlegend=False,
             hoverinfo='skip'
@@ -104,9 +106,9 @@ def plot_probability(stats: xr.DataArray):
             x=time,
             y=plink(qu),
             mode='lines',
-            line=dict(color=colors[i], width=0),
+            line=dict(width=0),
             fill='tonexty',
-            fillcolor=colors[i],
+            fillcolor=colors_fill[i],
             showlegend=False,
             hoverinfo='skip'
         )
@@ -125,7 +127,7 @@ def plot_probability(stats: xr.DataArray):
                 [_safe_str(1/p, fp=1, unit='years') for p in ql]
             ], axis=-1),
             mode='lines',
-            line=dict(color=colors[i], width=2),
+            line=dict(color=colors_line[i], width=2),
             name=tn,
             legendrank=1-i,
             hovertemplate=(
@@ -135,7 +137,14 @@ def plot_probability(stats: xr.DataArray):
                 "<b>Return period</b> : %{customdata[3]}<br>" +
                 "<b>Confidence</b> : From %{customdata[4]} to %{customdata[5]}" +
                 "<extra></extra>"
-            )
+            ),
+            hoverlabel={
+                 'bgcolor': colors_hl_bg[i],
+                 'bordercolor': 'black',
+                 'font': {
+                      'color': 'black'
+                 }
+            }
         )
         median_traces.append(median)
 
