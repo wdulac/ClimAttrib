@@ -66,12 +66,6 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
 
 def plot_probability(stats: xr.DataArray):
 
-    # Computing quantiles
-    qstats = stats.quantile(
-        [0.5*CONFIDENCE_INTERVAL, 0.5, 1-0.5*CONFIDENCE_INTERVAL],
-        dim="sample_MCMC"
-    ).assign_coords(quantile=["ql", "be", "qu"])
-
     # Ratio and figure size
     mm = 1. / 25.4
     ratio = 16 / 11
@@ -90,11 +84,10 @@ def plot_probability(stats: xr.DataArray):
     median_traces = []
 
     for i, (name, tn) in enumerate(zip(names, trace_names)):
-        qp = qstats.loc[:, :, name]
-        time = qp.time.values
-        be = qp.sel(quantile='be').values
-        ql = qp.sel(quantile='ql').values
-        qu = qp.sel(quantile='qu').values
+        time = stats.time.values
+        be = stats[name].sel(quantile='BE').values
+        ql = stats[name].sel(quantile='QL').values
+        qu = stats[name].sel(quantile='QU').values
 
         # Lower trace
         lower = go.Scatter(
