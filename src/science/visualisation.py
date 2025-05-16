@@ -15,17 +15,41 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
-def _safe_str(value, fmt=".2f", max_val=1e6, min_val=1e-12, inf_str="Inf", zero_str="0"):
+def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
+              inf_str="infinity", zero_str="0", unit=""):
+    """
+    Replaces probablities / return values by strings that are safe to
+    display in plotly's hover label.
+
+    Limits how small or how large values can be displayed.
+    Handles infinite confidence interval.
+
+    :value: Either a probability in [0, 1] or a return period in [1, ∞]
+    :fp: Desired floating point precision for the value to be displayed
+    :max_T_val: Value above which display switches to :inf_str:
+    :min_p_val: Value below which display switches to :zero_str:
+    :inf_str: String to display when T is virtually infinite
+    (or simply larger than max_T_val)
+    :zero_str: String to display when p is virtually null
+    (or simply smaller than min_p_val)
+    :unit: Optional unit
+    """
+    
+    fmt = f".{fp}f"
+
     if np.isnan(value):
         return "NaN"
-    elif np.isinf(value) or value >= max_val:
+    # Only T can be greater than 1
+    elif np.isinf(value) or value >= max_T_val:
         return inf_str
-    elif value <= min_val:
-        return zero_str
-    elif value <= 1e-2:
-        return "< 0.01"
+    # Only p can be smaller than 1
+    elif value <= min_p_val:
+        return " ".join([zero_str, unit])
+    elif value <= pow(10, -fp):
+        return " ".join([f"< {pow(10, -fp)}", unit])
     else:
-        return format(value, fmt)
+        return " ".join([format(value, fmt), unit])
+        
 
 
 # TODO Make interactive plot
@@ -91,12 +115,12 @@ def plot_probability(stats: xr.DataArray):
             x=time,
             y=plink(be),
             customdata=np.stack([
-                [_safe_str(p, ".2f") for p in be],
-                [_safe_str(p, ".2f") for p in ql],
-                [_safe_str(p, ".2f") for p in qu],
-                [_safe_str(1/p, ".1f") for p in be],
-                [_safe_str(1/p, ".1f") for p in qu],
-                [_safe_str(1/p, ".1f") for p in ql]
+                [_safe_str(p, fp=2) for p in be],
+                [_safe_str(p, fp=2) for p in ql],
+                [_safe_str(p, fp=2) for p in qu],
+                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in be],
+                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in qu],
+                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in ql]
             ], axis=-1),
             mode='lines',
             line=dict(color=colors[i], width=2),
@@ -106,8 +130,8 @@ def plot_probability(stats: xr.DataArray):
                 "<b>Year</b> : %{x}<br>" +
                 "<b>Probability</b> : %{customdata[0]}<br>" +
                 "<b>Confidence</b> : From %{customdata[1]} to %{customdata[2]}<br>" +
-                "<b>Return period</b> : %{customdata[3]} years<br>" +
-                "<b>Confidence</b> : From %{customdata[4]} to %{customdata[5]} years" +
+                "<b>Return period</b> : %{customdata[3]}<br>" +
+                "<b>Confidence</b> : From %{customdata[4]} to %{customdata[5]}" +
                 "<extra></extra>"
             )
         )
