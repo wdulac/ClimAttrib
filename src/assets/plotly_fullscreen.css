@@ -1,0 +1,33 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css');
+
+/* Style du bouton "Fullscreen" pour coller exactement à ceux de Plotly */
+.modebar-btn[data-title="Fullscreen"] {
+    display: inline;
+    position: relative;
+    font-size: 15px;
+    padding: 3px 4px;
+    height: 22px;
+    line-height: normal;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+/* Icône centrée */
+.modebar-btn[data-title="Fullscreen"] i.fa-maximize {
+    position: relative;
+    top: 2px;
+    vertical-align: middle;
+    overflow: hidden;
+}
+
+:fullscreen .dash-graph,
+:-webkit-full-screen .dash-graph {
+    width: 100vw;
+    height: 100vh;
+}
+
+:fullscreen .js-plotly-plot,
+:-webkit-full-screen .js-plotly-plot {
+    width: 100% !important;
+    height: 100% !important;
+}

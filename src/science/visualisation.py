@@ -135,6 +135,7 @@ def plot_probability(stats: xr.DataArray):
     fig.update_layout(
         width=width,
         height=height,
+        meta=dict(initial_width=width, initial_height=height),
         margin=dict(l=60, r=60, t=40, b=40),
         yaxis=dict(
             title="Probability",
