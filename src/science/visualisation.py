@@ -16,7 +16,7 @@ def PRlink(x: float, e:float=3) -> float:
 
 
 def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
-              inf_str="infinity", zero_str="0", unit=""):
+              inf_str="infinity", zero_str="0", unit=None):
     """
     Replaces probablities / return values by strings that are safe to
     display in plotly's hover label.
@@ -50,26 +50,29 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
         return inf_str
     # Only p can be smaller than 1
     elif value <= min_p_val:
-        return " ".join([zero_str, unit])
+        return " ".join([zero_str, unit]) if unit else\
+            zero_str
     # When p is smaller than the desired floating point precision, yet not
     # virtually 0 either
     elif value <= pow(10, -fp):
-        return " ".join([f"< {pow(10, -fp)}", unit])
+        return " ".join([f"less than {pow(10, -fp)}", unit]) if unit else\
+            f"less than {pow(10, -fp)}"
     # Default : format with desired precision and optional unit
     else:
-        return " ".join([format(value, fmt), unit])
+        return " ".join([format(value, fmt), unit]) if unit else\
+            format(value, fmt)
         
 
 
 def plot_probability(stats: xr.DataArray):
 
-    # 1. Calcul des quantiles
+    # Computing quantiles
     qstats = stats.quantile(
         [0.5*CONFIDENCE_INTERVAL, 0.5, 1-0.5*CONFIDENCE_INTERVAL],
         dim="sample_MCMC"
     ).assign_coords(quantile=["ql", "be", "qu"])
 
-    # 2. Définition des tailles
+    # Ratio and figure size
     mm = 1. / 25.4
     ratio = 16 / 11
     width = 180 * mm * 110  # 96 dpi
@@ -79,8 +82,6 @@ def plot_probability(stats: xr.DataArray):
     yticks = np.array([0,1e-12,1e-6,1e-3,1e-2,1/30,1/10,0.2,0.5,1])
     yticklabelsL = ["0", "10⁻¹²", "10⁻⁶", "10⁻³", "10⁻²", "1/30", "1/10", "1/5", "1/2", "1"]
     yticklabelsR = ["∞", "", "", "1000", "100", "30", "10", "5", "2", "1"]
-
-    fig = go.Figure()
 
     names = ['pF', 'pC']
     trace_names = ['Factual', 'Counter-factual']
@@ -95,17 +96,17 @@ def plot_probability(stats: xr.DataArray):
         ql = qp.sel(quantile='ql').values
         qu = qp.sel(quantile='qu').values
 
-        # Trace inférieure
+        # Lower trace
         lower = go.Scatter(
             x=time,
             y=plink(ql),
             mode='lines',
             line=dict(color=colors[i], width=0),
+            fill=None,
             showlegend=False,
-            hoverinfo='skip',
-            fill=None
+            hoverinfo='skip'
         )
-        # Trace supérieure avec fill
+        # Upper trace
         upper = go.Scatter(
             x=time,
             y=plink(qu),
@@ -118,7 +119,7 @@ def plot_probability(stats: xr.DataArray):
         )
         fill_traces.extend([lower, upper])
 
-        # Courbe médiane
+        # Best estimate's trace
         median = go.Scatter(
             x=time,
             y=plink(be),
@@ -126,9 +127,9 @@ def plot_probability(stats: xr.DataArray):
                 [_safe_str(p, fp=2) for p in be],
                 [_safe_str(p, fp=2) for p in ql],
                 [_safe_str(p, fp=2) for p in qu],
-                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in be],
-                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in qu],
-                [_safe_str(1/p, fp=1, inf_str='infinity', unit='years') for p in ql]
+                [_safe_str(1/p, fp=1, unit='years') for p in be],
+                [_safe_str(1/p, fp=1, unit='years') for p in qu],
+                [_safe_str(1/p, fp=1, unit='years') for p in ql]
             ], axis=-1),
             mode='lines',
             line=dict(color=colors[i], width=2),
@@ -145,25 +146,26 @@ def plot_probability(stats: xr.DataArray):
         )
         median_traces.append(median)
 
-    # Ajout des traces dans le bon ordre
+    # Adding traces to the figure in specific order so that best estimates
+    # are on top
     fig = go.Figure()
     for trace in fill_traces:
         fig.add_trace(trace)
     for trace in median_traces:
         fig.add_trace(trace)
 
-    # Adding bare minimum trace to get a secondary axis
+    # Adding invisible and minimal scatter trace to get a secondary axis
     fig.add_trace(go.Scatter(
         x=[min(time), max(time)],
         y=[min(be), max(be)],
-        name="yaxis2 data",
+        yaxis="y2",
+        mode='markers',
+        opacity=0,
         showlegend=False,
-        line=dict(width=0, color='rgba(0,0,0,0)'),
-        hoverinfo='skip',
-        yaxis="y2"
+        hoverinfo='skip'
     ))
 
-    # 4. Mise en forme de l’axe principal Y
+    # Formating figure and most importantly axes
     fig.update_layout(
         width=width,
         height=height,
@@ -206,7 +208,7 @@ def plot_probability(stats: xr.DataArray):
         ),
         plot_bgcolor='white',
         legend=dict(
-            font=dict(size=14)  # taille en pixels
+            font=dict(size=14)
         ),
         modebar_remove=['select', 'lasso2d']
     )
