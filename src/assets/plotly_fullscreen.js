@@ -7,7 +7,7 @@
 
 function addToModbar() {
     const modeBars = document.querySelectorAll(".modebar-container");
-    for(let i=0; i<modeBars.length; i++) {
+    for (let i = 0; i < modeBars.length; i++) {
         const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
         const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
 
@@ -25,7 +25,6 @@ function addToModbar() {
         }
     }
 }
-
 
 function fullscreen(el) {
     const graphContainer = el.closest('.dash-graph');
@@ -89,22 +88,48 @@ function fullscreen(el) {
     } else {
         // Sinon on entre en plein écran
         enterFullscreen().then(() => {
-            resizePlotToContainer()
+            resizePlotToContainer();
         });
     }
 }
 
+// Écoute globale de la sortie de plein écran (ex: touche Échap)
+document.addEventListener("fullscreenchange", function () {
+    const fullElement = document.fullscreenElement;
+    
+    // Si on vient de quitter le plein écran (aucun élément actif)
+    if (!fullElement) {
+        // On cherche l'élément qui *était* en plein écran
+        // → l'API ne le fournit pas directement, donc on garde une référence manuellement
+        const prevFull = window._previousFullscreenGraph;
+        if (prevFull) {
+            const plot = prevFull.querySelector('.js-plotly-plot');
+            if (plot && plot.layout && plot.layout.meta) {
+                const meta = plot.layout.meta;
+                const initialWidth = meta.initial_width || 800;
+                const initialHeight = meta.initial_height || 600;
+                Plotly.relayout(plot, {
+                    autosize: false,
+                    width: initialWidth,
+                    height: initialHeight
+                });
+            }
+            window._previousFullscreenGraph = null; // on nettoie la référence
+        }
+    } else {
+        // Si on entre en plein écran, on garde une référence
+        window._previousFullscreenGraph = fullElement;
+    }
+});
 
 window.fetch = new Proxy(window.fetch, {
     apply(fetch, that, args) {
-        // Forward function call to the original fetch
         const result = fetch.apply(that, args);
-
-        // Do whatever you want with the resulting Promise
         result.then((response) => {
             if (args[0] == '/_dash-update-component') {
-                setTimeout(addToModbar, 200)
-            }})
-        return result
-        }
-})
+                setTimeout(addToModbar, 200);
+            }
+        });
+        return result;
+    }
+});
