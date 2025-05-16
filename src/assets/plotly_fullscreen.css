@@ -10,6 +10,11 @@
     line-height: normal;
     cursor: pointer;
     box-sizing: border-box;
+    color: rgba(68, 68, 68, 0.3) !important;
+}
+
+.modebar-btn[data-title="Fullscreen"]:hover {
+    color: gray !important;
 }
 
 /* Icône centrée */
@@ -18,4 +23,5 @@
     top: 2px;
     vertical-align: middle;
     overflow: hidden;
+    color: inherit;
 }
