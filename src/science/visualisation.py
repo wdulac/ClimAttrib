@@ -52,7 +52,6 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
         
 
 
-# TODO Make interactive plot
 def plot_probability(stats: xr.DataArray):
 
     # 1. Calcul des quantiles
