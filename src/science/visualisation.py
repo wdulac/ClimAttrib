@@ -1,9 +1,11 @@
 import xarray as xr
 import numpy as np
+import sys
 
 import plotly.graph_objects as go
 
 CONFIDENCE_INTERVAL=0.05
+EPSILON = 10*sys.float_info.epsilon
 
 def plink(x: float, e: float=2/3) -> float:
 	y = np.arctan( np.log(x) ) / (np.pi / 2)
@@ -15,7 +17,20 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
-def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
+def _format_years(value):
+    if value < 100:
+        return f"{value:.1f} years"
+    elif value < 1000:
+        return f"{round(value)} years"
+    elif value < 1_000_000:
+        return f"{value / 1_000:.1f}k years"
+    elif value < 1_000_000_000:
+        return f"{value / 1_000_000:.1f}M years"
+    else:
+        return f"{value / 1_000_000_000:.1f}G years"
+    
+
+def _safe_str(value, fp=2, max_T_val=1/EPSILON, min_p_val=EPSILON,
               inf_str="infinity", zero_str="0", unit=None):
     """
     Replaces probablities / return values by strings that are safe to
@@ -59,8 +74,11 @@ def _safe_str(value, fp=2, max_T_val=1e6, min_p_val=1e-12,
             f"less than {pow(10, -fp)}"
     # Default : format with desired precision and optional unit
     else:
-        return " ".join([format(value, fmt), unit]) if unit else\
-            format(value, fmt)
+        if value >= 1:
+            return _format_years(value)
+        else:
+            return " ".join([format(value, fmt), unit]) if unit else\
+                format(value, fmt)
         
 
 
@@ -75,9 +93,10 @@ def plot_probability(stats: xr.DataArray):
     colors_fill =  ['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)']
     colors_line =  ['rgba(255,0,0,0.8)', 'rgba(0,0,255,0.8)']
     colors_hl_bg = ['rgba(255,0,0,0.3)', 'rgba(0,0,255,0.3)']
-    yticks = np.array([0,1e-12,1e-6,1e-3,1e-2,1/30,1/10,0.2,0.5,1])
-    yticklabelsL = ["0", "10⁻¹²", "10⁻⁶", "10⁻³", "10⁻²", "1/30", "1/10", "1/5", "1/2", "1"]
-    yticklabelsR = ["∞", "", "", "1000", "100", "30", "10", "5", "2", "1"]
+
+    yticks = np.array([EPSILON,1e-12,1e-6,1e-3,1e-2,1/30,1/10,0.2,0.5,1-EPSILON])
+    yticklabelsL = ["≈0", "", "10⁻⁶", "10⁻³", "10⁻²", "1/30", "1/10", "1/5", "1/2", "≈1"]
+    yticklabelsR = ["≈∞", "", "1 000 000", "1000", "100", "30", "10", "5", "2", "≈1"]
 
     names = ['pF', 'pC']
     trace_names = ['Factual', 'Counter-factual']
@@ -177,7 +196,7 @@ def plot_probability(stats: xr.DataArray):
             title="Probability",
             tickvals=plink(yticks),
             ticktext=yticklabelsL,
-            range=[plink(0), plink(1)],
+            range=[plink(EPSILON), plink(1-EPSILON)],
             showline=True,
             linecolor='black',
             gridcolor='lightgrey',
@@ -192,7 +211,7 @@ def plot_probability(stats: xr.DataArray):
             ticktext=yticklabelsR,
             showgrid=False,
             showline=True,
-            range=[plink(0), plink(1)],
+            range=[plink(EPSILON), plink(1-EPSILON)],
             linecolor='black',
             tickfont=dict(size=14, color='black'),
             title_font=dict(size=16, color='black', family='Arial')
@@ -210,7 +229,9 @@ def plot_probability(stats: xr.DataArray):
         ),
         plot_bgcolor='white',
         legend=dict(
-            font=dict(size=14)
+            font=dict(size=14),
+            bgcolor='rgba(255,255,255,0)',
+            y=0.95
         ),
         modebar_remove=['select', 'lasso2d']
     )
