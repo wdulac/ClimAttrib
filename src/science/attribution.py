@@ -61,17 +61,17 @@ PROJF, PROJC = CLIM.projection()
 
 
 def _projection_operator(times):
-    ## Build projection operator for the covariable
+
     time = CLIM.time
-    spl,lin,_,_ = CLIM.build_design_XFC()
+    lin, spl = CLIM.build_design_basis()
     nper = len(CLIM.dpers)
 
     design_ = []
     for nameX in CLIM.namesX:
         if nameX == CLIM.cname:
-            design_ = design_ + [spl for _ in range(nper)] + [nper * lin]
+            design_ = design_ + [spl[nameX][CLIM.dpers[iper]] for iper in range(nper)] + [nper * lin]
         else:
-            design_ = design_ + [np.zeros_like(spl) for _ in range(nper)] + [np.zeros_like(lin)]
+            design_ = design_ + [np.zeros_like(spl[nameX][CLIM.dpers[iper]]) for iper in range(nper)] + [np.zeros_like(lin)]
     design_ = design_ + [np.zeros( (time.size,CLIM.sizeY) )]
     design_ = np.hstack(design_)
 
@@ -127,7 +127,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     # Paramètres de la fonction de conditionnement
     ihpar = hpar_prior.values
     ihcov = hcov_prior.values
-    iXo = Xo.values # On ajoute deux dimensions pour représenter (lat, lon) en mono point de grille
+    iXo = Xo.values
     timeXo = Xo.time
     A_Xo = _projection_operator(timeXo)
 
@@ -169,10 +169,9 @@ def attribute_event(event:dict) -> xr.Dataset:
     out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
 
     # Conversion en xr.Dataset
-    modes =np.array(["QL","BE","QU"])
-
+    modes = np.array(["QL","BE","QU"])
     data_arrays = []
-
+    
     for key, value in out_CXCB.items():
         da = xr.DataArray(
             value,
