@@ -70,7 +70,20 @@ def layout(extreme_type=None,
         html.Div([
             dmc.Carousel([
                     dmc.CarouselSlide(
-                        dmc.Center(probability_plot(parsed_event), ta="center", h="100%", w='100%')
+                        dmc.Center(
+                            dmc.Group(
+                                children=[
+                                    probability_plot(parsed_event),
+                                    dmc.Text(
+                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+                                        "Vestibulum eget velit non ipsum dignissim feugiat.",
+                                        w=400  # largeur fixe ou ajustable selon besoin
+                                    )
+                                ],
+                            h='100%', style={'justifyContent': 'space-around', 'width': '100%'}
+                            ),
+                        h='100%'
+                        )
                     ),
                     dmc.CarouselSlide(
                         dmc.Center("Test", bg="blue", c="white", w="100%", h="100%")
