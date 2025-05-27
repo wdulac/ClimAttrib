@@ -1,5 +1,6 @@
 from dash import register_page, html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
+import dash_mantine_components as dmc
 import datetime as dt
 from components import chosen_event
 # from components import event_stats
@@ -64,9 +65,24 @@ def layout(extreme_type=None,
 
     # Compose and return layout
     layout = html.Div([
-        html.Div('Bienvenue sur cette page', id='analysis-welcome'),
+        # html.Div('Bienvenue sur cette page', id='analysis-welcome'),
         chosen_event(parsed_event), # Dummy component with event's description
-        probability_plot(parsed_event) # Simple static img plot component
+        html.Div([
+            dmc.Carousel([
+                    dmc.CarouselSlide(
+                        dmc.Center(probability_plot(parsed_event), ta="center", h="100%", w='100%')
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center("Test", bg="blue", c="white", w="100%", h="100%")
+                    )
+                ],
+                align='center',
+                orientation='vertical',
+                withIndicators=True,
+                withControls=True,
+                loop=False
+                )
+            ], className='carousel-container')
         ], className='analysis-container'
     )
     return layout

@@ -7,7 +7,7 @@ def chosen_event(event):
     the settings chosen by the user
     """
     
-    extreme_event = dmc.Table(
+    extreme_event = html.Div(dmc.Table(
         data={
             "head": ["Extreme Type", "Computation Method", "Event's Date",
                      "Event Duration", "Event intensity", "Latitude", "Longitude"],
@@ -30,6 +30,6 @@ def chosen_event(event):
         style={
             'width': '50%'
         }
-    )
+    ), className='chosen-event')
 
     return extreme_event
