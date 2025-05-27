@@ -1,38 +1,53 @@
 .analysis-container {
     display: flex;
     flex-direction: column;
-    /* height: 100vh; */
     min-height: 0;
     flex-grow: 1;
+    height: 100%;
 }
 
-.chosen-event {
-    /* Hauteur naturelle (pas besoin de flex) */
-    flex-shrink: 0;
+#plot-container {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    justify-content: center;
+    align-items: center;
 }
 
 .carousel-container {
-    flex: 1 1 auto; /* prend tout l'espace restant */
-    min-height: 0;  /* important pour le scroll interne */
     display: flex;
     flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: hidden;
+}
+
+.carousel-container [class*="mantine-Carousel-container"] {
+    height: 100% !important;
 }
 
 .carousel-container > .mantine-Carousel-root {
     flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
     min-height: 0;
-    overflow: hidden;;
+    overflow: hidden;
+    height: 100%;
 }
 
-.carousel-container > .mantine-Carousel-slide {
-    height: 100%;
+.carousel-container .mantine-Carousel-viewport {
+    flex: 1 1 auto;
+    min-height: 0;
     overflow: hidden;
 }
 
-#analysis-welcome{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
+
+/* .carousel-container .mantine-Carousel-slide {
+    height: 100%;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+} */
