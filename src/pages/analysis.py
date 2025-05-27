@@ -82,11 +82,11 @@ def layout(extreme_type=None,
                                 ],
                             h='100%', style={'justifyContent': 'space-around', 'width': '100%'}
                             ),
-                        h='100%'
+                        h='100%', bg='yellow'
                         )
                     ),
                     dmc.CarouselSlide(
-                        dmc.Center("Test", bg="blue", c="white", w="100%", h="100%")
+                        dmc.Center("Test", bg="green", c="white", w="100%", h="100%")
                     )
                 ],
                 align='center',
