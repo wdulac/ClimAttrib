@@ -1,4 +1,5 @@
 from dash import register_page, html, dcc, callback, Input, Output
+from dash import clientside_callback, ClientsideFunction
 from dash.exceptions import PreventUpdate
 
 import dash_mantine_components as dmc
@@ -102,9 +103,20 @@ def layout(extreme_type=None,
                 classNames={
                     "indicator": "dmc-indicator",
                     "control": "dmc-control"
-                }
+                },
+                id='my-carousel'
                 )
-            ], className='carousel-container')
+            ], className='carousel-container'),
+            dcc.Store(id='first-slide')
         ], className='analysis-container'
     )
     return layout
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='carousel',
+        function_name='toggleBounce'
+    ),
+    Output("first-slide", "data"),
+    Input("my-carousel", "active")
+)
