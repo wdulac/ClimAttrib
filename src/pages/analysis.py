@@ -94,7 +94,10 @@ def layout(extreme_type=None,
                 withIndicators=True,
                 withControls=True,
                 loop=False,
-                classNames={"indicator": "dmc-indicator"}
+                classNames={
+                    "indicator": "dmc-indicator",
+                    "control": "dmc-control"
+                }
                 )
             ], className='carousel-container')
         ], className='analysis-container'
