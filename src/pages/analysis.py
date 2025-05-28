@@ -1,6 +1,9 @@
 from dash import register_page, html, dcc, callback, Input, Output
 from dash.exceptions import PreventUpdate
+
 import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+
 import datetime as dt
 from components import chosen_event
 # from components import event_stats
@@ -94,6 +97,8 @@ def layout(extreme_type=None,
                 withIndicators=True,
                 withControls=True,
                 loop=False,
+                previousControlIcon=DashIconify(icon="icons8:up-round", width=50),
+                nextControlIcon=DashIconify(icon="icons8:down-round", width=50),
                 classNames={
                     "indicator": "dmc-indicator",
                     "control": "dmc-control"
