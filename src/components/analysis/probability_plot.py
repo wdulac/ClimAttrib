@@ -1,4 +1,4 @@
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, clientside_callback, ClientsideFunction
 from dash.exceptions import PreventUpdate
 from datetime import datetime as dt
 
@@ -54,3 +54,9 @@ def update_result(event):
     fig = plot_probability(stats)
 
     return dcc.Graph(figure=fig, config=dict(displaylogo=False))
+
+clientside_callback(
+    ClientsideFunction(namespace="carousel", function_name="blockSwiper"),
+    Output("plot-container", "data-dummy"),  # dummy prop
+    Input("plot-container", "id")
+)
