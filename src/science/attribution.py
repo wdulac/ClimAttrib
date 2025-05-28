@@ -32,7 +32,7 @@ else: # Root of the app (hopefully).
 ## Paramètres généraux
 
 # Pour la contrainte X
-METHOD = 'INDEPENDANT'
+METHOD = 'MAR2'
 
 # Pour la contrainte Y
 N_SAMPLES_COV = 10 # Tirages de covariables
