@@ -93,7 +93,8 @@ def layout(extreme_type=None,
                 orientation='vertical',
                 withIndicators=True,
                 withControls=True,
-                loop=False
+                loop=False,
+                classNames={"indicator": "dmc-indicator"}
                 )
             ], className='carousel-container')
         ], className='analysis-container'

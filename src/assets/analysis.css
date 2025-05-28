@@ -48,6 +48,17 @@
     }
 }
 
+/* Slide indicators : Highlight active slide */
+.dmc-indicator {
+  width: 4px;
+  height: 15px;
+  transition: height 250ms ease;
+
+  &[data-active] {
+    height: 40px;
+  }
+}
+
 /* .carousel-container .mantine-Carousel-slide {
     height: 100%;
     flex-shrink: 0;
