@@ -90,7 +90,8 @@ def layout(extreme_type=None,
                                          "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
                                          "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
                                          "nisi ullamcorper in. Proin placerat tristique convallis."),
-                                        w=400  # largeur fixe ou ajustable selon besoin
+                                        id='lorem-ipsum-demo',
+                                        w=600  # largeur fixe ou ajustable selon besoin
                                     )
                                 ],
                             h='100%', style={'justifyContent': 'space-around', 'width': '100%'}
@@ -116,7 +117,8 @@ def layout(extreme_type=None,
                 id='my-carousel'
                 )
             ], className='carousel-container'),
-            dcc.Store(id='first-slide')
+            dcc.Store(id='first-slide-dummy1'),
+            dcc.Store(id='first-slide-dummy2')
         ], className='analysis-container'
     )
     return layout
@@ -126,6 +128,15 @@ clientside_callback(
         namespace='carousel',
         function_name='toggleBounce'
     ),
-    Output("first-slide", "data"),
+    Output("first-slide-dummy1", "data"),
     Input("my-carousel", "active")
+)
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='carousel',
+        function_name='blockSwiper'
+    ),
+    Output('first-slide-dummy2', 'data'),
+    Input('lorem-ipsum-demo', 'id')
 )
