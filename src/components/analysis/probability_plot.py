@@ -60,7 +60,7 @@ def update_result(event):
 # Prevent click interactions inside the plot-container from back propagating
 clientside_callback(
     ClientsideFunction(
-        namespace="plotly_extras",
+        namespace="carousel",
         function_name="blockSwiper"
     ),
     Output("plot-container", "data-dummy"),  # dummy prop

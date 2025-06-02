@@ -1,19 +1,6 @@
 // Namespace for interaction with dash clientside callbacks
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
   plotly_extras: {
-    // Prevent swiping interaction with the carousel when dragging the mouse
-    // to zoom in on a plotly graph
-    blockSwiper: function (id) {
-      const el = document.getElementById(id);
-      if (!el) return window.dash_clientside.no_update;
-
-      ["mousedown", "touchstart"].forEach(evt =>
-        el.addEventListener(evt, e => e.stopPropagation(), { passive: true })
-      );
-
-      return null;
-    },
-
     // Look out for .plotly-notifier and move it into .user-select-none.svg-container
     hookPlotlyNotifier: function (containerId) {
       const parent = document.getElementById(containerId);
