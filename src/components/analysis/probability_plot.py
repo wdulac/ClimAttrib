@@ -56,6 +56,8 @@ def update_result(event):
 
     return dcc.Graph(figure=fig, config=dict(displaylogo=False))
 
+
+# Prevent click interactions inside the plot-container from back propagating
 clientside_callback(
     ClientsideFunction(
         namespace="plotly_extras",
@@ -65,6 +67,9 @@ clientside_callback(
     Input("plot-container", "id")
 )
 
+
+# Place the plotly 'double click to zoom back out' notification relative to the
+# plotly graph.
 clientside_callback(
     ClientsideFunction(
         namespace='plotly_extras',
