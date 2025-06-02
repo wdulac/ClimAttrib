@@ -57,34 +57,19 @@ def update_result(event):
     return dcc.Graph(figure=fig, config=dict(displaylogo=False))
 
 clientside_callback(
-    ClientsideFunction(namespace="carousel", function_name="blockSwiper"),
+    ClientsideFunction(
+        namespace="plotly_extras",
+        function_name="blockSwiper"
+    ),
     Output("plot-container", "data-dummy"),  # dummy prop
     Input("plot-container", "id")
 )
 
 clientside_callback(
-    """
-    function(input_id) {
-
-        const parent = document.getElementById('plot-container');
-        if (!parent) return window.dash_clientside.no_update;
-    
-        const observer = new MutationObserver(() => {
-            const container = parent.querySelector('.user-select-none.svg-container')
-            const notifier = document.querySelector('.plotly-notifier');
-            if (container && notifier && !container.contains(notifier)) {
-                container.appendChild(notifier);
-                
-                // Stop observing once donce
-                observer.disconnect()
-            }
-        });
-
-        observer.observe(document.body, { childList: true });
-    
-        return window.dash_clientside.no_update;
-    }
-    """,
+    ClientsideFunction(
+        namespace='plotly_extras',
+        function_name='hookPlotlyNotifier'
+    ),
     Output('plotly-notifier-hook', 'data'),
     Input('plot-container', 'id'),
 )
