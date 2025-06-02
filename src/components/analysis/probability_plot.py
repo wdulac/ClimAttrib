@@ -1,4 +1,4 @@
-from dash import html, dcc, callback, Input, Output
+from dash import html, dcc, callback, Input, Output, clientside_callback
 from dash.exceptions import PreventUpdate
 from datetime import datetime as dt
 
@@ -30,6 +30,7 @@ def probability_plot(event: dict):
 
     component = html.Div(children=[
         dcc.Store(id='event-data', data=serialized_event),
+        dcc.Store(id='plotly-notifier-hook', data=None),
         html.Div(id='plot-container', children='Calcul en cours...')
     ], id='results-parent-container')
 
@@ -54,3 +55,31 @@ def update_result(event):
     fig = plot_probability(stats)
 
     return dcc.Graph(figure=fig, config=dict(displaylogo=False))
+
+
+clientside_callback(
+    """
+    function(input_id) {
+
+        const parent = document.getElementById('plot-container');
+        if (!parent) return window.dash_clientside.no_update;
+    
+        const observer = new MutationObserver(() => {
+            const container = parent.querySelector('.user-select-none.svg-container')
+            const notifier = document.querySelector('.plotly-notifier');
+            if (container && notifier && !container.contains(notifier)) {
+                container.appendChild(notifier);
+                
+                // Stop observing once donce
+                observer.disconnect()
+            }
+        });
+
+        observer.observe(document.body, { childList: true });
+    
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output('plotly-notifier-hook', 'data'),
+    Input('plot-container', 'id'),
+)
