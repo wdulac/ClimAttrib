@@ -117,8 +117,6 @@ def layout(extreme_type=None,
                 id='my-carousel'
                 )
             ], className='carousel-container'),
-            dcc.Store(id='first-slide-dummy1'),
-            dcc.Store(id='first-slide-dummy2')
         ], className='analysis-container'
     )
     return layout
@@ -128,7 +126,7 @@ clientside_callback(
         namespace='carousel',
         function_name='toggleBounce'
     ),
-    Output("first-slide-dummy1", "data"),
+    Output("my-carousel", "data-toggle-bounce"),
     Input("my-carousel", "active")
 )
 
@@ -137,6 +135,6 @@ clientside_callback(
         namespace='carousel',
         function_name='blockSwiper'
     ),
-    Output('first-slide-dummy2', 'data'),
+    Output('my-carousel', 'data-lorem-ipsum-swiper'),
     Input('lorem-ipsum-demo', 'id')
 )
