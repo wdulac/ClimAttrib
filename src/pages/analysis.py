@@ -79,8 +79,17 @@ def layout(extreme_type=None,
                                 children=[
                                     probability_plot(parsed_event),
                                     dmc.Text(
-                                        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
-                                        "Vestibulum eget velit non ipsum dignissim feugiat.",
+                                        ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
+                                         "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
+                                         "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
+                                         "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
+                                         "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
+                                         "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
+                                         "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
+                                         "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
+                                         "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
+                                         "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
+                                         "nisi ullamcorper in. Proin placerat tristique convallis."),
                                         w=400  # largeur fixe ou ajustable selon besoin
                                     )
                                 ],
