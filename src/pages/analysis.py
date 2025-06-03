@@ -91,27 +91,35 @@ def layout(extreme_type=None,
                                          "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
                                          "nisi ullamcorper in. Proin placerat tristique convallis."),
                                         id='lorem-ipsum-demo',
-                                        w=600  # largeur fixe ou ajustable selon besoin
+                                        style={'userSelect': 'text'},
+                                        w=600
                                     )
                                 ],
-                            h='100%', style={'justifyContent': 'space-around', 'width': '100%'}
+                            h='100%', style={
+                                'justifyContent': 'space-around',
+                                'width': '100%',
+                                'userSelect': 'none'
+                                }
                             ),
                         h='100%', bg=dmc.DEFAULT_THEME['colors']['yellow'][2]
                         )
                     ),
                     dmc.CarouselSlide(
                         dmc.Center(
-                            "Page 2", bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
+                            "Page 2",
+                            bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
                         )
                     ),
                     dmc.CarouselSlide(
                         dmc.Center(
-                            "Page 3", bg=dmc.DEFAULT_THEME['colors']['green'][2], c='black', w='100%', h='100%'
+                            "Page 3",
+                            bg=dmc.DEFAULT_THEME['colors']['green'][2], c='black', w='100%', h='100%'
                         )
                     ),
                     dmc.CarouselSlide(
                         dmc.Center(
-                            "Page 4", bg=dmc.DEFAULT_THEME['colors']['blue'][2], c='black', w='100%', h='100%'
+                            "Page 4",
+                            bg=dmc.DEFAULT_THEME['colors']['blue'][2], c='black', w='100%', h='100%'
                         )
                     )
                 ],
