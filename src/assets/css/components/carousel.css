@@ -36,17 +36,26 @@
   width: 4px;
   height: 15px;
   transition: height 250ms ease;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  opacity: 0.6;
 
   &[data-active] {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+    opacity: 1;
     height: 40px;
   }
 }
 
 /* Slide controls : Hide inactive controls */
 .dmc-control {
+
+  transition: opacity 300ms ease, transform 300ms ease;
+  transform: scale(1);
+
   &[data-inactive] {
     opacity: 0;
     cursor: default;
+    transform: scale(0.9);
   }
 }
 
