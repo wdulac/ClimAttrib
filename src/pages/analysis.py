@@ -96,11 +96,23 @@ def layout(extreme_type=None,
                                 ],
                             h='100%', style={'justifyContent': 'space-around', 'width': '100%'}
                             ),
-                        h='100%', bg='yellow'
+                        h='100%', bg=dmc.DEFAULT_THEME['colors']['yellow'][2]
                         )
                     ),
                     dmc.CarouselSlide(
-                        dmc.Center("Test", bg="green", c="white", w="100%", h="100%")
+                        dmc.Center(
+                            "Page 2", bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
+                        )
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            "Page 3", bg=dmc.DEFAULT_THEME['colors']['green'][2], c='black', w='100%', h='100%'
+                        )
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            "Page 4", bg=dmc.DEFAULT_THEME['colors']['blue'][2], c='black', w='100%', h='100%'
+                        )
                     )
                 ],
                 orientation='vertical',
