@@ -4,9 +4,7 @@ from dash import Dash, html, page_container
 # Bootstrap
 import dash_bootstrap_components as dbc
 # Mantine
-from dash import _dash_renderer
 import dash_mantine_components as dmc
-_dash_renderer._set_react_version("18.2.0")
 # Custom components for the layout
 from components import header
 from components import footer
