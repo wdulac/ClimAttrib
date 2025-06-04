@@ -49,13 +49,11 @@
 /* Slide controls : Hide inactive controls */
 .dmc-control {
 
-  transition: opacity 300ms ease, transform 300ms ease;
-  transform: scale(1);
+  transition: opacity 300ms ease;
 
   &[data-inactive] {
     opacity: 0;
     cursor: default;
-    transform: scale(0.9);
   }
 }
 
