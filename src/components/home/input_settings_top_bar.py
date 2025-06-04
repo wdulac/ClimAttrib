@@ -1,12 +1,9 @@
-import dash_mantine_components as dmc
 from dash import html, callback, Output, Input, State, dcc
 from dash.exceptions import PreventUpdate
-from .location_selector import *
-import json
-
-from datetime import datetime, timedelta, date
+import dash_mantine_components as dmc
 
 import os
+import json
 import xarray as xr
 import datetime as dt
 
@@ -52,12 +49,12 @@ _date_selector_calendar = dmc.DatePickerInput(
     label="Date de l'évènement",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
     type='range',
-    value=[date(2019, 7, 24), date(2019, 7, 26)],
+    value=[dt.date(2019, 7, 24), dt.date(2019, 7, 26)],
     allowSingleDateInRange=True,
     w=300,
     highlightToday=False,
-    minDate=date(1940, 1, 1),
-    maxDate=date(2022, 12, 31),
+    minDate=dt.date(1940, 1, 1),
+    maxDate=dt.date(2022, 12, 31),
     className='datepicker-container'
 )
 
