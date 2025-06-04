@@ -103,11 +103,13 @@ def layout(extreme_type=None,
                         dmc.Center("Test", bg="green", c="white", w="100%", h="100%")
                     )
                 ],
-                align='center',
                 orientation='vertical',
                 withIndicators=True,
                 withControls=True,
-                loop=False,
+                emblaOptions={
+                    'align': 'center',
+                    'loop': False
+                },
                 previousControlIcon=DashIconify(icon="icons8:up-round", width=50),
                 nextControlIcon=DashIconify(icon="icons8:down-round", width=50),
                 classNames={
