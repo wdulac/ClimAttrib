@@ -94,12 +94,12 @@ def plot_probability(stats: xr.DataArray):
     colors_line =  ['rgba(255,0,0,0.8)', 'rgba(0,0,255,0.8)']
     colors_hl_bg = ['rgba(255,0,0,0.3)', 'rgba(0,0,255,0.3)']
 
-    yticks = np.array([EPSILON,1e-12,1e-6,1e-3,1e-2,1/30,1/10,0.2,0.5,1-EPSILON])
-    yticklabelsL = ["≈0", "", "10⁻⁶", "10⁻³", "10⁻²", "1/30", "1/10", "1/5", "1/2", "≈1"]
-    yticklabelsR = ["≈∞", "", "1 000 000", "1000", "100", "30", "10", "5", "2", "≈1"]
+    yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
+    yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
+    yticklabelsR = ["∞", "1 000 000", "1000", "100", "40", "10", "4", "2", "1"]
 
     names = ['pF', 'pC']
-    trace_names = ['Factual', 'Counter-factual']
+    trace_names = ['With human influence', 'Without human influence']
 
     fill_traces = []
     median_traces = []
@@ -204,7 +204,7 @@ def plot_probability(stats: xr.DataArray):
             title_font=dict(size=16, color='black', family='Arial')
         ),
         yaxis2=dict(
-            title="Return period",
+            title="Return period [years]",
             overlaying='y',
             side='right',
             tickvals=plink(yticks),
