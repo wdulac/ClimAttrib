@@ -100,7 +100,6 @@ input_settings_top_bar = html.Div(children=[
                 ], id='left-column')
             ], span=9.5),
         dmc.GridCol(children=[
-            html.Div(id='button-notification-container'),
             _continue_button
         ], span='auto', id='right-column'),
     ], id='inputs-row')
@@ -190,7 +189,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
 
 
 @callback(
-    Output('button-notification-container', 'children'),
+    Output('notification-container', 'sendNotifications'),
     Input('trigger:continue-btn', 'n_clicks'),
     State('input:selected-point', 'data'),
     prevent_initial_call=True
@@ -203,12 +202,12 @@ def notify_user(n_clicks, selected_point_data):
 
     if n_clicks:
         if selected_point_data is None:
-            return dmc.Notification(
-                title="Oups !",
-                message="Veuillez sélectionner un point de grille avant de poursuivre",
-                action="show",
-                autoClose=3500
-            )
+            return [{
+                "action": "show",
+                "title": "Oops !",
+                "message": "Please select a grid point before proceeding",
+                "autoClose": 3500
+            }]
         else:
             raise PreventUpdate
 

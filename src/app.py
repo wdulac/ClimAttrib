@@ -27,6 +27,7 @@ application = Dash(
 
 # Define the page layout
 layout = html.Div([
+    dmc.NotificationContainer(id='notification-container'),
     header,
     page_container, # Page content loaded from `pages` folder
     footer
