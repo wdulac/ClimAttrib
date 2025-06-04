@@ -1,10 +1,29 @@
-//Script to show Plotly graph to fullscreen mode
-//Dependence on Font Awesome icons
-//Author: Dhirendra Kumar
-//Created: 26-Nov-2024
-//Adapted to fixed size figures: 16-May-2025
-//By: William Dulac
+// Namespace for interaction with dash clientside callbacks
+window.dash_clientside = Object.assign({}, window.dash_clientside, {
+  plotly_extras: {
+    // Look out for .plotly-notifier and move it into .user-select-none.svg-container
+    hookPlotlyNotifier: function (containerId) {
+      const parent = document.getElementById(containerId);
+      if (!parent) return;
+    
+      const observer = new MutationObserver(() => {
+        const container = parent.querySelector('.user-select-none.svg-container');
+        const notifier = document.querySelector('.plotly-notifier');
+        if (container && notifier && !container.contains(notifier)) {
+          container.appendChild(notifier);
+          observer.disconnect();
+        }
+      });
+    
+      observer.observe(document.body, { childList: true });
+    }
+  }
+});
 
+
+// ###### Global functions for fullscreen support ######
+
+// Adding a fullscreen button to the mode bar
 function addToModbar() {
     const modeBars = document.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
@@ -16,7 +35,6 @@ function addToModbar() {
             aTag.className = "modebar-btn";
             aTag.setAttribute("rel", "tooltip");
             aTag.setAttribute("data-title", "Fullscreen");
-            aTag.setAttribute("style", "color:gray");
             aTag.setAttribute("onClick", "fullscreen(this);");
             const iTag = document.createElement('i');
             iTag.className = 'fa-solid fa-maximize';
@@ -26,6 +44,7 @@ function addToModbar() {
     }
 }
 
+// Fullscreen implementation
 function fullscreen(el) {
     const graphContainer = el.closest('.dash-graph');
     const plot = graphContainer.querySelector('.js-plotly-plot');
@@ -93,43 +112,8 @@ function fullscreen(el) {
     }
 }
 
-// Écoute globale de la sortie de plein écran (ex: touche Échap)
-document.addEventListener("fullscreenchange", function () {
-    const fullElement = document.fullscreenElement;
-    
-    // Si on vient de quitter le plein écran (aucun élément actif)
-    if (!fullElement) {
-        // On cherche l'élément qui *était* en plein écran
-        // → l'API ne le fournit pas directement, donc on garde une référence manuellement
-        const prevFull = window._previousFullscreenGraph;
-        if (prevFull) {
-            const plot = prevFull.querySelector('.js-plotly-plot');
-            if (plot && plot.layout && plot.layout.meta) {
-                const meta = plot.layout.meta;
-                const initialWidth = meta.initial_width || 800;
-                const initialHeight = meta.initial_height || 600;
-                Plotly.relayout(plot, {
-                    autosize: false,
-                    width: initialWidth,
-                    height: initialHeight
-                });
-            }
-            window._previousFullscreenGraph = null; // on nettoie la référence
-        }
-    } else {
-        // Si on entre en plein écran, on garde une référence
-        window._previousFullscreenGraph = fullElement;
-    }
-});
 
-window.fetch = new Proxy(window.fetch, {
-    apply(fetch, that, args) {
-        const result = fetch.apply(that, args);
-        result.then((response) => {
-            if (args[0] == '/_dash-update-component') {
-                setTimeout(addToModbar, 500);
-            }
-        });
-        return result;
-    }
-});
+// Export into plotlyExtras namespace for calling in init.js
+window.plotlyExtras = {
+  addToModbar,
+};

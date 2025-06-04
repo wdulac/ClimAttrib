@@ -1,5 +1,10 @@
 from dash import register_page, html, dcc, callback, Input, Output
+from dash import clientside_callback, ClientsideFunction
 from dash.exceptions import PreventUpdate
+
+import dash_mantine_components as dmc
+from dash_iconify import DashIconify
+
 import datetime as dt
 from components import chosen_event
 # from components import event_stats
@@ -64,9 +69,94 @@ def layout(extreme_type=None,
 
     # Compose and return layout
     layout = html.Div([
-        html.Div('Bienvenue sur cette page', id='analysis-welcome'),
+        # html.Div('Bienvenue sur cette page', id='analysis-welcome'),
         chosen_event(parsed_event), # Dummy component with event's description
-        probability_plot(parsed_event) # Simple static img plot component
+        html.Div([
+            dmc.Carousel([
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            dmc.Group(
+                                children=[
+                                    probability_plot(parsed_event),
+                                    dmc.Text(
+                                        ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
+                                         "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
+                                         "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
+                                         "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
+                                         "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
+                                         "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
+                                         "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
+                                         "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
+                                         "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
+                                         "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
+                                         "nisi ullamcorper in. Proin placerat tristique convallis."),
+                                        id='lorem-ipsum-demo',
+                                        style={'userSelect': 'text'},
+                                        w=600
+                                    )
+                                ],
+                            h='100%', style={
+                                'justifyContent': 'space-around',
+                                'width': '100%',
+                                'userSelect': 'none'
+                                }
+                            ),
+                        h='100%', bg=dmc.DEFAULT_THEME['colors']['yellow'][2]
+                        )
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            "Page 2",
+                            bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
+                        )
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            "Page 3",
+                            bg=dmc.DEFAULT_THEME['colors']['green'][2], c='black', w='100%', h='100%'
+                        )
+                    ),
+                    dmc.CarouselSlide(
+                        dmc.Center(
+                            "Page 4",
+                            bg=dmc.DEFAULT_THEME['colors']['blue'][2], c='black', w='100%', h='100%'
+                        )
+                    )
+                ],
+                orientation='vertical',
+                withIndicators=True,
+                withControls=True,
+                emblaOptions={
+                    'align': 'center',
+                    'loop': False
+                },
+                previousControlIcon=DashIconify(icon="icons8:up-round", width=50),
+                nextControlIcon=DashIconify(icon="icons8:down-round", width=50),
+                classNames={
+                    "indicator": "dmc-indicator",
+                    "control": "dmc-control"
+                },
+                id='my-carousel'
+                )
+            ], className='carousel-container'),
         ], className='analysis-container'
     )
     return layout
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='carousel',
+        function_name='toggleBounce'
+    ),
+    Output("my-carousel", "data-toggle-bounce"),
+    Input("my-carousel", "active")
+)
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='carousel',
+        function_name='blockSwiper'
+    ),
+    Output('my-carousel', 'data-lorem-ipsum-swiper'),
+    Input('lorem-ipsum-demo', 'id')
+)

@@ -3,12 +3,5 @@
     flex-direction: column;
     min-height: 0;
     flex-grow: 1;
-}
-
-
-#analysis-welcome{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    height: 100%;
 }

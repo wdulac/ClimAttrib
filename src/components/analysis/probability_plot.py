@@ -1,4 +1,4 @@
-from dash import html, dcc, callback, Input, Output, clientside_callback
+from dash import html, dcc, callback, Input, Output, clientside_callback, ClientsideFunction
 from dash.exceptions import PreventUpdate
 from datetime import datetime as dt
 
@@ -57,29 +57,24 @@ def update_result(event):
     return dcc.Graph(figure=fig, config=dict(displaylogo=False))
 
 
+# Prevent click interactions inside the plot-container from back propagating
 clientside_callback(
-    """
-    function(input_id) {
+    ClientsideFunction(
+        namespace="carousel",
+        function_name="blockSwiper"
+    ),
+    Output("plot-container", "data-dummy"),  # dummy prop
+    Input("plot-container", "id")
+)
 
-        const parent = document.getElementById('plot-container');
-        if (!parent) return window.dash_clientside.no_update;
-    
-        const observer = new MutationObserver(() => {
-            const container = parent.querySelector('.user-select-none.svg-container')
-            const notifier = document.querySelector('.plotly-notifier');
-            if (container && notifier && !container.contains(notifier)) {
-                container.appendChild(notifier);
-                
-                // Stop observing once donce
-                observer.disconnect()
-            }
-        });
 
-        observer.observe(document.body, { childList: true });
-    
-        return window.dash_clientside.no_update;
-    }
-    """,
+# Place the plotly 'double click to zoom back out' notification relative to the
+# plotly graph.
+clientside_callback(
+    ClientsideFunction(
+        namespace='plotly_extras',
+        function_name='hookPlotlyNotifier'
+    ),
     Output('plotly-notifier-hook', 'data'),
     Input('plot-container', 'id'),
 )
