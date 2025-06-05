@@ -16,6 +16,8 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
 
 LINK_DEFAULT_HREF = '/'
 
+ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10] # In days
+
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Type d'extrême", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
@@ -55,6 +57,7 @@ _date_selector_calendar = dmc.DatePickerInput(
     highlightToday=False,
     minDate=dt.date(1940, 1, 1),
     maxDate=dt.date(2022, 12, 31),
+    disabledDates={"function": "disableInvalidRange", "options": None},
     className='datepicker-container'
 )
 
@@ -106,6 +109,32 @@ input_settings_top_bar = html.Div(children=[
 #~~~~~~~ Callbacks
 
 @callback(
+    Output('input:date', 'disabledDates'),
+    Input('input:date', 'value'),
+    prevent_initial_call=True
+)
+def update_disabled_dates(date_range):
+    """
+    Pass the current selected dates (even if None) to the JS function that
+    decides which date to disable to enforce ALLOWED_DURATIONS.
+    
+    This is made possible since the DMC 2.0 release
+    """
+
+    if date_range:
+        return {
+            "function": "disableInvalidRange",
+            "options": {
+                "validDurations": ALLOWED_DURATIONS,
+                "startDate": date_range[0],
+                "endDate": date_range[1]
+            }
+        }
+    else:
+        raise PreventUpdate
+
+
+@callback(
         Output('input:date', 'error'),
         Input('input:date', 'value'),
         prevent_initial_call=True
@@ -139,7 +168,7 @@ def calendar_error(dates: list):
             # We evaluate the duration in days between start and stop date
             duration = ((stop - start) + dt.timedelta(days=1)).days
             
-            if duration != 3:
+            if duration not in ALLOWED_DURATIONS:
                 return "Please select a valid time range"
             else:
                 return ""
