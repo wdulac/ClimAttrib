@@ -151,10 +151,8 @@ def plot_probability(stats: xr.DataArray):
             legendrank=1-i,
             hovertemplate=(
                 "<b>Year</b> : %{x}<br>" +
-                "<b>Probability</b> : %{customdata[0]}<br>" +
-                "<b>Confidence</b> : From %{customdata[1]} to %{customdata[2]}<br>" +
-                "<b>Return period</b> : %{customdata[3]}<br>" +
-                "<b>Confidence</b> : From %{customdata[4]} to %{customdata[5]}" +
+                "<b>Probability</b> : %{customdata[0]} [%{customdata[1]} to %{customdata[2]}]<br>" +
+                "<b>Return period</b> : %{customdata[3]} [%{customdata[4]} to %{customdata[5]}]<br>" +
                 "<extra></extra>"
             ),
             hoverlabel={
