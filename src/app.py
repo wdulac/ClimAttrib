@@ -1,8 +1,6 @@
 # Essentials
 from flask import Flask
 from dash import Dash, html, page_container
-# Bootstrap
-import dash_bootstrap_components as dbc
 # Mantine
 import dash_mantine_components as dmc
 # Custom components for the layout
@@ -13,7 +11,9 @@ from components import footer
 server = Flask(__name__)
 application = Dash(
     server=server,
-    external_stylesheets=[],
+    external_stylesheets=[
+        "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    ],
     external_scripts=[
         "https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.8/dayjs.min.js"
     ],
