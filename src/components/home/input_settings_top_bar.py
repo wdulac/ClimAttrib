@@ -88,7 +88,7 @@ debug_style = {
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
     dcc.Store(id='data:intensity', data=None),
-    html.H5("Extreme event selection", id='settings-row-title'),
+    html.H3("Extreme event selection", id='settings-row-title'),
     dmc.Divider(variant='solid'),
     dmc.Grid(children=[
         dmc.GridCol(children=[
