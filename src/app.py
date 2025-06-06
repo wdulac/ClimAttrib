@@ -13,11 +13,7 @@ from components import footer
 server = Flask(__name__)
 application = Dash(
     server=server,
-    external_stylesheets=[
-        # dmc.styles.NOTIFICATIONS,
-        # dmc.styles.DATES,
-        dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
-    ],
+    external_stylesheets=[],
     external_scripts=[
         "https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.8/dayjs.min.js"
     ],
