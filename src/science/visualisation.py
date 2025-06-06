@@ -17,71 +17,58 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
-def _format_years(value):
-    if value < 100:
-        return f"{value:.1f} years"
-    elif value < 1000:
-        return f"{round(value)} years"
-    elif value < 1_000_000:
-        return f"{value / 1_000:.1f}k years"
-    elif value < 1_000_000_000:
-        return f"{value / 1_000_000:.1f}M years"
-    else:
-        return f"{value / 1_000_000_000:.1f}G years"
-    
+def _safe_prob(value, fp=2, min_val=EPSILON, zero_str="0", unit="%"):
 
-def _safe_str(value, fp=2, max_T_val=1/EPSILON, min_p_val=EPSILON,
-              inf_str="infinity", zero_str="0", unit=None):
-    """
-    Replaces probablities / return values by strings that are safe to
-    display in plotly's hover label.
-
-    Limits how small or how large values can be displayed.
-    Handles infinite confidence interval.
-
-    :value: Either a probability in [0, 1] or a return period in [1, ∞]
-
-    :fp: Desired floating point precision for the value to be displayed
-
-    :max_T_val: Value above which display switches to :inf_str:
-
-    :min_p_val: Value below which display switches to :zero_str:
-
-    :inf_str: String to display when T is virtually infinite
-    (or simply larger than max_T_val)
-
-    :zero_str: String to display when p is virtually null
-    (or simply smaller than min_p_val)
-
-    :unit: Optional unit
-    """
-    
     fmt = f".{fp}f"
+
+    def _format_prob(p, fmt=fmt):
+        p *= 100
+        if round(p, 2) == 100:
+            return format(p, ".0f")
+        else:
+            return format(p, fmt)
+        
 
     if np.isnan(value):
         return "NaN"
-    # Only T can be greater than 1
-    elif np.isinf(value) or value >= max_T_val:
-        return inf_str
-    # Only p can be smaller than 1
-    elif value <= min_p_val:
+    elif 100*value <= min_val:
         return " ".join([zero_str, unit]) if unit else\
             zero_str
-    # When p is smaller than the desired floating point precision, yet not
-    # virtually 0 either
-    elif value <= pow(10, -fp):
-        return " ".join([f"less than {pow(10, -fp)}", unit]) if unit else\
-            f"less than {pow(10, -fp)}"
-    # Default : format with desired precision and optional unit
+    elif 100*value < pow(10, -fp):
+        return " ".join([f"< {pow(10, -fp)}", unit]) if unit else\
+            f"< {pow(10, -fp)}"
     else:
-        if value >= 1:
-            return _format_years(value)
+        return " ".join([_format_prob(value), unit]) if unit else\
+            _format_prob(value)
+
+
+def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
+
+    def _format_years(value):
+        if round(value, 1) == 1:
+            return "1"
+        elif value < 20: # Entre 0 et 20
+            return f"{value:.1f}"
+        elif value < 100: # Entre 20 et 100
+            return f"{round(value)}"
+        elif value < 1000: # Entre 100 et 1000
+            return f"{round(value/5) * 5}"
+        elif value < 1_000_000:
+            return f"{value / 1_000:.1f}k"
+        elif value < 1_000_000_000:
+            return f"{value / 1_000_000:.1f}M"
         else:
-            return " ".join([format(value, fmt), unit]) if unit else\
-                format(value, fmt)
+            return f"{value / 1_000_000_000:.1f}G"
         
-
-
+    if np.isnan(value):
+        return "NaN"
+    elif np.isinf(value) or value >= max_val:
+        return inf_str
+    else:
+        return " ".join((_format_years(value), unit+"s" if round(value, 1)>1 else unit)) if unit else\
+            _format_years(value)
+    
+        
 def plot_probability(stats: xr.DataArray):
 
     # Ratio and figure size
@@ -138,12 +125,12 @@ def plot_probability(stats: xr.DataArray):
             x=time,
             y=plink(be),
             customdata=np.stack([
-                [_safe_str(p, fp=2) for p in be],
-                [_safe_str(p, fp=2) for p in ql],
-                [_safe_str(p, fp=2) for p in qu],
-                [_safe_str(1/p, fp=1, unit='years') for p in be],
-                [_safe_str(1/p, fp=1, unit='years') for p in qu],
-                [_safe_str(1/p, fp=1, unit='years') for p in ql]
+                [_safe_prob(p) for p in be],
+                [_safe_prob(p) for p in ql],
+                [_safe_prob(p) for p in qu],
+                [_safe_ret(1/p) for p in be],
+                [_safe_ret(1/p) for p in qu],
+                [_safe_ret(1/p) for p in ql]
             ], axis=-1),
             mode='lines',
             line=dict(color=colors_line[i], width=2),
@@ -151,8 +138,8 @@ def plot_probability(stats: xr.DataArray):
             legendrank=1-i,
             hovertemplate=(
                 "<b>Year</b> : %{x}<br>" +
-                "<b>Probability</b> : %{customdata[0]} [%{customdata[1]} to %{customdata[2]}]<br>" +
-                "<b>Return period</b> : %{customdata[3]} [%{customdata[4]} to %{customdata[5]}]<br>" +
+                "<b>Probability</b> : %{customdata[0]} <i>[%{customdata[1]} to %{customdata[2]}]</i><br>" +
+                "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i><br>" +
                 "<extra></extra>"
             ),
             hoverlabel={
