@@ -1,7 +1,3 @@
-const script = document.createElement("script");
-script.src = "https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js";
-document.head.appendChild(script);
-
 var dmcfuncs = window.dashMantineFunctions = window.dashMantineFunctions || {};
 
 dmcfuncs.disableInvalidRange = function(dateStr, opts) {

@@ -18,6 +18,9 @@ application = Dash(
         # dmc.styles.DATES,
         dbc.themes.BOOTSTRAP # Needed for row and columns to work as expected in dbc
     ],
+    external_scripts=[
+        "https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.8/dayjs.min.js"
+    ],
     update_title=None,
     title="Clim@Ribes",
     suppress_callback_exceptions=True,
