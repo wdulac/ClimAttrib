@@ -1,6 +1,7 @@
 from dash import html, callback, Output, Input, State, dcc
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
+from dash_iconify import DashIconify
 
 import os
 import json
@@ -33,12 +34,43 @@ _extreme_type_segmented = dmc.Stack(children=[
 
 
 _computation_method_segmented = dmc.Stack(children=[
-    dmc.Text("Computation method", **TOP_BAR_INPUTS_LABEL_PROPS),
+    dmc.Group(children=[
+        dmc.Text("Restrict to same dates", **TOP_BAR_INPUTS_LABEL_PROPS),
+        dmc.HoverCard(
+            withArrow=True,
+            width=250,
+            shadow='md',
+            children=[
+                dmc.HoverCardTarget(
+                    DashIconify(icon="material-symbols:help-outline", width=17,
+                    style={"position": "relative", "top": "4px"})
+                ),
+                dmc.HoverCardDropdown(
+                    dmc.Box(children=[
+                        # dmc.Text("Determines whether the selected event's intensity is to be", span=True, inherit=True),
+                        # dmc.Text(" compared to the maximum (resp. minimum) temperature taken in the same calendar period of each year, give or take 1 week", span=True, inherit=True),
+                        # dmc.Text(" (Yes)", span=True, inherit=True, fw=700),
+                        # dmc.Text(", or to the maximum (resp. minimum) temperature of each year, regardless of the dates of the event", span=True, inherit=True),
+                        # dmc.Text(" (No)", span=True, inherit=True, fw=700),
+                        # dmc.Text(".", span=True, inherit=True),
+                        # dmc.Space(h=10),
+                        dmc.Text("Select ", span=True, inherit=True),
+                        dmc.Text("Yes ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
+                        dmc.Text("if you want the resulting probabilities to be valid only for the selected calendar period, give or take 1 week.", span=True, inherit=True),
+                        dmc.Space(h=10),
+                        dmc.Text("Select ", span=True, inherit=True),
+                        dmc.Text("No ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
+                        dmc.Text("if probabilities should be irrespective of time of year.", span=True, inherit=True)
+                    ], style={'fontSize': '14px'})
+                )
+            ]
+        )
+    ], gap='sm'),
     dmc.SegmentedControl(
         id='input:computation-method',
         data= [
-            {"value": "yearmax", "label": "Yearly maximum"},
-            {"value": "calendar", "label": "Calendar"}
+            {"value": "calendar", "label": "Yes"},
+            {"value": "yearmax", "label": "No"},
         ],
         value="yearmax"
     )],
@@ -48,7 +80,7 @@ _computation_method_segmented = dmc.Stack(children=[
 
 _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
-    label="Event date",
+    label="Event date(s)",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
     type='range',
     value=[dt.date(2019, 7, 24), dt.date(2019, 7, 26)],
@@ -94,8 +126,8 @@ input_settings_top_bar = html.Div(children=[
         dmc.GridCol(children=[
             dmc.Group(children=[
                 _extreme_type_segmented,
-                _computation_method_segmented,
                 _date_selector_calendar,
+                _computation_method_segmented,
                 _temperature_readout
                 ], id='left-column')
             ], span=9.5),
