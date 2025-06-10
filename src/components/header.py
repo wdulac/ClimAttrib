@@ -12,31 +12,31 @@ import dash_mantine_components as dmc
 _about_button = html.A(
     href="",
     children=[
-        dmc.Button("À propos", variant='subtle')
+        dmc.Button("About", variant='subtle')
     ]
 )
 
-_language_menu = dmc.Menu(
-    children=[
-        dmc.MenuTarget(dmc.Button("EN / FR", variant='subtle')),
-        dmc.MenuDropdown(
-            children=[
-                dmc.MenuItem(
-                    "English",
-                    href=""
-                ),
-                dmc.MenuItem(
-                    "Français",
-                    href=""
-                )
-            ]
-        )
-    ],
-    trigger='hover',
-    openDelay=100,
-    closeDelay=400,
-    id='language-menu'
-)
+# _language_menu = dmc.Menu(
+#     children=[
+#         dmc.MenuTarget(dmc.Button("EN / FR", variant='subtle')),
+#         dmc.MenuDropdown(
+#             children=[
+#                 dmc.MenuItem(
+#                     "English",
+#                     href=""
+#                 ),
+#                 dmc.MenuItem(
+#                     "Français",
+#                     href=""
+#                 )
+#             ]
+#         )
+#     ],
+#     trigger='hover',
+#     openDelay=100,
+#     closeDelay=400,
+#     id='language-menu'
+# )
 
 _github_action_button = html.A(
     href='https://github.com/wdulac/EET-app',
@@ -59,7 +59,7 @@ _header_right = dmc.Group(
     children=dmc.Group(
         children=[
             _about_button,
-            _language_menu,
+            # _language_menu,
             dmc.Space(w='10px'), # For even spacing of the buttons
             _github_action_button
         ], id='header-buttons'

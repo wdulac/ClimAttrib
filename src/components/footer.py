@@ -7,12 +7,12 @@ footer = html.Footer(
             children=[
                 html.A(
                     href="",
-                    children="Nous contacter",
+                    children="Contact us",
                     className="footer-bottom-link"
                 ),
                 html.A(
                     href="",
-                    children="Politique de confidentialité",
+                    children="Privacy policy",
                     className="footer-bottom-link"
                 )
             ], className="footer-row-container"

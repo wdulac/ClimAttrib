@@ -19,12 +19,12 @@ LINK_DEFAULT_HREF = '/'
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10] # In days
 
 _extreme_type_segmented = dmc.Stack(children=[
-    dmc.Text("Type d'extrême", **TOP_BAR_INPUTS_LABEL_PROPS),
+    dmc.Text("Extreme type", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
-            {"value": "hot", "label": "Chaud"},
-            {"value": "cold", "label": "Froid"}
+            {"value": "hot", "label": "Hot"},
+            {"value": "cold", "label": "Cold"}
         ],
         value="hot"
     )],
@@ -33,12 +33,12 @@ _extreme_type_segmented = dmc.Stack(children=[
 
 
 _computation_method_segmented = dmc.Stack(children=[
-    dmc.Text("Méthode de calcul", **TOP_BAR_INPUTS_LABEL_PROPS),
+    dmc.Text("Computation method", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
         id='input:computation-method',
         data= [
-            {"value": "yearmax", "label": "Max. annuel"},
-            {"value": "calendar", "label": "Calendaire"}
+            {"value": "yearmax", "label": "Yearly maximum"},
+            {"value": "calendar", "label": "Calendar"}
         ],
         value="yearmax"
     )],
@@ -48,7 +48,7 @@ _computation_method_segmented = dmc.Stack(children=[
 
 _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
-    label="Date de l'évènement",
+    label="Event date",
     labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
     type='range',
     value=[dt.date(2019, 7, 24), dt.date(2019, 7, 26)],
@@ -64,7 +64,7 @@ _date_selector_calendar = dmc.DatePickerInput(
 
 _continue_button = dcc.Link(
     children=dmc.Button(
-        'Poursuivre',
+        'Continue',
         size='lg',
         variant='gradient',
         id='trigger:continue-btn'
@@ -75,7 +75,7 @@ _continue_button = dcc.Link(
     
 
 _temperature_readout = dmc.Stack(children=[
-    dmc.Text("Intensité de l'évènement sélectionné", **TOP_BAR_INPUTS_LABEL_PROPS),
+    dmc.Text("Intensity of the selected event", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.Box(id='temp-readout-field', children=None,
             fz=18, c='white', bd='solid white 1px')
 ], gap=0)
