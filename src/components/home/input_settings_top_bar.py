@@ -56,7 +56,7 @@ _computation_method_segmented = dmc.Stack(children=[
                         # dmc.Space(h=10),
                         dmc.Text("Select ", span=True, inherit=True),
                         dmc.Text("Yes ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
-                        dmc.Text("if you want the resulting probabilities to be valid only for the selected calendar period, give or take 1 week.", span=True, inherit=True),
+                        dmc.Text("if you want the resulting probabilities to be specific to the selected calendar period, give or take 1 week.", span=True, inherit=True),
                         dmc.Space(h=10),
                         dmc.Text("Select ", span=True, inherit=True),
                         dmc.Text("No ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
