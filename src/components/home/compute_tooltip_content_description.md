@@ -1,0 +1,1 @@
+Determines whether the selected event's intensity is to be compared to the maximum (resp. minimum) temperature taken in the same calendar period of each year, give or take 1 week (***Yes***), or to the maximum (resp. minimum) temperature of each year, regardless of the dates of the event (***No***).

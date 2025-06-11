@@ -61,10 +61,22 @@
     font-weight: 300;
 }  
 
+
 .mantine-DatePickerInput-error::before {
     content: "⚠ "; /* Icône d'avertissement */
     color: #ff2d2d; /* Rouge vif */
     font-weight: bold;
     font-size: 18px;
     vertical-align: -1px;
+}
+
+
+.tooltip-markdown {
+    padding: 8px 12px;
+}
+
+
+.tooltip-markdown p {
+    font-size: 14px;
+    margin: 3px;
 }

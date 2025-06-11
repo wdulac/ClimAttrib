@@ -19,6 +19,11 @@ LINK_DEFAULT_HREF = '/'
 
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10] # In days
 
+COMPUTE_TOOLTIP_MD_FILE = 'src/components/home/compute_tooltip_content_usecase.md'
+with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
+    COMPUTE_TOOLTIP_CONTENT = f.read()
+
+
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Extreme type", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
@@ -45,24 +50,9 @@ _computation_method_segmented = dmc.Stack(children=[
                     DashIconify(icon="material-symbols:help-outline", width=17,
                     style={"position": "relative", "top": "4px"})
                 ),
-                dmc.HoverCardDropdown(
-                    dmc.Box(children=[
-                        # dmc.Text("Determines whether the selected event's intensity is to be", span=True, inherit=True),
-                        # dmc.Text(" compared to the maximum (resp. minimum) temperature taken in the same calendar period of each year, give or take 1 week", span=True, inherit=True),
-                        # dmc.Text(" (Yes)", span=True, inherit=True, fw=700),
-                        # dmc.Text(", or to the maximum (resp. minimum) temperature of each year, regardless of the dates of the event", span=True, inherit=True),
-                        # dmc.Text(" (No)", span=True, inherit=True, fw=700),
-                        # dmc.Text(".", span=True, inherit=True),
-                        # dmc.Space(h=10),
-                        dmc.Text("Select ", span=True, inherit=True),
-                        dmc.Text("Yes ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
-                        dmc.Text("if you want the resulting probabilities to be specific to the selected calendar period, give or take 1 week.", span=True, inherit=True),
-                        dmc.Space(h=10),
-                        dmc.Text("Select ", span=True, inherit=True),
-                        dmc.Text("No ", span=True, inherit=True, fw=700, style={'fontStyle': 'italic'}),
-                        dmc.Text("if probabilities should be irrespective of time of year.", span=True, inherit=True)
-                    ], style={'fontSize': '14px'})
-                )
+                dmc.HoverCardDropdown([
+                    dcc.Markdown(COMPUTE_TOOLTIP_CONTENT),
+                ], className='tooltip-markdown')
             ]
         )
     ], gap='sm'),
