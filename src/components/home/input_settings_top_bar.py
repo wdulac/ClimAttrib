@@ -43,6 +43,7 @@ _computation_method_segmented = dmc.Stack(children=[
         dmc.Text("Restrict to same dates", **TOP_BAR_INPUTS_LABEL_PROPS),
         dmc.HoverCard(
             withArrow=True,
+            arrowSize=15,
             width=250,
             shadow='md',
             children=[
