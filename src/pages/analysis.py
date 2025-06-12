@@ -8,9 +8,6 @@ from components import carousel
 
 from utils.tasks import attribution
 
-import xarray as xr
-import os
-
 register_page(__name__, path='/analysis')
 
 def _parse_event(query: dict) -> dict:
