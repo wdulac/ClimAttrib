@@ -1,4 +1,5 @@
 .loading-skeleton {
+    flex-direction: column;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -6,4 +7,12 @@
     min-height: 100%;
     width: 100%;
     padding: 5%;
+}
+
+
+.bottom-circle {
+    position: absolute;
+    bottom: 1rem;    /* un peu de marge en bas */
+    left: 50%;
+    transform: translateX(-50%);
 }

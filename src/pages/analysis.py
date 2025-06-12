@@ -46,20 +46,20 @@ def _make_skeleton_lines(n, width='100%'):
     ]
 
 
-_loading_screen = dmc.Box([
-    dmc.Grid([
-        dmc.GridCol([
-            dmc.Stack([
-                dmc.Skeleton(height=75, circle=True, mb='sm'),
-                *_make_skeleton_lines(8, width='70%')
-            ])
-        ], span=6),
+_loading_screen = [
+    dmc.Box([
+        dmc.Grid([
+            dmc.GridCol([
+                dmc.Center(dmc.Skeleton(height=350, width=600, circle=False, mb='sm', radius='sm')),
+            ], span=6),
 
-        dmc.GridCol([
-            dmc.Stack(_make_skeleton_lines(12, width='70%'))
-        ], span=6)
-    ], gutter=100, style={'width': '100%'})
-], className='loading-skeleton')
+            dmc.GridCol([
+                dmc.Stack(_make_skeleton_lines(10, width='70%'))
+            ], span=6)
+        ], gutter=100, style={'width': '100%'}, align='center'),
+    ], className='loading-skeleton'),
+    dmc.Skeleton(height=50, width=50, circle=True, className='bottom-circle')
+]
 
 
 def layout(extreme_type=None,
