@@ -4,14 +4,14 @@ import dash_mantine_components as dmc
 
 from components import probability_plot
 
-def carousel(parsed_event):
+def carousel(stats):
 
     component = dmc.Carousel([
                     dmc.CarouselSlide(
                         dmc.Center(
                             dmc.Group(
                                 children=[
-                                    probability_plot(parsed_event),
+                                    probability_plot(stats),
                                     dmc.Text(
                                         ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
                                          "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
@@ -84,6 +84,7 @@ clientside_callback(
     Output("my-carousel", "data-toggle-bounce"),
     Input("my-carousel", "active")
 )
+
 
 clientside_callback(
     ClientsideFunction(
