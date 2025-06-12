@@ -1,9 +1,9 @@
 from dash import register_page, html, dcc, callback, Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
+import dash_mantine_components as dmc
 
 import datetime as dt
 from components import chosen_event
-from components import loading_screen
 from components import carousel
 
 from utils.tasks import attribution
@@ -37,6 +37,29 @@ def _parse_event(query: dict) -> dict:
     event['intensity'] = float(query['To'])
 
     return event
+
+
+def _make_skeleton_lines(n, width='100%'):
+    return [
+        dmc.Skeleton(height=10, radius='xl', w=width if i == n - 1 else '100%')
+        for i in range(n)
+    ]
+
+
+_loading_screen = dmc.Box([
+    dmc.Grid([
+        dmc.GridCol([
+            dmc.Stack([
+                dmc.Skeleton(height=75, circle=True, mb='sm'),
+                *_make_skeleton_lines(8, width='70%')
+            ])
+        ], span=6),
+
+        dmc.GridCol([
+            dmc.Stack(_make_skeleton_lines(12, width='70%'))
+        ], span=6)
+    ], gutter=100, style={'width': '100%'})
+], className='loading-skeleton')
 
 
 def layout(extreme_type=None,
@@ -73,7 +96,7 @@ def layout(extreme_type=None,
             disabled=False
         ),
         chosen_event(parsed_event), # Dummy component with event's description
-        html.Div(children=loading_screen, id='content',
+        html.Div(children=_loading_screen, id='content',
                  className='carousel-container')
         ], className='analysis-container'
     )
