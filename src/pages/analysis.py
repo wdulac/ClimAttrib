@@ -10,9 +10,6 @@ from components import chosen_event
 # from components import event_stats
 from components import probability_plot
 
-import xarray as xr
-import os
-
 register_page(__name__, path='/analysis')
 
 def _parse_event(query: dict) -> dict:
