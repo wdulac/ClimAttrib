@@ -1,11 +1,12 @@
-from dash import register_page, html, dcc, callback, Input, Output
+from dash import register_page, html, dcc, callback, Input, Output, State, no_update
 from dash.exceptions import PreventUpdate
 
-import time
 import datetime as dt
 from components import chosen_event
 from components import loading_screen
 from components import carousel
+
+from utils.tasks import attribution
 
 import xarray as xr
 import os
@@ -67,6 +68,13 @@ def layout(extreme_type=None,
     # Compose and return layout
     layout = html.Div([
         dcc.Store(data=parsed_event, id='event-data'),
+        dcc.Store(data=None, id='task-id'),
+        dcc.Interval(
+            id='update-interval',
+            interval=1000,
+            n_intervals=0,
+            disabled=False
+        ),
         chosen_event(parsed_event), # Dummy component with event's description
         html.Div(children=loading_screen, id='content',
                  className='carousel-container')
@@ -76,14 +84,37 @@ def layout(extreme_type=None,
 
 
 @callback(
-    Output('content', 'children'),
-    Input('event-data', 'data')
+        Output('task-id', 'data'),
+        Input('event-data', 'data')
 )
-def test_page(data):
+def run_task(data):
 
     if not data:
         raise PreventUpdate
     
-    else:
-        time.sleep(2)
-        return carousel(data)
+    data['date'] = dt.datetime.fromisoformat(data['date'])
+
+    task = attribution.apply_async(args=[data])
+
+    return task.id
+    
+
+@callback(
+    Output('content', 'children'),
+    Output('update-interval', 'disabled'),
+    Input('update-interval', 'n_intervals'),
+    State('task-id', 'data'),
+    prevent_initial_call=True
+)
+def update_results(n, task_id):
+
+    if not task_id:
+        raise PreventUpdate
+    
+    task = attribution.AsyncResult(task_id)
+    if task.ready():
+        stats = task.result
+        return carousel(stats), True
+    return no_update, False
+
+
