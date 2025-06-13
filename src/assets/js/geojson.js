@@ -1,3 +1,4 @@
+// Functions passed as argument in Python through dash_extensions.javascript.Namespace
 window.dashExtensions = Object.assign({}, window.dashExtensions, {
     geojson: {
         colorCell: function(feature, context){
@@ -15,24 +16,36 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
                 weight: 0.5,
                 fillOpacity: 0.1
             };
+        },
+        zoomFilter: function(feature, context) {
+            const zoom = context.hideout.zoom || 0;
+            const threshold = context.hideout.zoom_threshold || 6;
+            return zoom >= threshold;
         }
     }
 })
 
-
+// Clientside Callbacks related functions
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        select_point: function(clickData) {
+        select_point: function(clickData, hideout) {
             if (!clickData) {
-                return window.dash_clientside.no_update;
+                return [window.dash_clientside.no_update, window.dash_clientside.no_update]
             }
             const lat = clickData.properties.lat;
             const lon = clickData.properties.lon;
             const id = clickData.properties.cell_id;
+
             return [
-                { selected: id },
+                {...hideout, selected: id},
                 JSON.stringify([lat, lon])
             ];
+        },
+        update_zoom: function(zoom, hideout) {
+            // Clone hideout object as to not replace in-place (which doesn't trigger the filter)
+            hideout.zoom = zoom;
+
+            return { ...hideout };
         }
     }
 });

@@ -17,11 +17,16 @@ ns = Namespace('dashExtensions', 'geojson')
 
 _grid = dl.GeoJSON(
     url='/assets/static/grid.geojson',
-    style=ns('colorCell'),
+    style=ns('colorCell'), # Dynamically highlights selected cell
     hoverStyle=dict(
         fillOpacity=0.3
     ),
-    hideout={'selected': None},
+    filter=ns('zoomFilter'), # Responsible for making cells (dis)appear w/ zoom
+    hideout={
+        'selected': None,
+        'zoom': DEFAULT_ZOOM_LEVEL,
+        'zoom_threshold': ZOOM_LEVEL_THRESHOLD 
+    },
     id='geojson'
 )
 
@@ -32,7 +37,7 @@ location_selector = html.Div(
                 dl.FullScreenControl(),
                 dl.TileLayer(noWrap=True),
                 dl.LayerGroup(id='marker'),
-                dl.LayerGroup(id='grid'),
+                dl.LayerGroup(id='grid', children=[_grid]),
                 html.Div(id='zoom-to-select', children="Zoom-in to select a grid cell")
             ],
             center=MAP_CENTER_POSITION,
@@ -75,37 +80,26 @@ def zoom_to_select(zoom_level, is_hidden):
             raise PreventUpdate
 
 
-# TODO Try to make the grid faster (Client-side callback with custom JS ?)
-@callback(
-    Output('grid', 'children'),
-    Input('map', 'zoom'),
-    State('grid', 'children'),
-)
-def show_grid(current_zoom_level, grid_state):
-    """
-    Show the geojson grid passed a certain zoom level.
-    """
-
-    if grid_state is not None:
-        if current_zoom_level >= ZOOM_LEVEL_THRESHOLD:
-            # Zooming further down with the grid already displayed. No need to update.
-            raise PreventUpdate
-        else:
-            # Zooming out below the threshold with the grid displayed; we remove the grid
-            return None
-    elif current_zoom_level >= ZOOM_LEVEL_THRESHOLD:
-        # The grid is not displayed and we pass the zoom threshold
-        return _grid
-    else:
-        # The grid is not displayed but we are not at the threshold; no need to update
-        raise PreventUpdate
-
-    
+# Select point (which triggers colorCell) and store coordinates
 clientside_callback(
     ClientsideFunction(namespace='clientside', function_name='select_point'),
     Output('geojson', 'hideout'),
     Output('input:selected-point', 'data'),
-    Input('geojson', 'clickData')
+    Input('geojson', 'clickData'),
+    State('geojson', 'hideout')
+)
+
+
+# Update geojson's hideout prop with current zoom level 
+clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='update_zoom'
+    ),
+    Output('geojson', 'hideout', allow_duplicate=True),
+    Input('map', 'zoom'),
+    State('geojson', 'hideout'),
+    prevent_initial_call=True
 )
 
 
