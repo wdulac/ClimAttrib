@@ -1,6 +1,7 @@
 from dash import html, callback, Output, Input, State
 from dash import dcc
 from dash.exceptions import PreventUpdate
+from dash_extensions.javascript import Namespace
 import dash_leaflet as dl
 import json
 
@@ -10,20 +11,19 @@ MINIMUM_ZOOM_LEVEL = 3
 MAP_CENTER_POSITION = [40, 0]
 MAP_MAX_BOUNDS = [[-70, -180], [83, -180], [83, 180], [-70, 180]]
 
+# Load JS namespace from assets/js/leaflet_extras.js
+ns = Namespace('dashExtensions', 'geojson')
 
 _grid = dl.GeoJSON(
     url='/assets/static/grid.geojson',
-    style=dict(
-        weight=0.5,
-        opacity=1,
-        color='#066e91',
-        fillOpacity=0.1
-    ),
+    style=ns('colorCell'),
     hoverStyle=dict(
         fillOpacity=0.3
     ),
+    hideout={'selected': None},
     id='geojson'
 )
+
 
 _custom_icon=dict(
     iconUrl='/assets/static/marker-icon.png',
