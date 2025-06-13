@@ -118,21 +118,16 @@ def select_point(click_data):
     (the center) to the Store unit (i.e the browser's memory)
     """
 
-    def center_from_polygon(coordinates):
-        lon_min, lon_max = coordinates[0][0], coordinates[2][0]
-        lat_min, lat_max = coordinates[0][1], coordinates[1][1]
-        return [lat_min + (lat_max - lat_min)/2, lon_min + (lon_max - lon_min)/2]
-
-    if click_data is not None:
-        clicked_poly = click_data['geometry']['coordinates'][0]
-        poly_centre = center_from_polygon(clicked_poly)
-        marker = dl.Marker(
-            position=poly_centre,
-            icon=_custom_icon
-        )
-        return marker, json.dumps([poly_centre])
-    else:
+    if click_data is None:
         raise PreventUpdate
+    
+    lat, lon = click_data['properties']['lat'], click_data['properties']['lon']
+    pos = [lat, lon]
+    marker = dl.Marker(
+        position=pos,
+        icon=_custom_icon
+    )
+    return marker, json.dumps([pos])
 
 
 @callback(
