@@ -210,7 +210,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     if not None in date:
         if not date_error:
             if grid_point is not None:
-                lat, lon = json.loads(grid_point)[0]
+                lat, lon = json.loads(grid_point)
                 start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
                                 for _ in date]
                 if extreme_type == 'hot':
@@ -288,7 +288,7 @@ def update_link(
         if not date_error:
             if grid_point is not None:
                 # Compose the href based on the input settings
-                coords = json.loads(grid_point)[0]
+                coords = json.loads(grid_point)
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
                 href = ("/analysis?"
