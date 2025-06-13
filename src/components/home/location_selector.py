@@ -24,13 +24,6 @@ _grid = dl.GeoJSON(
     id='geojson'
 )
 
-
-_custom_icon=dict(
-    iconUrl='/assets/static/marker-icon.png',
-    # shadowUrl='https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-    iconSize=[25,40]
-)
-
 location_selector = html.Div(
     children=[
         dl.Map(
@@ -108,7 +101,7 @@ def show_grid(current_zoom_level, grid_state):
 
     
 @callback(
-    Output('marker', 'children'),
+    Output('geojson', 'hideout'),
     Output('input:selected-point', 'data'),
     Input('geojson', 'clickData')
 )
@@ -123,11 +116,9 @@ def select_point(click_data):
     
     lat, lon = click_data['properties']['lat'], click_data['properties']['lon']
     pos = [lat, lon]
-    marker = dl.Marker(
-        position=pos,
-        icon=_custom_icon
-    )
-    return marker, json.dumps([pos])
+    selected_cell_id = click_data['properties']['cell_id']
+
+    return {'selected': selected_cell_id}, json.dumps([pos])
 
 
 @callback(
