@@ -86,7 +86,9 @@ clientside_callback(
     Output('geojson', 'hideout'),
     Output('input:selected-point', 'data'),
     Input('geojson', 'clickData'),
-    State('geojson', 'hideout')
+    Input('map', 'zoom'),
+    State('geojson', 'hideout'),
+    prevent_initial_call=True
 )
 
 
@@ -104,20 +106,21 @@ clientside_callback(
 
 
 @callback(
-    Output('marker', 'children', allow_duplicate=True),
     Output('input:selected-point', 'data', allow_duplicate=True),
+    Output('geojson', 'clickData'),
     Input('map', 'zoom'),
-    State('marker', 'children'),
+    State('input:selected-point', 'data'),
+    State('geojson', 'clickData'),
     prevent_initial_call=True
 )
-def clear_point_data(zoom_level, marker_state):
+def clear_point_data(zoom_level, data, clickData):
     """
     Clear out both the marker and the stored value when zooming out
     passed the the globally set zoom level threshold.
     """
 
     if zoom_level < ZOOM_LEVEL_THRESHOLD:
-        if marker_state is not None:
+        if clickData is not None:
             return None, None
         else:
             raise PreventUpdate

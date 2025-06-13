@@ -28,10 +28,16 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
 // Clientside Callbacks related functions
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
-        select_point: function(clickData, hideout) {
-            if (!clickData) {
-                return [window.dash_clientside.no_update, window.dash_clientside.no_update]
+        select_point: function(clickData, zoom, hideout) {
+
+            if (zoom < hideout.zoom_threshold) {
+                return [{ ...hideout, selected: null}, window.dash_clientside.no_update];
             }
+
+            if (!clickData) {
+                return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+            }
+            
             const lat = clickData.properties.lat;
             const lon = clickData.properties.lon;
             const id = clickData.properties.cell_id;
