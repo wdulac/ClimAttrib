@@ -1,4 +1,5 @@
 from dash import html, callback, Output, Input, State
+from dash import clientside_callback, ClientsideFunction
 from dash import dcc
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import Namespace
@@ -100,25 +101,12 @@ def show_grid(current_zoom_level, grid_state):
         raise PreventUpdate
 
     
-@callback(
+clientside_callback(
+    ClientsideFunction(namespace='clientside', function_name='select_point'),
     Output('geojson', 'hideout'),
     Output('input:selected-point', 'data'),
     Input('geojson', 'clickData')
 )
-def select_point(click_data):
-    """
-    Place a marker on the selected geojson grid point and return its coordinates
-    (the center) to the Store unit (i.e the browser's memory)
-    """
-
-    if click_data is None:
-        raise PreventUpdate
-    
-    lat, lon = click_data['properties']['lat'], click_data['properties']['lon']
-    pos = [lat, lon]
-    selected_cell_id = click_data['properties']['cell_id']
-
-    return {'selected': selected_cell_id}, json.dumps([pos])
 
 
 @callback(

@@ -18,3 +18,21 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
         }
     }
 })
+
+
+window.dash_clientside = Object.assign({}, window.dash_clientside, {
+    clientside: {
+        select_point: function(clickData) {
+            if (!clickData) {
+                return window.dash_clientside.no_update;
+            }
+            const lat = clickData.properties.lat;
+            const lon = clickData.properties.lon;
+            const id = clickData.properties.cell_id;
+            return [
+                { selected: id },
+                JSON.stringify([lat, lon])
+            ];
+        }
+    }
+});
