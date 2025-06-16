@@ -7,8 +7,8 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
             if (id === selected) {
                 return {
                     color: "#FF0000",
-                    weight: 1,
-                    fillOpacity: 0.5
+                    weight: 0.5,
+                    fillOpacity: 0.3
                 };
             }
             return {
