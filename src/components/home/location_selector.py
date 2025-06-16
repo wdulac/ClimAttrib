@@ -4,6 +4,7 @@ from dash import dcc
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import Namespace
 import dash_leaflet as dl
+import dash_leaflet.express as dlx
 import json
 
 ZOOM_LEVEL_THRESHOLD = 4
@@ -11,11 +12,19 @@ DEFAULT_ZOOM_LEVEL = 3
 MINIMUM_ZOOM_LEVEL = 3
 MAP_CENTER_POSITION = [40, 0]
 
+GEOJSON_STATIC_FILE = './src/assets/static/grid.geojson'
+
+with open(GEOJSON_STATIC_FILE, 'r') as f:
+    gj = json.load(f)
+
+geobuf = dlx.geojson_to_geobuf(gj)
+
 # Load JS namespace from assets/js/geojson.js
 ns = Namespace('dashExtensions', 'geojson')
 
 _grid = dl.GeoJSON(
-    url='/assets/static/grid.geojson',
+    data=geobuf,
+    format="geobuf",
     style=ns('colorCell'), # Dynamically highlights selected cell
     hoverStyle=dict(
         fillOpacity=0.3
@@ -43,6 +52,9 @@ location_selector = html.Div(
             zoom=DEFAULT_ZOOM_LEVEL,
             minZoom=MINIMUM_ZOOM_LEVEL,
             worldCopyJump=True,
+            renderer={
+                'method': 'canvas'
+            },
             id='map',
             className='map-container'
         ),
