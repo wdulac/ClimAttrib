@@ -28,14 +28,23 @@ window.dashExtensions = Object.assign({}, window.dashExtensions, {
 // Clientside Callbacks related functions
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
     clientside: {
+        // Updates both GeoJSON's hideout prop with the selected cell's ID (used by colorCell)
+        // and the 'selected-point' dcc.Store with the grid point coordinates.
+        // Handles clearing out both elements when zooming-out.   
         select_point: function(clickData, zoom, hideout) {
 
             if (zoom < hideout.zoom_threshold) {
-                return [{ ...hideout, selected: null}, window.dash_clientside.no_update];
+                return [
+                    { ...hideout, selected: null},
+                    null
+                ];
             }
 
             if (!clickData) {
-                return [window.dash_clientside.no_update, window.dash_clientside.no_update];
+                return [
+                    window.dash_clientside.no_update,
+                    window.dash_clientside.no_update
+                ];
             }
             
             const lat = clickData.properties.lat;
@@ -47,6 +56,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 JSON.stringify([lat, lon])
             ];
         },
+        // Updates GeoJSON's hideout prop with current zoom-level (used by zoomFilter)
         update_zoom: function(zoom, hideout) {
             // Clone hideout object as to not replace in-place (which doesn't trigger the filter)
             hideout.zoom = zoom;

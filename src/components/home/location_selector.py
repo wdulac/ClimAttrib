@@ -106,22 +106,21 @@ clientside_callback(
 
 
 @callback(
-    Output('input:selected-point', 'data', allow_duplicate=True),
     Output('geojson', 'clickData'),
     Input('map', 'zoom'),
-    State('input:selected-point', 'data'),
     State('geojson', 'clickData'),
     prevent_initial_call=True
 )
-def clear_point_data(zoom_level, data, clickData):
+def clear_point_data(zoom_level, clickData):
     """
-    Clear out both the marker and the stored value when zooming out
-    passed the the globally set zoom level threshold.
+    Clear out 'GeoJSON's clickData attribute based when zooming-out.
+    Otherwise it reselects the previous point when zooming back-in, even if it
+    had previously been cleared.
     """
 
     if zoom_level < ZOOM_LEVEL_THRESHOLD:
         if clickData is not None:
-            return None, None
+            return None
         else:
             raise PreventUpdate
     else:
