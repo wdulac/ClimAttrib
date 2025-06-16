@@ -10,9 +10,8 @@ ZOOM_LEVEL_THRESHOLD = 4
 DEFAULT_ZOOM_LEVEL = 3
 MINIMUM_ZOOM_LEVEL = 3
 MAP_CENTER_POSITION = [40, 0]
-MAP_MAX_BOUNDS = [[-70, -180], [83, -180], [83, 180], [-70, 180]]
 
-# Load JS namespace from assets/js/leaflet_extras.js
+# Load JS namespace from assets/js/geojson.js
 ns = Namespace('dashExtensions', 'geojson')
 
 _grid = dl.GeoJSON(
@@ -35,7 +34,7 @@ location_selector = html.Div(
         dl.Map(
             children=[
                 dl.FullScreenControl(),
-                dl.TileLayer(noWrap=True),
+                dl.TileLayer(noWrap=False),
                 dl.LayerGroup(id='marker'),
                 dl.LayerGroup(id='grid', children=[_grid]),
                 html.Div(id='zoom-to-select', children="Zoom-in to select a grid cell")
@@ -43,7 +42,7 @@ location_selector = html.Div(
             center=MAP_CENTER_POSITION,
             zoom=DEFAULT_ZOOM_LEVEL,
             minZoom=MINIMUM_ZOOM_LEVEL,
-            maxBounds=MAP_MAX_BOUNDS,
+            worldCopyJump=True,
             id='map',
             className='map-container'
         ),
