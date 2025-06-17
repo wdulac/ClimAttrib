@@ -5,7 +5,7 @@ import math
 import os
 
 TILE_SIZE = 10  # degress
-INPUT = "../src/assets/static/grid_1_5.geojson"
+INPUT = "../src/assets/static/grid.geojson"
 OUTPUT_DIR = "../src/assets/static/grid_tiles"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
