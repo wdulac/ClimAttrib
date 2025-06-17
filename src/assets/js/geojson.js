@@ -62,6 +62,25 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             hideout.zoom = zoom;
 
             return { ...hideout };
+        },
+        updateGridTiles: function(bounds, hideout) {
+
+            // Bounds undefined on first page load
+            if (!bounds) return window.dash_clientside.no_update;
+            
+            if (hideout.zoom < hideout.zoom_threshold) {
+                return window.dash_clientside.no_update;
+            }
+             
+            const url = `/grid_tiles?bounds=${JSON.stringify(bounds)}`;
+
+            return fetch(url)
+                .then(r => r.json())
+                .then(data => data)
+                .catch(error => {
+                    console.error("Erreur lors du fetch GeoJSON:", error);
+                    return window.dash_clientside.no_update;
+                });
         }
     }
 });
