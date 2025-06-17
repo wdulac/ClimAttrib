@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Polygon", "coordinates": [[[140.0, 37.5], [140.0, 40.0], [142.5, 40.0], [142.5, 37.5], [140.0, 37.5]]]}, "properties": {"cell_id": "56_51", "lon": 141.25, "lat": 38.75}}]}
