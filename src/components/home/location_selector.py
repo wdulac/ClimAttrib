@@ -83,42 +83,6 @@ def zoom_to_select(zoom_level, is_hidden):
             raise PreventUpdate
 
 
-# Compose and fetch request to grid tiles that fit within map bounds
-clientside_callback(
-    ClientsideFunction(
-        namespace='clientside',
-        function_name='updateGridTiles'
-    ),
-    Output('geojson', 'data'),
-    Input('map', 'bounds')
-)
-
-
-# Select point (which triggers colorCell) and store coordinates
-clientside_callback(
-    ClientsideFunction(namespace='clientside', function_name='select_point'),
-    Output('geojson', 'hideout'),
-    Output('input:selected-point', 'data'),
-    Input('geojson', 'clickData'),
-    Input('map', 'zoom'),
-    State('geojson', 'hideout'),
-    prevent_initial_call=True
-)
-
-
-# Update geojson's hideout prop with current zoom level 
-clientside_callback(
-    ClientsideFunction(
-        namespace='clientside',
-        function_name='update_zoom'
-    ),
-    Output('geojson', 'hideout', allow_duplicate=True),
-    Input('map', 'zoom'),
-    State('geojson', 'hideout'),
-    prevent_initial_call=True
-)
-
-
 @callback(
     Output('geojson', 'clickData'),
     Input('map', 'zoom'),
@@ -139,3 +103,43 @@ def clear_point_data(zoom_level, clickData):
             raise PreventUpdate
     else:
         raise PreventUpdate
+
+
+# Compose and fetch request to grid tiles that fit within map bounds
+clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='updateGridTiles'
+    ),
+    Output('geojson', 'data'),
+    Input('map', 'bounds'),
+    Input('geojson', 'hideout') # Trigger on hideout so that zoom level is always up to date
+)
+
+
+# Select point (which triggers colorCell) and store coordinates
+clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='select_point'
+    ),
+    Output('geojson', 'hideout'),
+    Output('input:selected-point', 'data'),
+    Input('geojson', 'clickData'),
+    Input('map', 'zoom'),
+    State('geojson', 'hideout'),
+    prevent_initial_call=True
+)
+
+
+# Update geojson's hideout prop with current zoom level 
+clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='update_zoom'
+    ),
+    Output('geojson', 'hideout', allow_duplicate=True),
+    Input('map', 'zoom'),
+    State('geojson', 'hideout'),
+    prevent_initial_call=True
+)

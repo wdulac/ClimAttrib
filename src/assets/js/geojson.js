@@ -63,9 +63,14 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
 
             return { ...hideout };
         },
-        updateGridTiles: function(bounds) {
+        updateGridTiles: function(bounds, hideout) {
 
+            // Bounds undefined on first page load
             if (!bounds) return window.dash_clientside.no_update;
+            
+            if (hideout.zoom < hideout.zoom_threshold) {
+                return window.dash_clientside.no_update;
+            }
              
             const url = `/grid_tiles?bounds=${JSON.stringify(bounds)}`;
 
