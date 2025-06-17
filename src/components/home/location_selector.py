@@ -12,19 +12,19 @@ DEFAULT_ZOOM_LEVEL = 3
 MINIMUM_ZOOM_LEVEL = 3
 MAP_CENTER_POSITION = [40, 0]
 
-GEOJSON_STATIC_FILE = './src/assets/static/grid.geojson'
+# GEOJSON_STATIC_FILE = './src/assets/static/grid.geojson'
 
-with open(GEOJSON_STATIC_FILE, 'r') as f:
-    gj = json.load(f)
+# with open(GEOJSON_STATIC_FILE, 'r') as f:
+#     gj = json.load(f)
 
-geobuf = dlx.geojson_to_geobuf(gj)
+# geobuf = dlx.geojson_to_geobuf(gj)
 
 # Load JS namespace from assets/js/geojson.js
 ns = Namespace('dashExtensions', 'geojson')
 
 _grid = dl.GeoJSON(
-    data=geobuf,
-    format="geobuf",
+    # data=geobuf,
+    # format="geobuf",
     style=ns('colorCell'), # Dynamically highlights selected cell
     hoverStyle=dict(
         fillOpacity=0.3
@@ -35,6 +35,7 @@ _grid = dl.GeoJSON(
         'zoom': DEFAULT_ZOOM_LEVEL,
         'zoom_threshold': ZOOM_LEVEL_THRESHOLD 
     },
+    zoomToBounds=False,
     id='geojson'
 )
 
@@ -45,7 +46,8 @@ location_selector = html.Div(
                 dl.FullScreenControl(),
                 dl.TileLayer(noWrap=False),
                 dl.LayerGroup(id='marker'),
-                dl.LayerGroup(id='grid', children=[_grid]),
+                _grid,
+                # dl.LayerGroup(id='grid', children=[_grid]),
                 html.Div(id='zoom-to-select', children="Zoom-in to select a grid cell")
             ],
             center=MAP_CENTER_POSITION,
@@ -89,6 +91,16 @@ def zoom_to_select(zoom_level, is_hidden):
             return False
         else:
             raise PreventUpdate
+
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='clientside',
+        function_name='updateGridTiles'
+    ),
+    Output('map', 'bounds'),
+    Input('map', 'bounds')
+)
 
 
 # Select point (which triggers colorCell) and store coordinates

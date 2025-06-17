@@ -62,6 +62,20 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             hideout.zoom = zoom;
 
             return { ...hideout };
-        }
+        },
+        updateGridTiles: function(bounds) {
+
+                    if (!bounds) return window.dash_clientside.no_update;
+
+                    const url = `/grid_dynamic?bounds=${JSON.stringify(bounds)}`;
+                    fetch(url).then(r => r.json()).then(data => {
+                        const layer = window.dash_leaflet.get("geojson");
+                        if (layer) {
+                            layer.clearLayers();
+                            layer.addData(data);
+                        }
+                    });
+                    return window.dash_clientside.no_update;
+                }
     }
 });
