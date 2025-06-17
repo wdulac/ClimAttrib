@@ -71,8 +71,9 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             if (hideout.zoom < hideout.zoom_threshold) {
                 return window.dash_clientside.no_update;
             }
-             
-            const url = `/grid_tiles?bounds=${JSON.stringify(bounds)}`;
+            
+            const roundBounds = bounds.map(pair => pair.map(value => parseFloat(value.toFixed(2))));
+            const url = `/grid_tiles?bounds=${JSON.stringify(roundBounds)}`;
 
             return fetch(url)
                 .then(r => r.json())
