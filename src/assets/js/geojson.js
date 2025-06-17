@@ -65,17 +65,17 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         },
         updateGridTiles: function(bounds) {
 
-                    if (!bounds) return window.dash_clientside.no_update;
+            if (!bounds) return window.dash_clientside.no_update;
+             
+            const url = `/grid_tiles?bounds=${JSON.stringify(bounds)}`;
 
-                    const url = `/grid_dynamic?bounds=${JSON.stringify(bounds)}`;
-                    fetch(url).then(r => r.json()).then(data => {
-                        const layer = window.dash_leaflet.get("geojson");
-                        if (layer) {
-                            layer.clearLayers();
-                            layer.addData(data);
-                        }
-                    });
+            return fetch(url)
+                .then(r => r.json())
+                .then(data => data)
+                .catch(error => {
+                    console.error("Erreur lors du fetch GeoJSON:", error);
                     return window.dash_clientside.no_update;
-                }
+                });
+        }
     }
 });

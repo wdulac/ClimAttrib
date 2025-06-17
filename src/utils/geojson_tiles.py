@@ -1,10 +1,10 @@
 from app import server
 import os
 import json
-from flask import request, jsonify, send_file
+from flask import request, jsonify
 
 
-@server.route("/grid_dynamic")
+@server.route("/grid_tiles")
 def serve_grid_tiles():
     bounds_str = request.args.get("bounds", None)
     if bounds_str is None:
@@ -25,7 +25,7 @@ def serve_grid_tiles():
 
     features = []
     for x, y in tile_indices_in_bbox(south, west, north, east):
-        tile_path = f"assets/grid_tiles/tile_{x}_{y}.geojson"
+        tile_path = f"src/assets/static/grid_tiles/tile_{x}_{y}.geojson"
         if os.path.exists(tile_path):
             with open(tile_path, "r") as f:
                 tile_data = json.load(f)
