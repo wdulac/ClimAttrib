@@ -224,12 +224,15 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                 elif cwd == 'app' or cwd == 'EET-app':
                     path_fix = './data/daily/'
                 
-                To = xr.open_dataset(path_fix + f"era5_sfc_{var}_G025.nc")[var].\
-                    sel(
-                        time=slice(start, stop + dt.timedelta(days=1)),
-                        lat=lat, lon=lon % 360
-                    ).\
-                    mean('time').data
+                # Return fixed temperature for testing, as we don't have the 
+                # correct 1.5° data
+                To = 35 + 273.15
+                # To = xr.open_dataset(path_fix + f"era5_sfc_{var}_G025.nc")[var].\
+                #     sel(
+                #         time=slice(start, stop + dt.timedelta(days=1)),
+                #         lat=lat, lon=lon % 360
+                #     ).\
+                #     mean('time').data
                 return f"{To-273.15:.1f}°C", f"{To:.2f}"
             return "Select a grid point", None
         return "Select a valid date range", None
