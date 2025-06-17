@@ -5,6 +5,7 @@ dash-iconify
 plotly
 python-dotenv
 pygam
+flask_compress
 
 ./libraries/SDFC-python
 ./libraries/zxarray
