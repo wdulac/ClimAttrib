@@ -130,6 +130,7 @@ def create_plotly_figure(
             customdata=customdata,
             legendrank=1-i,
             hovertemplate=hovertemplate,
+            showlegend=labels is not None,
             hoverlabel=dict(
                 bgcolor=colors_hl[i],
                 bordercolor='black',
@@ -270,10 +271,12 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
                 'range': [EPSILON, 1/EPSILON]
             },
             {
-                'Title': 'Fraction of attributable risk [%]',
+                'title': 'Fraction of attributable risk [%]',
                 'tickvals': yticks,
                 'ticktext': ytickslabelsR,
-                'range': [EPSILON, 1/EPSILON]
+                'range': [EPSILON, 1/EPSILON],
+                'overlaying': 'y',
+                'side': 'right'
             }
         ],
         transform_func=PRlink
