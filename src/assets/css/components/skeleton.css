@@ -8,11 +8,3 @@
     width: 100%;
     padding: 5%;
 }
-
-
-.bottom-circle {
-    position: absolute;
-    bottom: 1rem;    /* un peu de marge en bas */
-    left: 50%;
-    transform: translateX(-50%);
-}

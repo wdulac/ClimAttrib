@@ -57,8 +57,7 @@ _loading_screen = [
                 dmc.Stack(_make_skeleton_lines(10, width='70%'))
             ], span=6)
         ], gutter=100, style={'width': '100%'}, align='center'),
-    ], className='loading-skeleton'),
-    dmc.Skeleton(height=50, width=50, circle=True, className='bottom-circle')
+    ], className='loading-skeleton')
 ]
 
 
