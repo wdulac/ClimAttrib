@@ -2,6 +2,7 @@ import xarray as xr
 import numpy as np
 import sys
 
+from typing import Callable
 import plotly.graph_objects as go
 
 CONFIDENCE_INTERVAL=0.05
@@ -69,137 +70,123 @@ def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
             _format_years(value)
     
         
-def plot_probability(stats: xr.DataArray):
+def create_plotly_figure(
+    stats: xr.DataArray,
+    variables: list[str],
+    labels: list[str],
+    yaxis_conf: list[dict],
+    transform_func: Callable[[np.ndarray], str] | None = lambda x: x,
+    customdata_func: Callable[[np.ndarray], np.ndarray] | None = None,
+    hovertemplate = str,
+    colors: list[str] | None = None,
+    fill_alpha: float = 0.5,
+    line_alpha: float = 0.8,
+    background_alpha: float = 0.3,
+    title: str = ""
+) -> go.Figure:
 
-    # Ratio and figure size
+    # Taille
     mm = 1. / 25.4
     ratio = 16 / 11
-    width = 180 * mm * 110  # 96 dpi
+    width = 180 * mm * 110
     height = width / ratio
 
-    colors_fill =  ['rgba(255,0,0,0.5)', 'rgba(0,0,255,0.5)']
-    colors_line =  ['rgba(255,0,0,0.8)', 'rgba(0,0,255,0.8)']
-    colors_hl_bg = ['rgba(255,0,0,0.3)', 'rgba(0,0,255,0.3)']
+    # Couleurs
+    colors_fill = [f'rgba({c},{fill_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
+    colors_line = [f'rgba({c},{line_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
+    colors_hl =  [f'rgba({c},{background_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
 
-    yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
-    yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
-    yticklabelsR = ["∞", "1 000 000", "1000", "100", "40", "10", "4", "2", "1"]
-
-    names = ['pF', 'pC']
-    trace_names = ['With human influence', 'Without human influence']
-
-    fill_traces = []
-    median_traces = []
-
-    for i, (name, tn) in enumerate(zip(names, trace_names)):
+    fig = go.Figure()
+    fill_traces, line_traces = [], []
+    
+    for i, var in enumerate(variables):
+        ql = stats[var].sel(quantile="QL").values
+        be = stats[var].sel(quantile="BE").values
+        qu = stats[var].sel(quantile="QU").values
         time = stats.time.values
-        be = stats[name].sel(quantile='BE').values
-        ql = stats[name].sel(quantile='QL').values
-        qu = stats[name].sel(quantile='QU').values
 
-        # Lower trace
+        # Traces IC
         lower = go.Scatter(
-            x=time,
-            y=plink(ql),
-            mode='lines',
-            line=dict(width=0),
-            fill=None,
-            showlegend=False,
-            hoverinfo='skip'
+            x=time, y=transform_func(ql), mode='lines', line=dict(width=0),
+            fill=None, hoverinfo='skip', showlegend=False
         )
-        # Upper trace
         upper = go.Scatter(
-            x=time,
-            y=plink(qu),
-            mode='lines',
-            line=dict(width=0),
-            fill='tonexty',
-            fillcolor=colors_fill[i],
-            showlegend=False,
-            hoverinfo='skip'
+            x=time, y=transform_func(qu), mode='lines', line=dict(width=0),
+            fill='tonexty', fillcolor=colors_fill[i],
+            hoverinfo='skip', showlegend=False
         )
-        fill_traces.extend([lower, upper])
+        fill_traces += [lower, upper]
 
-        # Best estimate's trace
+        # Trace médiane
+        customdata = customdata_func(ql, be, qu) if customdata_func else None
+
         median = go.Scatter(
             x=time,
-            y=plink(be),
-            customdata=np.stack([
-                [_safe_prob(p) for p in be],
-                [_safe_prob(p) for p in ql],
-                [_safe_prob(p) for p in qu],
-                [_safe_ret(1/p) for p in be],
-                [_safe_ret(1/p) for p in qu],
-                [_safe_ret(1/p) for p in ql]
-            ], axis=-1),
+            y=transform_func(be),
             mode='lines',
             line=dict(color=colors_line[i], width=2),
-            name=tn,
+            name=labels[i],
+            customdata=customdata,
             legendrank=1-i,
-            hovertemplate=(
-                "<b>Year</b> : %{x}<br>" +
-                "<b>Probability</b> : %{customdata[0]} <i>[%{customdata[1]} to %{customdata[2]}]</i><br>" +
-                "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i><br>" +
-                "<extra></extra>"
-            ),
-            hoverlabel={
-                 'bgcolor': colors_hl_bg[i],
-                 'bordercolor': 'black',
-                 'font': {
-                      'color': 'black'
-                 }
-            }
+            hovertemplate=hovertemplate,
+            hoverlabel=dict(
+                bgcolor=colors_hl[i],
+                bordercolor='black',
+                font=dict(color='black')
+            )
         )
-        median_traces.append(median)
+        line_traces.append(median)
 
-    # Adding traces to the figure in specific order so that best estimates
-    # are on top
-    fig = go.Figure()
+    # Ajout dans le bon ordre
     for trace in fill_traces:
         fig.add_trace(trace)
-    for trace in median_traces:
+    for trace in line_traces:
         fig.add_trace(trace)
 
-    # Adding invisible and minimal scatter trace to get a secondary axis
-    fig.add_trace(go.Scatter(
-        x=[min(time), max(time)],
-        y=[min(be), max(be)],
-        yaxis="y2",
-        mode='markers',
-        opacity=0,
-        showlegend=False,
-        hoverinfo='skip'
-    ))
+    # Ajout d'un scatter invisible sur le deuxième axe, si ce dernier existe
+    if len(yaxis_conf) > 1:
+        fig.add_trace(
+            go.Scatter(
+                x=[min(time), max(time)],
+                y=[min(be), max(be)],
+                yaxis="y2",
+                mode="markers",
+                opacity=0,
+                showlegend=False,
+                hoverinfo="skip"
+            )
+        )
 
-    # Formating figure and most importantly axes
+    # Mise en forme des axes (primaire obligatoire, secondaire optionnel)
+    layout_yaxes = {}
+    for i, yaxis in enumerate(yaxis_conf):
+        axis_key = "yaxis" if i == 0 else "yaxis2"
+        layout_yaxes[axis_key] = dict(
+            title=yaxis.get("title", ""),
+            tickvals=transform_func(yaxis.get("tickvals", None)),
+            ticktext=yaxis.get("ticktext", None),
+            overlaying=yaxis.get("overlaying", None),
+            side=yaxis.get("side", "left"),
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey' if i == 0 else None,
+            showgrid=(i == 0),
+            tickfont=dict(size=14, color='black'),
+            title_font=dict(size=16, color='black', family='Arial'),
+            range=transform_func(yaxis.get("range", None)),
+        )
+
+    # Layout final
     fig.update_layout(
         width=width,
         height=height,
         meta=dict(initial_width=width, initial_height=height),
         margin=dict(l=60, r=60, t=40, b=40),
-        yaxis=dict(
-            title="Probability",
-            tickvals=plink(yticks),
-            ticktext=yticklabelsL,
-            range=[plink(EPSILON), plink(1-EPSILON)],
-            showline=True,
-            linecolor='black',
-            gridcolor='lightgrey',
-            tickfont=dict(size=14, color='black'),
-            title_font=dict(size=16, color='black', family='Arial')
-        ),
-        yaxis2=dict(
-            title="Return period [years]",
-            overlaying='y',
-            side='right',
-            tickvals=plink(yticks),
-            ticktext=yticklabelsR,
-            showgrid=False,
-            showline=True,
-            range=[plink(EPSILON), plink(1-EPSILON)],
-            linecolor='black',
-            tickfont=dict(size=14, color='black'),
-            title_font=dict(size=16, color='black', family='Arial')
+        plot_bgcolor='white',
+        legend=dict(
+            font=dict(size=14),
+            bgcolor='rgba(255,255,255,0)',
+            y=0.95
         ),
         xaxis=dict(
             title="Time",
@@ -212,13 +199,54 @@ def plot_probability(stats: xr.DataArray):
             tickfont=dict(size=14, color='black'),
             title_font=dict(size=16, color='black', family='Arial')
         ),
-        plot_bgcolor='white',
-        legend=dict(
-            font=dict(size=14),
-            bgcolor='rgba(255,255,255,0)',
-            y=0.95
-        ),
-        modebar_remove=['select', 'lasso2d']
+        modebar_remove=['select', 'lasso2d'],
+        **layout_yaxes
+    )
+
+    return fig
+
+
+def plot_probability(stats: xr.DataArray):
+
+    yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
+    yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
+    yticklabelsR = ["∞", "1 000 000", "1000", "100", "40", "10", "4", "2", "1"]
+
+    fig = create_plotly_figure(
+        stats,
+        variables=['pF', 'pC'],
+        labels=['With human influence', 'Without human influence'],
+        yaxis_conf=[
+            {
+                'title': "Probability",
+                'tickvals': yticks,
+                'ticktext': yticklabelsL,
+                'range': [EPSILON, 1-EPSILON]
+            },
+            {
+                'title': "Return period [years]",
+                'overlaying': "y",
+                'side': "right",
+                'tickvals': yticks,
+                'ticktext': yticklabelsR,
+                'range': [EPSILON, 1-EPSILON]
+            }
+        ],
+        transform_func=plink,
+        customdata_func=lambda ql, be, qu: np.stack([
+            [_safe_prob(p) for p in be],
+            [_safe_prob(p) for p in ql],
+            [_safe_prob(p) for p in qu],
+            [_safe_ret(1/p) for p in be],
+            [_safe_ret(1/p) for p in qu],
+            [_safe_ret(1/p) for p in ql]
+        ], axis=-1),
+        hovertemplate=(
+            "<b>Year</b> : %{x}<br>" +
+            "<b>Probability</b> : %{customdata[0]} <i>[%{customdata[1]} to %{customdata[2]}]</i><br>" +
+            "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i><br>" +
+            "<extra></extra>"
+        )
     )
 
     return fig
