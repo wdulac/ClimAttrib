@@ -2,7 +2,7 @@ import xarray as xr
 import numpy as np
 import sys
 
-from typing import Callable
+from collections.abc import Callable
 import plotly.graph_objects as go
 
 CONFIDENCE_INTERVAL=0.05
@@ -73,11 +73,11 @@ def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
 def create_plotly_figure(
     stats: xr.DataArray,
     variables: list[str],
-    labels: list[str],
     yaxis_conf: list[dict],
-    transform_func: Callable[[np.ndarray], str] | None = lambda x: x,
+    labels: list[str] | None = None,
+    transform_func: Callable[[np.ndarray], float] | None = lambda x: x,
     customdata_func: Callable[[np.ndarray], np.ndarray] | None = None,
-    hovertemplate = str,
+    hovertemplate: str | None = None,
     colors: list[str] | None = None,
     fill_alpha: float = 0.5,
     line_alpha: float = 0.8,
@@ -104,6 +104,7 @@ def create_plotly_figure(
         be = stats[var].sel(quantile="BE").values
         qu = stats[var].sel(quantile="QU").values
         time = stats.time.values
+        label = labels[i] if labels else None
 
         # Traces IC
         lower = go.Scatter(
@@ -125,7 +126,7 @@ def create_plotly_figure(
             y=transform_func(be),
             mode='lines',
             line=dict(color=colors_line[i], width=2),
-            name=labels[i],
+            name=label,
             customdata=customdata,
             legendrank=1-i,
             hovertemplate=hovertemplate,
@@ -206,7 +207,7 @@ def create_plotly_figure(
     return fig
 
 
-def plot_probability(stats: xr.DataArray):
+def plot_probability(stats: xr.DataArray) -> go.Figure:
 
     yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
     yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
@@ -215,7 +216,6 @@ def plot_probability(stats: xr.DataArray):
     fig = create_plotly_figure(
         stats,
         variables=['pF', 'pC'],
-        labels=['With human influence', 'Without human influence'],
         yaxis_conf=[
             {
                 'title': "Probability",
@@ -232,6 +232,7 @@ def plot_probability(stats: xr.DataArray):
                 'range': [EPSILON, 1-EPSILON]
             }
         ],
+        labels=['With human influence', 'Without human influence'],
         transform_func=plink,
         customdata_func=lambda ql, be, qu: np.stack([
             [_safe_prob(p) for p in be],
@@ -247,6 +248,35 @@ def plot_probability(stats: xr.DataArray):
             "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i><br>" +
             "<extra></extra>"
         )
+    )
+
+    return fig
+
+
+def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
+    
+    yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
+    yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
+    ytickslabelsR = ["-∞", "-999", "-99", "-9", "-4", "0", "80%", "90%", "99%", "99,99%", "100%"]
+
+    fig = create_plotly_figure(
+        stats,
+        variables=['PR'],
+        yaxis_conf=[
+            {
+                'title': 'Probability ratio',
+                'tickvals': yticks,
+                'ticktext': yticklabelsL,
+                'range': [EPSILON, 1/EPSILON]
+            },
+            {
+                'Title': 'Fraction of attributable risk [%]',
+                'tickvals': yticks,
+                'ticktext': ytickslabelsR,
+                'range': [EPSILON, 1/EPSILON]
+            }
+        ],
+        transform_func=PRlink
     )
 
     return fig

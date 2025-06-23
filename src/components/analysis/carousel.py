@@ -3,6 +3,7 @@ from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
 from components import probability_plot
+from components import PR_FAR_plot
 
 def carousel(stats):
 
@@ -40,7 +41,24 @@ def carousel(stats):
                     ),
                     dmc.CarouselSlide(
                         dmc.Center(
-                            "Page 2",
+                            # PR_FAR_plot(stats),
+                            # 'Page 2',
+                            dmc.Text(
+                                ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
+                                 "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
+                                 "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
+                                 "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
+                                 "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
+                                 "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
+                                 "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
+                                 "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
+                                 "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
+                                 "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
+                                 "nisi ullamcorper in. Proin placerat tristique convallis."),
+                                id='lorem-ipsum-demo',
+                                style={'userSelect': 'text'},
+                                w=600
+                            ),
                             bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
                         )
                     ),
