@@ -3,6 +3,11 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
     // Prevent swiping interaction with the carousel when dragging the mouse
     // to zoom in on an arbitrary element identified by id.
     blockSwiper: function (id) {
+
+      if (!(typeof id === 'string' || id instanceof String)) {
+                  id = JSON.stringify(id, Object.keys(id).sort());
+      };
+
       const el = document.getElementById(id);
       if (!el) return window.dash_clientside.no_update;
 

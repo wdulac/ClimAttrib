@@ -1,23 +1,28 @@
 // Namespace for interaction with dash clientside callbacks
 window.dash_clientside = Object.assign({}, window.dash_clientside, {
-  plotly_extras: {
-    // Look out for .plotly-notifier and move it into .user-select-none.svg-container
-    hookPlotlyNotifier: function (containerId) {
-      const parent = document.getElementById(containerId);
-      if (!parent) return;
+    plotly_extras: {
+        // Look out for .plotly-notifier and move it into .user-select-none.svg-container
+        hookPlotlyNotifier: function (containerId) {
     
-      const observer = new MutationObserver(() => {
-        const container = parent.querySelector('.user-select-none.svg-container');
-        const notifier = document.querySelector('.plotly-notifier');
-        if (container && notifier && !container.contains(notifier)) {
-          container.appendChild(notifier);
-          observer.disconnect();
+        if (!(typeof containerId === 'string' || containerId instanceof String)) {
+                    containerId = JSON.stringify(containerId, Object.keys(containerId).sort());
+        };
+
+        const parent = document.getElementById(containerId);
+        if (!parent) return;
+    
+        const observer = new MutationObserver(() => {
+          const container = parent.querySelector('.user-select-none.svg-container');
+          const notifier = document.querySelector('.plotly-notifier');
+          if (container && notifier && !container.contains(notifier)) {
+            container.appendChild(notifier);
+            observer.disconnect();
+          }
+        });
+    
+        observer.observe(document.body, { childList: true });
         }
-      });
-    
-      observer.observe(document.body, { childList: true });
     }
-  }
 });
 
 

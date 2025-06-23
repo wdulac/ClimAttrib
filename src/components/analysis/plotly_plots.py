@@ -37,7 +37,7 @@ clientside_callback(
         function_name="blockSwiper"
     ),
     Output({"type": "plot-container", "name": MATCH}, "data-dummy"),  # dummy prop
-    Input({"type": "plot-container", "name": MATCH}, "data-dummy")
+    Input({"type": "plot-container", "name": MATCH}, "id")
 )
 
 
