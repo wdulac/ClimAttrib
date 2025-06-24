@@ -5,63 +5,53 @@ import dash_mantine_components as dmc
 from components import probability_plot
 from components import PR_FAR_plot
 
+
+DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]
+
+_lorem_ipsum = dmc.Text(
+    ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
+     "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
+     "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
+     "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
+     "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
+     "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
+     "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
+     "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
+     "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
+     "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
+     "nisi ullamcorper in. Proin placerat tristique convallis.")*2,
+    id='lorem-ipsum-demo',
+    style={'userSelect': 'text', 'width': '30%'},
+)
+
+def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR):
+
+    return dmc.CarouselSlide(
+        dmc.Center([
+            slide_content
+        ], h='100%', bg=bg)
+    )
+
+
 def carousel(stats):
 
     component = dmc.Carousel([
-                    dmc.CarouselSlide(
-                        dmc.Center(
-                            dmc.Group(
-                                children=[
-                                    probability_plot(stats),
-                                    dmc.Text(
-                                        ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
-                                         "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
-                                         "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
-                                         "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
-                                         "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
-                                         "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
-                                         "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
-                                         "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
-                                         "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
-                                         "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
-                                         "nisi ullamcorper in. Proin placerat tristique convallis."),
-                                        id='lorem-ipsum-demo',
-                                        style={'userSelect': 'text'},
-                                        w=600
-                                    )
-                                ],
+                    _carousel_slide(
+                        dmc.Group(
+                            children=[
+                                probability_plot(stats),
+                                PR_FAR_plot(stats)
+                            ],
                             h='100%', style={
                                 'justifyContent': 'space-around',
                                 'width': '100%',
                                 'userSelect': 'none'
-                                }
-                            ),
-                        h='100%', bg=dmc.DEFAULT_THEME['colors']['yellow'][2]
+                            }
                         )
                     ),
-                    dmc.CarouselSlide(
-                        dmc.Center(
-                            dmc.Group(
-                                children=[
-                                    PR_FAR_plot(stats)
-                                ],
-                                h='100%'
-                            ),
-                            bg=dmc.DEFAULT_THEME['colors']['red'][2], c="black", w="100%", h="100%"
-                        )
-                    ),
-                    dmc.CarouselSlide(
-                        dmc.Center(
-                            "Page 3",
-                            bg=dmc.DEFAULT_THEME['colors']['green'][2], c='black', w='100%', h='100%'
-                        )
-                    ),
-                    dmc.CarouselSlide(
-                        dmc.Center(
-                            "Page 4",
-                            bg=dmc.DEFAULT_THEME['colors']['blue'][2], c='black', w='100%', h='100%'
-                        )
-                    )
+                    _carousel_slide(_lorem_ipsum),
+                    _carousel_slide('Page 3'),
+                    _carousel_slide('Page 4'),
                     ],
                     orientation='vertical',
                     withIndicators=True,
