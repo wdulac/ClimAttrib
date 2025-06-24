@@ -9,8 +9,8 @@ def PR_FAR_plot(stats):
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'PR'}),
-        dcc.Graph(figure=fig, config=dict(displaylogo=False))
-    ], id={'type': 'plot-container', 'name': 'PR'})
+        dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot-PR')
+    ], id={'type': 'plot-container', 'name': 'PR'}, className='plot-container')
 
     return component
 
@@ -21,11 +21,8 @@ def probability_plot(stats):
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'probability'}),
-        html.Div([
-                dcc.Graph(figure=fig, config=dict(displaylogo=False))
-            ],
-            id={'type': 'plot-container', 'name': 'probability'})
-    ], id='results-parent-container')
+        dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot-probability')
+    ], id={'type': 'plot-container', 'name': 'probability'}, className='plot-container')
 
     return component
 
