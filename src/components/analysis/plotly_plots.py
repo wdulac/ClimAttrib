@@ -40,11 +40,11 @@ clientside_callback(
 
 # Place the plotly 'double click to zoom back out' notification relative to the
 # plotly graph.
-clientside_callback(
-    ClientsideFunction(
-        namespace='plotly_extras',
-        function_name='hookPlotlyNotifier'
-    ),
-    Output({'type': 'plotly-notifier-hook', 'name': MATCH}, 'data-dummy'),
-    Input({'type': 'plot-container', 'name': MATCH}, 'id'),
-)
+# clientside_callback(
+#     ClientsideFunction(
+#         namespace='plotly_extras',
+#         function_name='hookPlotlyNotifier'
+#     ),
+#     Output({'type': 'plotly-notifier-hook', 'name': MATCH}, 'data-dummy'),
+#     Input({'type': 'plot-container', 'name': MATCH}, 'id'),
+# )

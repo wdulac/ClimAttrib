@@ -4,7 +4,7 @@
 
 /* .plotly-notifier is not natively a children of .user-select-none. A JS clientside callback 
    is required to move it into place */
-.user-select-none.svg-container .plotly-notifier {
+/* .user-select-none.svg-container .plotly-notifier {
     position: absolute !important;
     top: 50px;
     left: 45%;
@@ -13,10 +13,12 @@
     top: 10px;
     right: 10px;
     z-index: 1000;
-}
+} */
 
 
 .modebar {
-   right: auto;
-   left: 2px;
+    position: absolute ;
+    top: 10px;
+    right: 10px;
+    transform: translateY(-20px);
 }
