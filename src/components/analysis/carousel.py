@@ -24,13 +24,50 @@ _lorem_ipsum = dmc.Text(
     style={'userSelect': 'text', 'width': '30%'},
 )
 
-def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR):
+# def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR):
 
-    return dmc.CarouselSlide(
-        dmc.Center([
-            slide_content
-        ], h='100%', bg=bg)
-    )
+#     return dmc.CarouselSlide(
+#         dmc.Center([
+#             slide_content
+#         ], h='100%', bg=bg)
+#     )
+
+def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR, align='center'):
+    if align == 'center':
+        # Centrage simple horizontal + vertical, pas d'align bottom
+        content = dmc.Center(
+            slide_content,
+            h='100%',
+            style={'backgroundColor': bg, 'width': '100%'}
+        )
+    elif align == 'bottom':
+        # Centrage vertical + align bottom des enfants
+        content = dmc.Box(
+            dmc.Box(
+                slide_content,
+                style={
+                    'display': 'flex',
+                    'alignItems': 'flex-end',
+                    'width': '100%',
+                }
+            ),
+            style={
+                'display': 'flex',
+                'flexDirection': 'column',
+                'justifyContent': 'center',
+                'height': '100%',
+                'backgroundColor': bg
+            }
+        )
+    else:
+        # fallback: juste un Center
+        content = dmc.Center(
+            slide_content,
+            h='100%',
+            style={'backgroundColor': bg, 'width': '100%'}
+        )
+
+    return dmc.CarouselSlide(content)
 
 
 def carousel(stats):
@@ -44,10 +81,11 @@ def carousel(stats):
                             ],
                             h='100%', style={
                                 'justifyContent': 'space-around',
+                                'alignItems': 'flex-end',
                                 'width': '100%',
                                 'userSelect': 'none'
                             }
-                        )
+                        ), align='bottom'
                     ),
                     _carousel_slide(_lorem_ipsum),
                     _carousel_slide('Page 3'),
