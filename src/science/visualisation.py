@@ -185,6 +185,7 @@ def create_plotly_figure(
         meta=dict(initial_width=width, initial_height=height),
         margin=dict(l=60, r=60, t=40, b=40),
         plot_bgcolor='white',
+        paper_bgcolor='rgba(0,0,0,0)',
         legend=dict(
             font=dict(size=14),
             bgcolor='rgba(255,255,255,0)',
