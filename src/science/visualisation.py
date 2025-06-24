@@ -176,20 +176,27 @@ def create_plotly_figure(
             tickfont=dict(size=14, color='black'),
             title_font=dict(size=16, color='black', family='Arial'),
             range=transform_func(yaxis.get("range", None)),
+            domain=[0,1]
         )
 
     # Layout final
     fig.update_layout(
         width=width,
-        height=height,
-        meta=dict(initial_width=width, initial_height=height),
+        height=height + 13 if labels else height,
+        meta=dict(initial_width=width, initial_height=height + 13 if labels else height),
         margin=dict(l=60, r=60, t=40, b=40),
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
         legend=dict(
-            font=dict(size=14),
+            orientation="h",
+            y=1.02,
+            x=0.5,
+            xanchor="center",
+            yanchor="bottom",
             bgcolor='rgba(255,255,255,0)',
-            y=0.95
+            font=dict(size=14),
+            itemsizing='constant',
+            traceorder='reversed',
         ),
         xaxis=dict(
             title="Time",
@@ -200,7 +207,8 @@ def create_plotly_figure(
             gridcolor='lightgrey',
             mirror=True,
             tickfont=dict(size=14, color='black'),
-            title_font=dict(size=16, color='black', family='Arial')
+            title_font=dict(size=16, color='black', family='Arial'),
+            domain=[0,1]
         ),
         modebar_remove=['select', 'lasso2d'],
         **layout_yaxes
