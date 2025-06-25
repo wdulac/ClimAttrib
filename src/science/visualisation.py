@@ -271,7 +271,8 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
-    ytickslabelsR = ["-∞", "-99 900%", "-9 900%", "-90%", "-40%", "0%", "80%", "90%", "99%", "99,99%", "100%"]
+    # ytickslabelsR = ["-∞", "-99 900%", "-9 900%", "-90%", "-40%", "0%", "80%", "90%", "99%", "99,99%", "100%"]
+    ytickslabelsR = ["", "", "", "", "", "0%", "80%", "90%", "99%", "99,99%", "100%"]
 
     fig = create_plotly_figure(
         stats,
@@ -292,7 +293,41 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
                 'side': 'right'
             }
         ],
+        # colors=["204,85,0"], # Orange foncé
+        colors=["0,128,128"], # Turquoise foncé
+        customdata_func=lambda ql, be, qu: np.stack([
+            [PRlink(pr) for pr in ql],
+            [PRlink(pr) for pr in be],
+            [PRlink(pr) for pr in qu],
+            [PRlink(1-(1/pr)) for pr in ql],
+            [PRlink(1-(1/pr)) for pr in be],
+            [PRlink(1-(1/pr)) for pr in qu]
+        ], axis=-1),
+        hovertemplate=(
+            "<b>Year</b> : %{x}<br>" +
+            "<b>Ratio</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i><br>" +
+            "<b>FAR</b> : %{customdata[4]} <i>[%{customdata[3]} to %{customdata[5]}]</i><br>" +
+            "<extra></extra>"
+        ),
         transform_func=PRlink
+    )
+
+    fig.add_shape(
+        type="rect",
+        xref="paper", x0=0, x1=1,
+        yref="y", y0=PRlink(EPSILON), y1=PRlink(1),
+        fillcolor="lightgrey",
+        opacity=0.3,
+        layer="below",
+        line_width=0
+    ),
+
+    fig.add_annotation(
+        text="Fraction of attributable risk not interpretable for proba. ratio < 1",
+        xref="paper", yref="y",
+        x=0.99, y=PRlink(5e-8),
+        showarrow=False,
+        font=dict(size=12, color="gray")
     )
 
     return fig
