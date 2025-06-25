@@ -78,7 +78,7 @@ def create_plotly_figure(
     transform_func: Callable[[np.ndarray], float] | None = lambda x: x,
     customdata_func: Callable[[np.ndarray], np.ndarray] | None = None,
     hovertemplate: str | None = None,
-    colors: list[str] | None = None,
+    colors: list[str] | None = ['255,0,0', '0,0,255', '0,128,0', '128,0,128'],
     fill_alpha: float = 0.5,
     line_alpha: float = 0.8,
     background_alpha: float = 0.3,
@@ -92,9 +92,9 @@ def create_plotly_figure(
     height = width / ratio
 
     # Couleurs
-    colors_fill = [f'rgba({c},{fill_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
-    colors_line = [f'rgba({c},{line_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
-    colors_hl =  [f'rgba({c},{background_alpha})' for c in ['255,0,0', '0,0,255', '0,128,0', '128,0,128']][:len(variables)]
+    colors_fill = [f'rgba({c},{fill_alpha})' for c in colors][:len(variables)]
+    colors_line = [f'rgba({c},{line_alpha})' for c in colors][:len(variables)]
+    colors_hl =  [f'rgba({c},{background_alpha})' for c in colors][:len(variables)]
 
     fig = go.Figure()
     fill_traces, line_traces = [], []
@@ -173,17 +173,21 @@ def create_plotly_figure(
             linecolor='black',
             gridcolor='lightgrey' if i == 0 else None,
             showgrid=(i == 0),
+            zeroline=(i == 0),
+            zerolinecolor='lightgrey',
+            zerolinewidth=1,
             tickfont=dict(size=14, color='black'),
             title_font=dict(size=16, color='black', family='Arial'),
             range=transform_func(yaxis.get("range", None)),
             domain=[0,1]
         )
 
+    height = height + 13 if labels else height
     # Layout final
     fig.update_layout(
         width=width,
-        height=height + 13 if labels else height,
-        meta=dict(initial_width=width, initial_height=height + 13 if labels else height),
+        height=height,
+        meta=dict(initial_width=width, initial_height=height),
         margin=dict(l=60, r=60, t=40, b=40),
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
@@ -267,7 +271,7 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
-    ytickslabelsR = ["-∞", "-999", "-99", "-9", "-4", "0", "80%", "90%", "99%", "99,99%", "100%"]
+    ytickslabelsR = ["-∞", "-99 900%", "-9 900%", "-90%", "-40%", "0%", "80%", "90%", "99%", "99,99%", "100%"]
 
     fig = create_plotly_figure(
         stats,
