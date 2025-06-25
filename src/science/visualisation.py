@@ -360,3 +360,11 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     )
 
     return fig
+
+
+def plot_intensity(stats: xr.Dataset) -> go.Figure:
+    pass
+
+
+def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
+    pass
