@@ -312,22 +312,45 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
         transform_func=PRlink
     )
 
-    fig.add_shape(
-        type="rect",
-        xref="paper", x0=0, x1=1,
-        yref="y", y0=PRlink(EPSILON), y1=PRlink(1),
-        fillcolor="lightgrey",
-        opacity=0.3,
-        layer="below",
-        line_width=0
-    ),
+    y0 = PRlink(EPSILON)
+    y1 = PRlink(1)
+
+    # Détermine les bornes en X avec les données
+    x_start = stats.time.values[0]
+    x_end = stats.time.values[-1]
+    x_center = (x_start + x_end) / 2
+    
+    # Trace de hachure par Bar
+    hachure_trace = go.Bar(
+        x=[x_center],  # une seule barre qui couvre tout
+        y=[y1 - y0],           # hauteur = hauteur de la zone à hachurer
+        base=y0,               # position de départ (bas de la barre)
+        width=[x_end - x_start],
+        marker=dict(
+            color="rgba(0,0,0,0)",              # fond transparent
+            pattern=dict(
+                shape="/",                     # hachures diagonales
+                fillmode="overlay",            # s’applique au-dessus de `color`
+                size=15,                       # taille du motif
+                fgcolor="lightgrey",           # couleur des hachures
+            ),
+            line=dict(width=0)                 # pas de bord
+        ),
+        hoverinfo="skip",
+        showlegend=False,
+        xaxis='x',  # même axe que les autres
+        yaxis='y'   # on précise bien le même y
+    )
+    
+    # On l’ajoute en premier ou dernier selon ton besoin
+    fig.add_trace(hachure_trace)
 
     fig.add_annotation(
         text="Fraction of attributable risk not interpretable for proba. ratio < 1",
         xref="paper", yref="y",
-        x=0.99, y=PRlink(5e-8),
+        x=0.99, y=PRlink(0.045),
         showarrow=False,
-        font=dict(size=12, color="gray")
+        font=dict(size=14, color="dimgrey")
     )
 
     return fig
