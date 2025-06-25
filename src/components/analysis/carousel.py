@@ -41,7 +41,7 @@ _lorem_ipsum = dmc.Text(
      "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
      "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
      "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
-     "nisi ullamcorper in. Proin placerat tristique convallis.")*2,
+     "nisi ullamcorper in. Proin placerat tristique convallis.")*10,
     id='lorem-ipsum-demo',
     style={'userSelect': 'text', 'width': '30%'},
 )
@@ -53,7 +53,13 @@ def carousel(stats):
         dmc.CarouselSlide(
             dmc.Center(
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Group(
+                children=dmc.Stack(
+                    style={
+                        'maxHeight': '80%',
+                        'overflowY': 'auto',
+                        'width': '100%'
+                    },
+                    children=dmc.Group(
                         style={
                             'justify-content': 'space-around',
                             'align-items': 'flex-end',
@@ -64,13 +70,21 @@ def carousel(stats):
                             probability_plot(stats),
                             PR_FAR_plot(stats)
                         ]
+                    )
                 )
             )
         ),
         dmc.CarouselSlide(
             dmc.Center(
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=_lorem_ipsum
+                children=dmc.Stack(
+                    style={
+                        'maxHeight': '80%',
+                        'overflowY': 'auto',
+                        'alignItems': 'center'
+                    },
+                    children=_lorem_ipsum
+                )
             )
         ),
         dmc.CarouselSlide(
