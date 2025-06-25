@@ -70,6 +70,14 @@ def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
             _format_years(value)
     
         
+def _safe_PR(value):
+    pass
+
+
+def _safe_FAR(value):
+    pass
+
+
 def create_plotly_figure(
     stats: xr.DataArray,
     variables: list[str],
@@ -296,12 +304,12 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
         # colors=["204,85,0"], # Orange foncé
         colors=["0,128,128"], # Turquoise foncé
         customdata_func=lambda ql, be, qu: np.stack([
-            [PRlink(pr) for pr in ql],
-            [PRlink(pr) for pr in be],
-            [PRlink(pr) for pr in qu],
-            [PRlink(1-(1/pr)) for pr in ql],
-            [PRlink(1-(1/pr)) for pr in be],
-            [PRlink(1-(1/pr)) for pr in qu]
+            ql,
+            be,
+            qu,
+            [1-(1/pr) for pr in ql],
+            [1-(1/pr) for pr in be],
+            [1-(1/pr) for pr in qu]
         ], axis=-1),
         hovertemplate=(
             "<b>Year</b> : %{x}<br>" +
