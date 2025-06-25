@@ -279,7 +279,6 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
-    # ytickslabelsR = ["-∞", "-99 900%", "-9 900%", "-90%", "-40%", "0%", "80%", "90%", "99%", "99,99%", "100%"]
     ytickslabelsR = ["", "", "", "", "", "0%", "80%", "90%", "99%", "99,99%", "100%"]
 
     fig = create_plotly_figure(
@@ -320,34 +319,33 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
         transform_func=PRlink
     )
 
+    # Hachure de la région PR < 1
     y0 = PRlink(EPSILON)
     y1 = PRlink(1)
 
-    # Détermine les bornes en X avec les données
     x_start = stats.time.values[0]
     x_end = stats.time.values[-1]
     x_center = (x_start + x_end) / 2
     
-    # Trace de hachure par Bar
     hachure_trace = go.Bar(
-        x=[x_center],  # une seule barre qui couvre tout
-        y=[y1 - y0],           # hauteur = hauteur de la zone à hachurer
-        base=y0,               # position de départ (bas de la barre)
+        x=[x_center],
+        y=[y1 - y0],
+        base=y0,
         width=[x_end - x_start],
         marker=dict(
-            color="rgba(0,0,0,0)",              # fond transparent
+            color="rgba(0,0,0,0)",
             pattern=dict(
-                shape="/",                     # hachures diagonales
-                fillmode="overlay",            # s’applique au-dessus de `color`
-                size=15,                       # taille du motif
-                fgcolor="lightgrey",           # couleur des hachures
+                shape="/",
+                fillmode="overlay",
+                size=15,
+                fgcolor="lightgrey",
             ),
-            line=dict(width=0)                 # pas de bord
+            line=dict(width=0)
         ),
         hoverinfo="skip",
         showlegend=False,
-        xaxis='x',  # même axe que les autres
-        yaxis='y'   # on précise bien le même y
+        xaxis='x',
+        yaxis='y'
     )
     
     # On l’ajoute en premier ou dernier selon ton besoin
