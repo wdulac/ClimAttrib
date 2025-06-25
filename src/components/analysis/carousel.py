@@ -8,6 +8,28 @@ from components import PR_FAR_plot
 
 DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]
 
+DEFAULT_CENTERED_SLIDE_STYLE = {
+    'width': '100%',
+    'height': '100%',
+    'backgroundColor': DEFAULT_SLIDE_BACKGROUND_COLOR
+}
+
+CAROUSEL_SETTINGS = {
+    'orientation': 'vertical',
+    'withIndicators': True,
+    'withControls': True,
+    'emblaOptions': {
+        'align': 'center',
+        'loop': False
+    },
+    'previousControlIcon': DashIconify(icon="icons8:up-round", width=50),
+    'nextControlIcon': DashIconify(icon="icons8:down-round", width=50),
+    'classNames': {
+        'indicator': 'dmc-indicator',
+        'control': 'dmc-control'
+    }
+}
+
 _lorem_ipsum = dmc.Text(
     ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
      "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
@@ -24,88 +46,48 @@ _lorem_ipsum = dmc.Text(
     style={'userSelect': 'text', 'width': '30%'},
 )
 
-# def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR):
-
-#     return dmc.CarouselSlide(
-#         dmc.Center([
-#             slide_content
-#         ], h='100%', bg=bg)
-#     )
-
-def _carousel_slide(slide_content, bg=DEFAULT_SLIDE_BACKGROUND_COLOR, align='center'):
-    if align == 'center':
-        # Centrage simple horizontal + vertical, pas d'align bottom
-        content = dmc.Center(
-            slide_content,
-            h='100%',
-            style={'backgroundColor': bg, 'width': '100%'}
-        )
-    elif align == 'bottom':
-        # Centrage vertical + align bottom des enfants
-        content = dmc.Box(
-            dmc.Box(
-                slide_content,
-                style={
-                    'display': 'flex',
-                    'alignItems': 'flex-end',
-                    'width': '100%',
-                }
-            ),
-            style={
-                'display': 'flex',
-                'flexDirection': 'column',
-                'justifyContent': 'center',
-                'height': '100%',
-                'backgroundColor': bg
-            }
-        )
-    else:
-        # fallback: juste un Center
-        content = dmc.Center(
-            slide_content,
-            h='100%',
-            style={'backgroundColor': bg, 'width': '100%'}
-        )
-
-    return dmc.CarouselSlide(content)
-
 
 def carousel(stats):
 
     component = dmc.Carousel([
-                    _carousel_slide(
-                        dmc.Group(
-                            children=[
-                                probability_plot(stats),
-                                PR_FAR_plot(stats)
-                            ],
-                            h='100%', style={
-                                'justifyContent': 'space-around',
-                                'alignItems': 'flex-end',
-                                'width': '100%',
-                                'userSelect': 'none'
-                            }
-                        ), align='bottom'
-                    ),
-                    _carousel_slide(_lorem_ipsum),
-                    _carousel_slide('Page 3'),
-                    _carousel_slide('Page 4'),
-                    ],
-                    orientation='vertical',
-                    withIndicators=True,
-                    withControls=True,
-                    emblaOptions={
-                        'align': 'center',
-                        'loop': False
-                    },
-                    previousControlIcon=DashIconify(icon="icons8:up-round", width=50),
-                    nextControlIcon=DashIconify(icon="icons8:down-round", width=50),
-                    classNames={
-                        "indicator": "dmc-indicator",
-                        "control": "dmc-control"
-                    },
-                    id='my-carousel'
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=dmc.Group(
+                        style={
+                            'justify-content': 'space-around',
+                            'align-items': 'flex-end',
+                            'width': '100%',
+                            'userSelect': 'none'
+                        },
+                        children=[
+                            probability_plot(stats),
+                            PR_FAR_plot(stats)
+                        ]
                 )
+            )
+        ),
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=_lorem_ipsum
+            )
+        ),
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=dmc.Text("Page 3")
+            )
+        ),
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=dmc.Text('Page 4')
+            )
+        )
+    ],
+    **CAROUSEL_SETTINGS, 
+    id='my-carousel' )
     
     return component
 
