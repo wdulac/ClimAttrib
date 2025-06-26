@@ -82,6 +82,7 @@ def create_plotly_figure(
     stats: xr.DataArray,
     variables: list[str],
     yaxis_conf: list[dict],
+    xaxis_domain : list[float] = [0, 1],
     labels: list[str] | None = None,
     transform_func: Callable[[np.ndarray], float] | None = lambda x: x,
     customdata_func: Callable[[np.ndarray], np.ndarray] | None = None,
@@ -220,7 +221,7 @@ def create_plotly_figure(
             mirror=True,
             tickfont=dict(size=14, color='black'),
             title_font=dict(size=16, color='black', family='Arial'),
-            domain=[0,1]
+            domain=xaxis_domain
         ),
         modebar_remove=['select', 'lasso2d'],
         **layout_yaxes
@@ -300,6 +301,7 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
                 'side': 'right'
             }
         ],
+        xaxis_domain=[0, 0.91],
         # colors=["204,85,0"], # Orange foncé
         colors=["0,128,128"], # Turquoise foncé
         customdata_func=lambda ql, be, qu: np.stack([
@@ -354,7 +356,7 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     fig.add_annotation(
         text="Fraction of attributable risk not interpretable for proba. ratio < 1",
         xref="paper", yref="y",
-        x=0.99, y=PRlink(0.045),
+        x=0.9, y=PRlink(0.045),
         showarrow=False,
         font=dict(size=14, color="dimgrey")
     )
