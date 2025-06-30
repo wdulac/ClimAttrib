@@ -365,7 +365,25 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
 
 
 def plot_intensity(stats: xr.Dataset) -> go.Figure:
-    pass
+
+    # Note to self: If this somehow causes issues (e.g offset subtracted multiple times) 
+    # the alternative would be to add an offset parameter to the :create_plotly_figure: function.
+    stats['IF'] -= 273.15
+    stats['IC'] -= 273.15
+
+    fig = create_plotly_figure(
+        stats,
+        variables=['IF', 'IC'],
+        yaxis_conf=[{
+            'title': 'Event intensity [°C]'
+        }],
+        labels=[
+            'With human influence',
+            'Without human influence'
+        ],
+    )
+
+    return fig
 
 
 def plot_intensity_change(stats: xr.Dataset) -> go.Figure:

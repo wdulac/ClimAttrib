@@ -4,6 +4,7 @@ import dash_mantine_components as dmc
 
 from components import probability_plot
 from components import PR_FAR_plot
+from components import intensity_plot
 
 
 DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]
@@ -72,6 +73,12 @@ def carousel(stats):
                         ]
                     )
                 )
+            )
+        ),
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=intensity_plot(stats)
             )
         ),
         dmc.CarouselSlide(
