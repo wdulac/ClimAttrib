@@ -3,6 +3,18 @@ from dash import MATCH
 from science import plot_probability
 from science import plot_PR_FAR
 from science import plot_intensity
+from science import plot_intensity_change
+
+
+def intensity_change_plot(stats):
+    fig = plot_intensity_change(stats)
+
+    component = html.Div([
+        html.Div(id={'type': 'plotly-notifier-hook', 'name': 'dI'}),
+        dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot-intensity-change')
+    ], id={'type': 'plot-container', 'name': 'intensity'}, className='plot-container')
+
+    return component
 
 
 def intensity_plot(stats):

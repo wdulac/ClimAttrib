@@ -6,4 +6,5 @@ from .analysis.chosen_event import chosen_event
 from .analysis.plotly_plots import probability_plot
 from .analysis.plotly_plots import PR_FAR_plot
 from .analysis.plotly_plots import intensity_plot
+from .analysis.plotly_plots import intensity_change_plot
 from .analysis.carousel import carousel
