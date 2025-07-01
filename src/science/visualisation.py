@@ -154,6 +154,17 @@ def create_plotly_figure(
     for trace in line_traces:
         fig.add_trace(trace)
 
+    x0 = stats.attrs['time']
+    fig.add_vline(
+        x=x0,
+        line={
+            'color': 'black',
+            'width': 1
+        },
+        annotation_text=f"Year {x0}",
+        annotation_position='top left'
+    )
+
     # Ajout d'un scatter invisible sur le deuxième axe, si ce dernier existe
     if len(yaxis_conf) > 1:
         fig.add_trace(

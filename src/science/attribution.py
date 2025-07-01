@@ -183,4 +183,6 @@ def attribute_event(event:dict) -> xr.Dataset:
 
     dataset = xr.Dataset({da.name: da for da in data_arrays})
 
+    dataset.attrs['time'] = int(event['date'].year)
+
     return dataset
