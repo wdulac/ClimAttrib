@@ -177,7 +177,7 @@ def create_plotly_figure(
             title=yaxis.get("title", ""),
             tickvals=transform_func(yaxis.get("tickvals", None)),
             ticktext=yaxis.get("ticktext", None),
-            overlaying=yaxis.get("overlaying", None),
+            overlaying=yaxis.get("overlaying", "y" if i > 0 else None),
             side=yaxis.get("side", "left"),
             showline=True,
             linecolor='black',
@@ -377,7 +377,8 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
         variables=['IF', 'IC'],
         yaxis_conf=[{
             'title': 'Event intensity [°C]'
-        }],
+        },
+        {'side': 'right', 'tickvals': [], 'ticktext': []}],
         labels=[
             'With human influence',
             'Without human influence'
@@ -395,7 +396,8 @@ def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
         variables=['dI'],
         yaxis_conf=[{
             'title': 'Change in intensity [°C]'
-        }]
+        },
+        {'side': 'right', 'tickvals': [], 'ticktext': []}]
     )
     
     return fig
