@@ -70,12 +70,44 @@ def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
             _format_years(value)
     
         
-def _safe_PR(value):
-    pass
+def _safe_PR(value, max_val=1e5, min_val=1e-3):
+    if np.isnan(value):
+        return "NaN"
+    elif value >= max_val:
+        return f"> {int(max_val):,}".replace(",", " ")
+    elif value > 1:
+        if value < 10:
+            return f"{value:.2f}"
+        elif value < 20:
+            return f"{value:.1f}"
+        elif value < 100:
+            return str(round(value))
+        elif value < 1000:
+            return str(round(value / 5) * 5)
+        elif value < 10_000:
+            return str(round(value / 50) * 50)
+        else:
+            return str(round(value / 500) * 500)
+    elif value >= 0.01:
+        return f"{value:.2f}"
+    elif value < min_val:
+        return f"< {min_val:.3f}"
+    else:
+        return f"{value:.3f}"
 
 
 def _safe_FAR(value):
-    pass
+
+    if np.isnan(value):
+        return "NaN"
+    elif value < 0:
+        return "--"
+    
+    p = value * 100
+    if round(p, 2) == 100:
+        return "100%"
+    else:
+        return f"{p:.2f}%"
 
 
 def create_plotly_figure(
@@ -320,12 +352,12 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
         # colors=["204,85,0"], # Orange foncé
         colors=["0,128,128"], # Turquoise foncé
         customdata_func=lambda ql, be, qu: np.stack([
-            ql,
-            be,
-            qu,
-            [1-(1/pr) for pr in ql],
-            [1-(1/pr) for pr in be],
-            [1-(1/pr) for pr in qu]
+            [_safe_PR(pr) for pr in ql],
+            [_safe_PR(pr) for pr in be],
+            [_safe_PR(pr) for pr in qu],
+            [_safe_FAR(1-(1/pr)) for pr in ql],
+            [_safe_FAR(1-(1/pr)) for pr in be],
+            [_safe_FAR(1-(1/pr)) for pr in qu]
         ], axis=-1),
         hovertemplate=(
             "<b>Year</b> : %{x}<br>" +
