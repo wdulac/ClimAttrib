@@ -279,8 +279,9 @@ def plot_probability(stats: xr.DataArray) -> go.Figure:
             [_safe_ret(1/p) for p in qu],
             [_safe_ret(1/p) for p in ql]
         ], axis=-1),
+        hovermode='x unified',
         hovertemplate=(
-            "<b>Year</b> : %{x}<br>" +
+            # "<b>Year</b> : %{x}<br>" +
             "<b>Probability</b> : %{customdata[0]} <i>[%{customdata[1]} to %{customdata[2]}]</i><br>" +
             "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i><br>" +
             "<extra></extra>"
@@ -396,6 +397,7 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
             'With human influence',
             'Without human influence'
         ],
+        hovermode='x unified'
     )
 
     return fig
