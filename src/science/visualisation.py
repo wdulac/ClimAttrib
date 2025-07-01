@@ -78,7 +78,6 @@ def _safe_FAR(value):
     pass
 
 
-# TODO Add axis line on right side even if there is no secondary axis
 def create_plotly_figure(
     stats: xr.DataArray,
     variables: list[str],
@@ -391,7 +390,6 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
 
 def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
 
-    # TODO Use signed axis for intensity change 
     fig = create_plotly_figure(
         stats,
         variables=['dI'],
