@@ -86,6 +86,7 @@ def create_plotly_figure(
     labels: list[str] | None = None,
     transform_func: Callable[[np.ndarray], float] | None = lambda x: x,
     customdata_func: Callable[[np.ndarray], np.ndarray] | None = None,
+    hovermode: str | None = None,
     hovertemplate: str | None = None,
     colors: list[str] | None = ['255,0,0', '0,0,255', '0,128,0', '128,0,128'],
     fill_alpha: float = 0.5,
@@ -212,6 +213,7 @@ def create_plotly_figure(
         margin=dict(l=60, r=60, t=40, b=40),
         plot_bgcolor='white',
         paper_bgcolor='rgba(0,0,0,0)',
+        hovermode=hovermode,
         legend=dict(
             orientation="h",
             y=1.02,
