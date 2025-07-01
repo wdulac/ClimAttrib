@@ -177,6 +177,7 @@ def create_plotly_figure(
             title=yaxis.get("title", ""),
             tickvals=transform_func(yaxis.get("tickvals", None)),
             ticktext=yaxis.get("ticktext", None),
+            tickformat=yaxis.get("tickformat", None),
             overlaying=yaxis.get("overlaying", "y" if i > 0 else None),
             side=yaxis.get("side", "left"),
             showline=True,
@@ -395,9 +396,11 @@ def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
         stats,
         variables=['dI'],
         yaxis_conf=[{
-            'title': 'Change in intensity [°C]'
+            'title': 'Change in intensity [°C]',
+            'tickformat': '+'
         },
-        {'side': 'right', 'tickvals': [], 'ticktext': []}]
+        {'side': 'right', 'tickvals': [], 'ticktext': []}],
+        colors=["204,85,0"]
     )
-    
+
     return fig
