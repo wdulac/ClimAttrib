@@ -375,8 +375,9 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
             [_safe_FAR(1-(1/pr)) for pr in be],
             [_safe_FAR(1-(1/pr)) for pr in qu]
         ], axis=-1),
+        hovermode='x unified',
         hovertemplate=(
-            "<b>Year</b> : %{x}<br>" +
+            # "<b>Year</b> : %{x}<br>" +
             "<b>Ratio</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i><br>" +
             "<b>FAR</b> : %{customdata[4]} <i>[%{customdata[3]} to %{customdata[5]}]</i><br>" +
             "<extra></extra>"
@@ -475,8 +476,9 @@ def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
             [_safe_intensity_change(delta) for delta in be],
             [_safe_intensity_change(delta) for delta in qu]
         ], axis=-1),
+        hovermode='x unified',
         hovertemplate=(
-            "<b>Year</b> : %{x}<br>" +
+            # "<b>Year</b> : %{x}<br>" +
             "<b>Change</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i>" +
             "<extra></extra>"
         ),
