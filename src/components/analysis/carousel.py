@@ -5,6 +5,7 @@ import dash_mantine_components as dmc
 from components.analysis.plotly_plots import probability_plot
 from components.analysis.plotly_plots import PR_FAR_plot
 from components.analysis.plotly_plots import intensity_plot, intensity_change_plot
+from components.analysis.sentence_generator import build_summary_component
 
 
 DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]
@@ -51,6 +52,19 @@ _lorem_ipsum = dmc.Text(
 def carousel(stats, task_id):
 
     component = dmc.Carousel([
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=dmc.Stack(
+                    style={
+                        'maxHeight': '80%',
+                        'overflowY': 'auto',
+                        'width': '100%'
+                    },
+                    children=build_summary_component(stats)
+                )
+            )
+        ),
         dmc.CarouselSlide(
             dmc.Center(
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
