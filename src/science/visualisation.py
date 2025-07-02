@@ -104,10 +104,26 @@ def _safe_FAR(value):
         return "--"
     
     p = value * 100
-    if round(p, 2) == 100:
-        return "100%"
+    if round(p, 2) > 99.99:
+        return "> 99.99%"
     else:
         return f"{p:.2f}%"
+    
+
+def _safe_intensity(value):
+
+    if np.isnan(value):
+        return "NaN"
+    
+    return f"{value:.1f}°C"
+
+
+def _safe_intensity_change(value):
+
+    if np.isnan(value):
+        return "NaN"
+    
+    return f"{value:+.1f}°C"
 
 
 def create_plotly_figure(
@@ -429,7 +445,16 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
             'With human influence',
             'Without human influence'
         ],
-        hovermode='x unified'
+        customdata_func=lambda ql, be, qu: np.stack([
+            [_safe_intensity(t) for t in ql],
+            [_safe_intensity(t) for t in be],
+            [_safe_intensity(t) for t in qu],
+        ], axis=-1),
+        hovermode='x unified',
+        hovertemplate=(
+            "%{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i>" +
+            "<extra></extra>"
+        )
     )
 
     return fig
@@ -445,6 +470,16 @@ def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
             'tickformat': '+'
         },
         {'side': 'right', 'tickvals': [], 'ticktext': []}],
+        customdata_func=lambda ql, be, qu: np.stack([
+            [_safe_intensity_change(delta) for delta in ql],
+            [_safe_intensity_change(delta) for delta in be],
+            [_safe_intensity_change(delta) for delta in qu]
+        ], axis=-1),
+        hovertemplate=(
+            "<b>Year</b> : %{x}<br>" +
+            "<b>Change</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i>" +
+            "<extra></extra>"
+        ),
         colors=["204,85,0"]
     )
 
