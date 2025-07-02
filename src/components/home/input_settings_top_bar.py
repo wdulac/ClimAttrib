@@ -32,7 +32,9 @@ _extreme_type_segmented = dmc.Stack(children=[
             {"value": "hot", "label": "Hot"},
             {"value": "cold", "label": "Cold"}
         ],
-        value="hot"
+        value="hot",
+        persistence=True,
+        persistence_type='session',
     )],
     className='selector-with-label'
 )
@@ -63,7 +65,9 @@ _computation_method_segmented = dmc.Stack(children=[
             {"value": "calendar", "label": "Yes"},
             {"value": "yearmax", "label": "No"},
         ],
-        value="yearmax"
+        value="yearmax",
+        persistence=True,
+        persistence_type='session',
     )],
     className='selector-with-label'
 )
@@ -80,6 +84,8 @@ _date_selector_calendar = dmc.DatePickerInput(
     highlightToday=False,
     minDate=dt.date(1940, 1, 1),
     maxDate=dt.date(2022, 12, 31),
+    persistence=True,
+    persistence_type='session',
     disabledDates={"function": "disableInvalidRange", "options": None},
     className='datepicker-container'
 )
