@@ -6,23 +6,32 @@
     overflow: hidden;
 }
 
-.carousel-container [class*="mantine-Carousel-container"] {
-    height: 100% !important;
-}
-
 .carousel-container > .mantine-Carousel-root {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    overflow: hidden;
     height: 100%;
+    overflow: hidden;
+    min-height: 0;
 }
 
 .carousel-container .mantine-Carousel-viewport {
     flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
+}
+
+/* Prevent carousel from extending vertically with the amount of slides */
+.carousel-container [class*="mantine-Carousel-container"] {
+    height: 100% !important;
+    position: absolute !important;
+}
+
+/* Allow for slide internal scroll bar */
+.carousel-container .mantine-Carousel-slide {
+    height: 100% !important;
+    flex-shrink: 0;
+    overflow-y: auto;
 }
 
 @-moz-document url-prefix() {

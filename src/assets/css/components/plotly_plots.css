@@ -4,22 +4,20 @@
 
 /* .plotly-notifier is not natively a children of .user-select-none. A JS clientside callback 
    is required to move it into place */
-.user-select-none.svg-container .plotly-notifier {
+/* .user-select-none.svg-container .plotly-notifier {
     position: absolute !important;
-<<<<<<< HEAD
     top: 50px;
     left: 45%;
     transform: translate(-50%);
     z-index: 1000;
-=======
     top: 10px;
     right: 10px;
     z-index: 1000;
-}
+} */
 
 
 .modebar {
-   right: auto;
-   left: 2px;
->>>>>>> analysis_carousel
+    position: absolute ;
+    top: 0px;
+    right: 0px;
 }
