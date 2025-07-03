@@ -13,11 +13,11 @@ def build_summary_component(stats):
     RC = float(stats['RC'].sel(time=year, quantile='BE'))
 
     variables = {
-        "year": format_year(year),
-        "pF": format_prob(pF),
-        "RP_F": format_return_period(RF),
-        "RP_C": format_return_period(RC),
-        "pC": format_prob(pC),
+        "year_then": format_year(year),
+        "pF_then": format_prob(pF),
+        "RP_F_then": format_return_period(RF),
+        "RP_C_then": format_return_period(RC),
+        "pC_then": format_prob(pC),
     }
 
     sentences = []
@@ -30,11 +30,18 @@ def build_summary_component(stats):
     if should_include_today_phrase(year, today):
         pF_today = stats['pF'].sel(time=today, quantile='BE')
         today_tpl = load_template("today_update")
-        sentences.append(fill_template(today_tpl, {
-            "pF_today": format_prob(pF_today),
-        }))
+        sentences.append(
+            fill_template(
+                today_tpl, {
+                    "year_today": format_year(today),
+                    "pF_today": format_prob(pF_today),
+                    "pF_ratio_now_then": f"{(pF_today/pF):.1f}",
+                    "year_then": variables.get('year_then')
+                }
+            )
+        )
 
     # Markdown → HTML
-    return html.Div([
-        html.Div(dcc.Markdown(sentence)) for sentence in sentences
+    return html.Div(children=[
+        dcc.Markdown(sentence) for sentence in sentences
     ])

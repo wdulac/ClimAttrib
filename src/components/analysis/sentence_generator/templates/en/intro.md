@@ -1,2 +1,1 @@
-**In {year},** the probability of such an event was **{pF}**, corresponding to a return period of **{RP_F} years**.  
-Without human influence, the same event would have had a probability of **{pC}**, or a return period of **{RP_C} years**.
+In **{year_then}**, the probability of such an event was **{pF_then}**, corresponding to a return period of **{RP_F_then}**. Without human influence, the same event would have had a probability of **{pC_then}**, or a return period of **{RP_C_then}**.

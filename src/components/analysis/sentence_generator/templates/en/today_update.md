@@ -1,0 +1,1 @@
+Today in **{year_today}**, the probability of such an event is **{pF_today}**, an increase by a factor of **{pF_ratio_now_then}** compared to **{year_then}**.
