@@ -1,8 +1,8 @@
 def format_prob(p: float) -> str:
-    return f"{100*p:.3g}"
+    return f"{100*p:.3g}%"
 
 def format_return_period(r: float) -> str:
-    return str(r)
+    return f"{r:.0f} years"
 
 def format_year(y: int) -> str:
     return str(y)
