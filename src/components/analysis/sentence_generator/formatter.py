@@ -4,5 +4,8 @@ def format_prob(p: float) -> str:
 def format_return_period(r: float) -> str:
     return f"{r:.0f} years"
 
+def format_PR(pr: float) -> str:
+    return f"{pr:.1f}"
+
 def format_year(y: int) -> str:
     return str(y)
