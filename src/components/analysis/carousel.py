@@ -59,7 +59,8 @@ def carousel(stats, task_id):
                     style={
                         'maxHeight': '80%',
                         'overflowY': 'auto',
-                        'width': '100%'
+                        'width': '100%',
+                        'alignItems': 'center'
                     },
                     children=build_summary_component(stats)
                 )
