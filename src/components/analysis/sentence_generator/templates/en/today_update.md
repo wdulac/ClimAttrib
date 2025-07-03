@@ -1,1 +1,1 @@
-Today in **{year_today}**, the probability of such an event is **{pF_today}**, an increase by a factor of **{pF_ratio_now_then}** compared to **{year_then}**.
+Today in **{year_today}**, the probability of such an event is **{pF_today}**, **{change}** by a factor of **{pF_ratio_now_then}** compared to **{year_then}**. An event such as this one is now made **{PR_today}** times **{change_PR_today}** likely, due to human influence alone.
