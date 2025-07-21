@@ -129,6 +129,7 @@ def _safe_intensity_change(value):
 def create_plotly_figure(
     stats: xr.DataArray,
     variables: list[str],
+    task_id: str,
     yaxis_conf: list[dict],
     xaxis_domain : list[float] = [0, 1],
     labels: list[str] | None = None,
@@ -257,7 +258,12 @@ def create_plotly_figure(
     fig.update_layout(
         width=width,
         height=height,
-        meta=dict(initial_width=width, initial_height=height),
+        meta=dict(
+            initial_width=width,
+            initial_height=height,
+            task_id=task_id,
+            variables='_'.join(variables)
+        ),
         margin=dict(l=60, r=60, t=40, b=40),
         plot_bgcolor='white',
         paper_bgcolor='#f1f3f5',
@@ -292,7 +298,7 @@ def create_plotly_figure(
     return fig
 
 
-def plot_probability(stats: xr.DataArray) -> go.Figure:
+def plot_probability(stats: xr.DataArray, task_id: str) -> go.Figure:
 
     yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
     yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
@@ -301,6 +307,7 @@ def plot_probability(stats: xr.DataArray) -> go.Figure:
     fig = create_plotly_figure(
         stats,
         variables=['pF', 'pC'],
+        task_id=task_id,
         yaxis_conf=[
             {
                 'title': "Probability",
@@ -339,7 +346,7 @@ def plot_probability(stats: xr.DataArray) -> go.Figure:
     return fig
 
 
-def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
+def plot_PR_FAR(stats: xr.Dataset, task_id: str) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
@@ -348,6 +355,7 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     fig = create_plotly_figure(
         stats,
         variables=['PR'],
+        task_id=task_id,
         yaxis_conf=[
             {
                 'title': 'Probability ratio',
@@ -428,7 +436,7 @@ def plot_PR_FAR(stats: xr.Dataset) -> go.Figure:
     return fig
 
 
-def plot_intensity(stats: xr.Dataset) -> go.Figure:
+def plot_intensity(stats: xr.Dataset, task_id: str) -> go.Figure:
 
     # Note to self: If this somehow causes issues (e.g offset subtracted multiple times) 
     # the alternative would be to add an offset parameter to the :create_plotly_figure: function.
@@ -438,6 +446,7 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
     fig = create_plotly_figure(
         stats,
         variables=['IF', 'IC'],
+        task_id=task_id,
         yaxis_conf=[{
             'title': 'Event intensity [°C]'
         },
@@ -461,11 +470,12 @@ def plot_intensity(stats: xr.Dataset) -> go.Figure:
     return fig
 
 
-def plot_intensity_change(stats: xr.Dataset) -> go.Figure:
+def plot_intensity_change(stats: xr.Dataset, task_id: str) -> go.Figure:
 
     fig = create_plotly_figure(
         stats,
         variables=['dI'],
+        task_id=task_id,
         yaxis_conf=[{
             'title': 'Change in intensity [°C]',
             'tickformat': '+'

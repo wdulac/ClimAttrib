@@ -117,7 +117,7 @@ def run_task(data):
 
     return task.id
     
-
+# TODO Find better way to retrieve stats datasets later on, than to pass task_id all the way down to create_plotly_figure
 @callback(
     Output('content', 'children'),
     Output('update-interval', 'disabled'),
@@ -133,7 +133,7 @@ def update_results(n, task_id):
     task = attribution.AsyncResult(task_id)
     if task.ready():
         stats = task.result
-        return carousel(stats), True
+        return carousel(stats, task_id), True
     return no_update, False
 
 

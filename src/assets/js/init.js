@@ -5,7 +5,8 @@ window.fetch = new Proxy(window.fetch, {
       if (args[0] == '/_dash-update-component') {
         setTimeout(() => {
           if (window.plotlyExtras) {
-            window.plotlyExtras.addToModbar();
+            window.plotlyExtras.addFullscreenButton();
+            window.plotlyExtras.addDownloadButton();
           }
         }, 500);
       }

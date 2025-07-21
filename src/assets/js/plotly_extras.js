@@ -29,7 +29,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
 // ###### Global functions for fullscreen support ######
 
 // Adding a fullscreen button to the mode bar
-function addToModbar() {
+function addFullscreenButton() {
     const modeBars = document.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
         const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
@@ -118,7 +118,74 @@ function fullscreen(el) {
 }
 
 
+function addDownloadButton() {
+    const modeBars = document.querySelectorAll(".modebar-container");
+    for (let i = 0; i < modeBars.length; i++) {
+        const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
+        const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
+
+        // On évite de le rajouter plusieurs fois
+        const alreadyAdded = Array.from(modeBarBtns).some(btn => btn.getAttribute('data-title') === 'Download CSV');
+        if (alreadyAdded) continue;
+
+        const aTag = document.createElement('a');
+        aTag.className = "modebar-btn";
+        aTag.setAttribute("rel", "tooltip");
+        aTag.setAttribute("data-title", "Download CSV");
+        aTag.setAttribute("onClick", "downloadCSV(this);");
+        const iTag = document.createElement('i');
+        iTag.className = 'fa-solid fa-file-arrow-down';
+        aTag.appendChild(iTag);
+        modeBarGroups[modeBarGroups.length - 1].appendChild(aTag);
+    }
+}
+
+
+function downloadCSV(el) {
+    const graphContainer = el.closest('.dash-graph');
+    const plot = graphContainer.querySelector('.js-plotly-plot');
+
+    if (!plot || !plot.layout || !plot.layout.meta) {
+        alert("No data available for download.");
+        return;
+    }
+
+    const vars = plot.layout.meta.variables;
+    const taskId = plot.layout.meta.task_id;
+
+    fetch(`/download_csv?task_id=${taskId}&variables=${vars}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to download CSV");
+    
+            // 🧠 Récupère le nom de fichier depuis le header
+            const disposition = response.headers.get("Content-Disposition");
+            let filename = "data.csv";  // valeur par défaut
+    
+            if (disposition && disposition.includes("filename=")) {
+                const match = disposition.match(/filename="?([^"]+)"?/);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+    
+            return response.blob().then(blob => ({ blob, filename }));
+        })
+        .then(({ blob, filename }) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        })
+        .catch(err => alert("Erreur téléchargement : " + err.message));
+}
+
+
+
 // Export into plotlyExtras namespace for calling in init.js
 window.plotlyExtras = {
-  addToModbar,
+  addFullscreenButton,
+  addDownloadButton
 };
