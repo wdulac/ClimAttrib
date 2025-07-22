@@ -32,7 +32,6 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                 containerId = JSON.stringify(containerId, Object.keys(containerId).sort());
             }
             const parent = document.getElementById(containerId);
-            console.log(parent)
             if (!parent) return null;
         
             // Function to add buttons once modebar exists
