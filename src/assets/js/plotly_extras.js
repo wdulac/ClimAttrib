@@ -1,12 +1,80 @@
 // plotly_extras.js
 
+// Namespace for interaction with dash clientside callbacks
+window.dash_clientside = Object.assign({}, window.dash_clientside, {
+    plotly_extras: {
+        // Look out for .plotly-notifier and move it into .user-select-none.svg-container
+        hookPlotlyNotifier: function (containerId) {
+    
+            if (!(typeof containerId === 'string' || containerId instanceof String)) {
+                containerId = JSON.stringify(containerId, Object.keys(containerId).sort());
+            };
+
+            const parent = document.getElementById(containerId);
+            if (!parent) return;
+        
+            const observer = new MutationObserver(() => {
+              const container = parent.querySelector('.user-select-none.svg-container');
+              const notifier = document.querySelector('.plotly-notifier');
+              if (container && notifier && !container.contains(notifier)) {
+                container.appendChild(notifier);
+                observer.disconnect();
+              }
+            });
+        
+            observer.observe(document.body, { childList: true });
+        },
+
+        // Add our custom buttons to the modebar of a plotly plot (1 call per plot)
+        addButtonsToModebar: function(containerId) {
+
+            if (!(typeof containerId === 'string' || containerId instanceof String)) {
+                containerId = JSON.stringify(containerId, Object.keys(containerId).sort());
+            }
+            const parent = document.getElementById(containerId);
+            console.log(parent)
+            if (!parent) return null;
+        
+            // Function to add buttons once modebar exists
+            function tryAddButtons() {
+                const modebars = parent.querySelectorAll('.modebar-container');
+                if (modebars.length === 0) {
+                    // modebar not yet present, wait for it with MutationObserver
+                    return false;
+                }
+                // Call your existing global functions scoped to this container
+                addFullscreenButton(parent);
+                addDownloadButton(parent);
+                return true;
+            }
+        
+            // Try once immediately
+            if (tryAddButtons()) {
+                return null; // buttons added
+            }
+        
+            // If not added, observe for modebar insertion
+            const observer = new MutationObserver((mutations, obs) => {
+                if (tryAddButtons()) {
+                    obs.disconnect();
+                }
+            });
+        
+            observer.observe(parent, { childList: true, subtree: true });
+        
+            return null;
+        }
+    }
+});
+
 // ---------- Plotly Buttons Management ----------
 
-// Add fullscreen button to all modebars that don't have it yet
-function addFullscreenButton() {
-    const modeBars = document.querySelectorAll(".modebar-container");
+// Add fullscreen button
+function addFullscreenButton(container = document) {
+    const modeBars = container.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
         const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
+        if (modeBarGroups.length === 0) continue;
         const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
 
         if (modeBarBtns.length === 0 || modeBarBtns[modeBarBtns.length - 1].getAttribute('data-title') !== 'Fullscreen') {
@@ -23,11 +91,12 @@ function addFullscreenButton() {
     }
 }
 
-// Add download CSV button to all modebars that don't have it yet
-function addDownloadButton() {
-    const modeBars = document.querySelectorAll(".modebar-container");
+// Add download CSV button
+function addDownloadButton(container = document) {
+    const modeBars = container.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
         const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
+        if (modeBarGroups.length === 0) continue;
         const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
 
         const alreadyAdded = Array.from(modeBarBtns).some(btn => btn.getAttribute('data-title') === 'Download CSV');
@@ -156,20 +225,3 @@ function downloadCSV(el) {
         })
         .catch(err => alert("Download error: " + err.message));
 }
-
-// ---------- DOM Mutation Observer to add buttons to new graphs ----------
-
-window.fetch = new Proxy(window.fetch, {
-  apply(fetch, that, args) {
-    const result = fetch.apply(that, args);
-    result.then((response) => {
-      if (args[0] == '/_dash-update-component') {
-        setTimeout(() => {
-            addFullscreenButton();
-            addDownloadButton();
-        }, 500);
-      }
-    });
-    return result;
-  }
-});

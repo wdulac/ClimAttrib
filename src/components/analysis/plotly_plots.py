@@ -12,7 +12,7 @@ def intensity_change_plot(stats, task_id):
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'dI'}),
         dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot-intensity-change')
-    ], id={'type': 'plot-container', 'name': 'intensity'}, className='plot-container')
+    ], id={'type': 'plot-container', 'name': 'delta-intensity'}, className='plot-container')
 
     return component
 
@@ -71,3 +71,13 @@ clientside_callback(
 #     Output({'type': 'plotly-notifier-hook', 'name': MATCH}, 'data-dummy'),
 #     Input({'type': 'plot-container', 'name': MATCH}, 'id'),
 # )
+
+
+clientside_callback(
+    ClientsideFunction(
+        namespace='plotly_extras',
+        function_name='addButtonsToModebar'
+    ),
+    Output({'type': 'plot-container', 'name': MATCH}, 'data-dummy2'),  # dummy prop, just trigger
+    Input({'type': 'plot-container', 'name': MATCH}, 'id'),
+)
