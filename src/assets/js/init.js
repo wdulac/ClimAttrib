@@ -1,3 +1,4 @@
+// TODO Find a cleaner way to add these buttons
 window.fetch = new Proxy(window.fetch, {
   apply(fetch, that, args) {
     const result = fetch.apply(that, args);
