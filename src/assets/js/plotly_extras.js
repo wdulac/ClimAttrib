@@ -37,7 +37,7 @@ function addFullscreenButton() {
 
         if (modeBarBtns[modeBarBtns.length - 1].getAttribute('data-title') !== 'Fullscreen') {
             const aTag = document.createElement('a');
-            aTag.className = "modebar-btn";
+            aTag.classList.add("modebar-btn", "custom-modebar-btn");
             aTag.setAttribute("rel", "tooltip");
             aTag.setAttribute("data-title", "Fullscreen");
             aTag.setAttribute("onClick", "fullscreen(this);");
@@ -129,7 +129,7 @@ function addDownloadButton() {
         if (alreadyAdded) continue;
 
         const aTag = document.createElement('a');
-        aTag.className = "modebar-btn";
+        aTag.classList.add("modebar-btn", "custom-modebar-btn");
         aTag.setAttribute("rel", "tooltip");
         aTag.setAttribute("data-title", "Download CSV");
         aTag.setAttribute("onClick", "downloadCSV(this);");

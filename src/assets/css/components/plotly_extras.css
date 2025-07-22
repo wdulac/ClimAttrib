@@ -1,7 +1,4 @@
-/* TODO Use single rules for both fullscreen and download button
-
-/* Style du bouton "Fullscreen" pour coller exactement à ceux de Plotly */
-.modebar-btn[data-title="Fullscreen"] {
+.modebar-btn.custom-modebar-btn {
     display: inline;
     position: relative;
     font-size: 15px;
@@ -13,34 +10,12 @@
     color: rgba(68, 68, 68, 0.3) !important;
 }
 
-.modebar-btn[data-title="Fullscreen"]:hover {
+.modebar-btn.custom-modebar-btn:hover {
     color: gray !important;
 }
 
-/* Icône centrée */
-.modebar-btn[data-title="Fullscreen"] i.fa-maximize {
-    position: relative;
-    top: 2px;
-    overflow: hidden;
-    color: inherit;
-}
-
-.modebar-btn[data-title="Download CSV"] {
-    display: inline;
-    position: relative;
-    font-size: 15px;
-    padding: 3px 4px;
-    height: 22px;
-    cursor: pointer;
-    box-sizing: border-box;
-    color: rgba(68, 68, 68, 0.3) !important;
-}
-
-.modebar-btn[data-title="Download CSV"]:hover {
-    color: gray !important;
-}
-
-.modebar-btn[data-title="Download CSV"] i.fa-file-arrow-down {
+/* Icônes des boutons custom : centrage vertical et héritage couleur */
+.modebar-btn.custom-modebar-btn i {
     position: relative;
     top: 2px;
     overflow: hidden;
