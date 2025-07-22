@@ -117,7 +117,9 @@ function fullscreen(el) {
     }
 }
 
+// ###### Global functions for graph data CSV download ######
 
+// Adding the download button to the modebar
 function addDownloadButton() {
     const modeBars = document.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
@@ -140,7 +142,7 @@ function addDownloadButton() {
     }
 }
 
-
+// Requesting and downloading CSV data from the server
 function downloadCSV(el) {
     const graphContainer = el.closest('.dash-graph');
     const plot = graphContainer.querySelector('.js-plotly-plot');
@@ -157,9 +159,8 @@ function downloadCSV(el) {
         .then(response => {
             if (!response.ok) throw new Error("Failed to download CSV");
     
-            // 🧠 Récupère le nom de fichier depuis le header
             const disposition = response.headers.get("Content-Disposition");
-            let filename = "data.csv";  // valeur par défaut
+            let filename = "data.csv";  // default filename
     
             if (disposition && disposition.includes("filename=")) {
                 const match = disposition.match(/filename="?([^"]+)"?/);
