@@ -1,41 +1,15 @@
-// Namespace for interaction with dash clientside callbacks
-window.dash_clientside = Object.assign({}, window.dash_clientside, {
-    plotly_extras: {
-        // Look out for .plotly-notifier and move it into .user-select-none.svg-container
-        hookPlotlyNotifier: function (containerId) {
-    
-        if (!(typeof containerId === 'string' || containerId instanceof String)) {
-                    containerId = JSON.stringify(containerId, Object.keys(containerId).sort());
-        };
+// plotly_extras.js
 
-        const parent = document.getElementById(containerId);
-        if (!parent) return;
-    
-        const observer = new MutationObserver(() => {
-          const container = parent.querySelector('.user-select-none.svg-container');
-          const notifier = document.querySelector('.plotly-notifier');
-          if (container && notifier && !container.contains(notifier)) {
-            container.appendChild(notifier);
-            observer.disconnect();
-          }
-        });
-    
-        observer.observe(document.body, { childList: true });
-        }
-    }
-});
+// ---------- Plotly Buttons Management ----------
 
-
-// ###### Global functions for fullscreen support ######
-
-// Adding a fullscreen button to the mode bar
+// Add fullscreen button to all modebars that don't have it yet
 function addFullscreenButton() {
     const modeBars = document.querySelectorAll(".modebar-container");
     for (let i = 0; i < modeBars.length; i++) {
         const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
         const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
 
-        if (modeBarBtns[modeBarBtns.length - 1].getAttribute('data-title') !== 'Fullscreen') {
+        if (modeBarBtns.length === 0 || modeBarBtns[modeBarBtns.length - 1].getAttribute('data-title') !== 'Fullscreen') {
             const aTag = document.createElement('a');
             aTag.classList.add("modebar-btn", "custom-modebar-btn");
             aTag.setAttribute("rel", "tooltip");
@@ -49,38 +23,48 @@ function addFullscreenButton() {
     }
 }
 
-// Fullscreen implementation
+// Add download CSV button to all modebars that don't have it yet
+function addDownloadButton() {
+    const modeBars = document.querySelectorAll(".modebar-container");
+    for (let i = 0; i < modeBars.length; i++) {
+        const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
+        const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
+
+        const alreadyAdded = Array.from(modeBarBtns).some(btn => btn.getAttribute('data-title') === 'Download CSV');
+        if (!alreadyAdded) {
+            const aTag = document.createElement('a');
+            aTag.classList.add("modebar-btn", "custom-modebar-btn");
+            aTag.setAttribute("rel", "tooltip");
+            aTag.setAttribute("data-title", "Download CSV");
+            aTag.setAttribute("onClick", "downloadCSV(this);");
+            const iTag = document.createElement('i');
+            iTag.className = 'fa-solid fa-file-arrow-down';
+            aTag.appendChild(iTag);
+            modeBarGroups[modeBarGroups.length - 1].appendChild(aTag);
+        }
+    }
+}
+
+// ---------- Fullscreen functionality ----------
+
 function fullscreen(el) {
     const graphContainer = el.closest('.dash-graph');
     const plot = graphContainer.querySelector('.js-plotly-plot');
 
-    // Fonction pour passer en plein écran
     async function enterFullscreen() {
-        if (graphContainer.requestFullscreen) {
-            await graphContainer.requestFullscreen();
-        } else if (graphContainer.webkitRequestFullscreen) {
-            await graphContainer.webkitRequestFullscreen();
-        } else if (graphContainer.mozRequestFullScreen) {
-            await graphContainer.mozRequestFullScreen();
-        } else if (graphContainer.msRequestFullscreen) {
-            await graphContainer.msRequestFullscreen();
-        }
+        if (graphContainer.requestFullscreen) await graphContainer.requestFullscreen();
+        else if (graphContainer.webkitRequestFullscreen) await graphContainer.webkitRequestFullscreen();
+        else if (graphContainer.mozRequestFullScreen) await graphContainer.mozRequestFullScreen();
+        else if (graphContainer.msRequestFullscreen) await graphContainer.msRequestFullscreen();
     }
 
-    // Fonction pour sortir du plein écran
     async function exitFullscreen() {
-        if (document.exitFullscreen) {
-            await document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            await document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            await document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            await document.msExitFullscreen();
-        }
+        if (document.exitFullscreen) await document.exitFullscreen();
+        else if (document.webkitExitFullscreen) await document.webkitExitFullscreen();
+        else if (document.mozCancelFullScreen) await document.mozCancelFullScreen();
+        else if (document.msExitFullscreen) await document.msExitFullscreen();
     }
 
-    // Redimensionne le plot pour remplir son conteneur
     function resizePlotToContainer() {
         if (!plot) return;
         const containerRect = graphContainer.getBoundingClientRect();
@@ -91,7 +75,6 @@ function fullscreen(el) {
         });
     }
 
-    // Restaure la taille initiale stockée dans layout.meta
     function restoreInitialSize() {
         if (!plot) return;
         const meta = plot.layout.meta || {};
@@ -105,44 +88,35 @@ function fullscreen(el) {
     }
 
     if (document.fullscreenElement === graphContainer) {
-        // Si on est déjà en plein écran sur ce graph, on sort du plein écran
-        exitFullscreen().then(() => {
-            restoreInitialSize();
-        });
+        exitFullscreen().then(() => restoreInitialSize());
     } else {
-        // Sinon on entre en plein écran
-        enterFullscreen().then(() => {
-            resizePlotToContainer();
-        });
+        enterFullscreen().then(() => resizePlotToContainer());
     }
 }
 
-// ###### Global functions for graph data CSV download ######
-
-// Adding the download button to the modebar
-function addDownloadButton() {
-    const modeBars = document.querySelectorAll(".modebar-container");
-    for (let i = 0; i < modeBars.length; i++) {
-        const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
-        const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
-
-        // On évite de le rajouter plusieurs fois
-        const alreadyAdded = Array.from(modeBarBtns).some(btn => btn.getAttribute('data-title') === 'Download CSV');
-        if (alreadyAdded) continue;
-
-        const aTag = document.createElement('a');
-        aTag.classList.add("modebar-btn", "custom-modebar-btn");
-        aTag.setAttribute("rel", "tooltip");
-        aTag.setAttribute("data-title", "Download CSV");
-        aTag.setAttribute("onClick", "downloadCSV(this);");
-        const iTag = document.createElement('i');
-        iTag.className = 'fa-solid fa-file-arrow-down';
-        aTag.appendChild(iTag);
-        modeBarGroups[modeBarGroups.length - 1].appendChild(aTag);
+// Handle exiting fullscreen event and restore original plot size
+document.addEventListener("fullscreenchange", function () {
+    const fullElement = document.fullscreenElement;
+    if (!fullElement && window._previousFullscreenGraph) {
+        const plot = window._previousFullscreenGraph.querySelector('.js-plotly-plot');
+        if (plot && plot.layout && plot.layout.meta) {
+            const meta = plot.layout.meta;
+            const initialWidth = meta.initial_width || 800;
+            const initialHeight = meta.initial_height || 600;
+            Plotly.relayout(plot, {
+                autosize: false,
+                width: initialWidth,
+                height: initialHeight
+            });
+        }
+        window._previousFullscreenGraph = null;
+    } else {
+        window._previousFullscreenGraph = fullElement;
     }
-}
+});
 
-// Requesting and downloading CSV data from the server
+// ---------- CSV Download functionality ----------
+
 function downloadCSV(el) {
     const graphContainer = el.closest('.dash-graph');
     const plot = graphContainer.querySelector('.js-plotly-plot');
@@ -158,17 +132,17 @@ function downloadCSV(el) {
     fetch(`/download_csv?task_id=${taskId}&variables=${vars}`)
         .then(response => {
             if (!response.ok) throw new Error("Failed to download CSV");
-    
+
             const disposition = response.headers.get("Content-Disposition");
-            let filename = "data.csv";  // default filename
-    
+            let filename = "data.csv";
+
             if (disposition && disposition.includes("filename=")) {
                 const match = disposition.match(/filename="?([^"]+)"?/);
                 if (match && match[1]) {
                     filename = match[1];
                 }
             }
-    
+
             return response.blob().then(blob => ({ blob, filename }));
         })
         .then(({ blob, filename }) => {
@@ -180,13 +154,22 @@ function downloadCSV(el) {
             a.click();
             a.remove();
         })
-        .catch(err => alert("Erreur téléchargement : " + err.message));
+        .catch(err => alert("Download error: " + err.message));
 }
 
+// ---------- DOM Mutation Observer to add buttons to new graphs ----------
 
-
-// Export into plotlyExtras namespace for calling in init.js
-window.plotlyExtras = {
-  addFullscreenButton,
-  addDownloadButton
-};
+window.fetch = new Proxy(window.fetch, {
+  apply(fetch, that, args) {
+    const result = fetch.apply(that, args);
+    result.then((response) => {
+      if (args[0] == '/_dash-update-component') {
+        setTimeout(() => {
+            addFullscreenButton();
+            addDownloadButton();
+        }, 500);
+      }
+    });
+    return result;
+  }
+});
