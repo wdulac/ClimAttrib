@@ -41,6 +41,7 @@ application.layout = dmc.MantineProvider(layout)
 from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
 from utils import redirects
 from utils import geojson_tiles
+from utils import download_csv
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.

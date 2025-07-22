@@ -95,9 +95,9 @@ def layout(extreme_type=None,
             disabled=False
         ),
         chosen_event(parsed_event), # Dummy component with event's description
-        html.Div(children=_loading_screen, id='content',
+        html.Div(children=_loading_screen, id='analysis-content',
                  className='carousel-container')
-        ], className='analysis-container'
+        ], className='analysis-container', id='analysis-container'
     )
     return layout
 
@@ -117,9 +117,9 @@ def run_task(data):
 
     return task.id
     
-
+# TODO Find better way to retrieve stats datasets later on, than to pass task_id all the way down to create_plotly_figure
 @callback(
-    Output('content', 'children'),
+    Output('analysis-content', 'children'),
     Output('update-interval', 'disabled'),
     Input('update-interval', 'n_intervals'),
     State('task-id', 'data'),
@@ -133,7 +133,7 @@ def update_results(n, task_id):
     task = attribution.AsyncResult(task_id)
     if task.ready():
         stats = task.result
-        return carousel(stats), True
+        return carousel(stats, task_id), True
     return no_update, False
 
 

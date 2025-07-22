@@ -1,5 +1,4 @@
-/* Style du bouton "Fullscreen" pour coller exactement à ceux de Plotly */
-.modebar-btn[data-title="Fullscreen"] {
+.modebar-btn.custom-modebar-btn {
     display: inline;
     position: relative;
     font-size: 15px;
@@ -11,12 +10,12 @@
     color: rgba(68, 68, 68, 0.3) !important;
 }
 
-.modebar-btn[data-title="Fullscreen"]:hover {
+.modebar-btn.custom-modebar-btn:hover {
     color: gray !important;
 }
 
-/* Icône centrée */
-.modebar-btn[data-title="Fullscreen"] i.fa-maximize {
+/* Icônes des boutons custom : centrage vertical et héritage couleur */
+.modebar-btn.custom-modebar-btn i {
     position: relative;
     top: 2px;
     overflow: hidden;
