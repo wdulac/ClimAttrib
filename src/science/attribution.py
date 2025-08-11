@@ -6,8 +6,10 @@ import datetime as dt
 
 import ANKIALE as ank
 # Specific imports
-from ANKIALE.stats.__constraint import gaussian_conditionning
-from ANKIALE.stats.__constraint import mcmc
+from ANKIALE.stats import MPeriodSmoother
+from ANKIALE.stats import build_projection_matrix
+from ANKIALE.stats import constraint_covar
+from ANKIALE.stats.__constraint import constraint_var
 from ANKIALE.cmd.__cmd_attribute import zattribute_event
 from ANKIALE.__linalg import mean_cov_hpars
 
@@ -32,7 +34,7 @@ else: # Root of the app (hopefully).
 ## Paramètres généraux
 
 # Pour la contrainte X
-METHOD = 'MAR2'
+METHOD = 'IND'
 
 # Pour la contrainte Y
 N_SAMPLES_COV = 100 # Tirages de covariables
@@ -46,41 +48,27 @@ MODE = 'quantile'
 CI = 0.05
 
 # Loading the prior
-_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS_EBM.nc'
+_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS_1.1.0a22_EBM_dof6.nc'
 CLIM = ank.Climatology.init_from_file(_CLIM_FILE)
-# Set XN to CMIP5 (custom file dropped in place of CMIP5 forcings: it's actually dT from EBM made from CMIP6 forcings file)
-CLIM._Xconfig['XN_version'] = 'CMIP5'
+# Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
+CLIM.cconfig.vXN = 'CMIP5'
 # Initializing CmdStan local work directory
 STAN_WORK_DIR = path_to_science_dir + './stan_files/'
-NSLAW = CLIM._nslaw_class
-NSLAW().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
+CNSLAW = CLIM.cnslaw
+CNSLAW().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
 # Total time axis (1850 -- 2100)
 TIME = CLIM.time
 # Reference period for bias
 BPER = CLIM.bper
 # Matrices de projection factuel / contre-factuel
 PROJF, PROJC = CLIM.projection()
-
-
-def _projection_operator(times):
-
-    time = CLIM.time
-    lin, spl = CLIM.build_design_basis()
-    nper = len(CLIM.dpers)
-
-    design_ = []
-    for nameX in CLIM.namesX:
-        if nameX == CLIM.cname:
-            design_ = design_ + [spl[nameX][CLIM.dpers[iper]] for iper in range(nper)] + [nper * lin]
-        else:
-            design_ = design_ + [np.zeros_like(spl[nameX][CLIM.dpers[iper]]) for iper in range(nper)] + [np.zeros_like(lin)]
-    design_ = design_ + [np.zeros( (time.size,CLIM.sizeY) )]
-    design_ = np.hstack(design_)
-
-    T = xr.DataArray( np.identity(design_.shape[0]) , dims = ["timeA","timeB"] , coords = [time,time] ).loc[times,time].values
-    A = T @ design_ / nper
-
-    return A
+# Lissage
+MPS = MPeriodSmoother(
+    XN = CLIM.XN,
+    cnames = CLIM.cnames,
+    dpers = CLIM.dpers,
+    spl_config = CLIM.cconfig.spl_config
+)
 
 
 def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
@@ -101,7 +89,7 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
     Yo = xr.open_dataset(Yo_file)['tasmax'].sel(lat=lat, lon=lon)
 
     # On remplace l'axe du temps par les années
-    Xo = xr.DataArray(Xo.values, dims=Xo.dims,
+    Xo = xr.DataArray(Xo.values, dims=('time0',),
                       coords=[Xo.time.dt.year.values] + [Xo.coords[d] for d in Xo.dims[1:]])
     Yo = xr.DataArray(Yo.values, dims=Yo.dims,
                       coords = [Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
@@ -112,8 +100,8 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 def attribute_event(event:dict) -> xr.Dataset:
 
     # hpar et hcov du prior
-    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360)
-    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360)
+    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
     Xo, Yo = _load_obs(event['lat'], event['lon'])
@@ -125,30 +113,41 @@ def attribute_event(event:dict) -> xr.Dataset:
     Yo_anom = Yo - bias_arr
 
     ### Contrainte par la covariable
-
+    
     # Paramètres de la fonction de conditionnement
     ihpar = hpar_prior.values
     ihcov = hcov_prior.values
     iXo = Xo.values
-    timeXo = Xo.time
-    A_Xo = _projection_operator(timeXo)
+    timeXo = Xo.time0
+    P = build_projection_matrix(MPS, {'tas': Xo}, {'tas': 'full'})
+    P = np.hstack((
+        P, np.zeros(
+            (P.shape[0], CLIM.vsize)
+        )
+    ))
 
     # Application de la contrainte par la covariable
-    hpar_CX, hcov_CX = gaussian_conditionning(ihpar, ihcov, iXo, A=A_Xo, timeXo=timeXo, method=METHOD)
+    hpar_CX, hcov_CX = constraint_covar(ihpar, ihcov, iXo, P=P, timeXo=[timeXo], method_oerror=METHOD)
 
     ### Contrainte par les observations de la variable
 
     # Paramètres de la fonction mcmc
     iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
-    A_Yo = _projection_operator(Yo.time)
-
+    fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
+    P = build_projection_matrix(MPS, {'tas': fake_Xo})
+    P = np.hstack((
+        P, np.zeros(
+            (P.shape[0], CLIM.vsize)
+        )
+    ))
+    
     # Initialisation du résultat
     ohpars = np.zeros((ihpar.size, samples.size, SIZE_CHAIN)) + np.nan
     # Boucle sur les tirages de covariable
-    mcmc_args = [SIZE_CHAIN, NSLAW, USE_STAN, STAN_WORK_DIR]
+    mcmc_args = [SIZE_CHAIN, CNSLAW, USE_STAN, STAN_WORK_DIR]
     for s in samples:
-        oh = mcmc(hpar_CX, hcov_CX, iYo_anom, A_Yo, *mcmc_args)
+        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
         ohpars[:,s,:] = oh
     
     # calcul des paramètres de la distribution des tirages MCMC
@@ -166,7 +165,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     idx_event = int(np.argwhere(TIME == event['date'].year).ravel())
 
     # Calcul des statistiques de l'évènement
-    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, NSLAW, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
+    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, CNSLAW, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
     out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
 
