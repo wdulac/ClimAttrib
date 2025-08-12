@@ -71,6 +71,15 @@ MPS = MPeriodSmoother(
 )
 
 
+def _projection_matrix(X: dict, constraint: dict | None = None) -> np.ndarray:
+
+    time_size = X[next(iter(X))].time0.values.size
+    return np.hstack((
+        build_projection_matrix(MPS, X, constraint),
+        np.zeros((time_size, CLIM.vsize))
+    ))
+
+
 def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
@@ -119,12 +128,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     ihcov = hcov_prior.values
     iXo = Xo.values
     timeXo = Xo.time0
-    P = build_projection_matrix(MPS, {'tas': Xo}, {'tas': 'full'})
-    P = np.hstack((
-        P, np.zeros(
-            (P.shape[0], CLIM.vsize)
-        )
-    ))
+    P = _projection_matrix({'tas': Xo})
 
     # Application de la contrainte par la covariable
     hpar_CX, hcov_CX = constraint_covar(ihpar, ihcov, iXo, P=P, timeXo=[timeXo], method_oerror=METHOD)
@@ -135,12 +139,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
     fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
-    P = build_projection_matrix(MPS, {'tas': fake_Xo})
-    P = np.hstack((
-        P, np.zeros(
-            (P.shape[0], CLIM.vsize)
-        )
-    ))
+    P = _projection_matrix({'tas': fake_Xo})
     
     # Initialisation du résultat
     ohpars = np.zeros((ihpar.size, samples.size, SIZE_CHAIN)) + np.nan
