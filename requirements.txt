@@ -7,6 +7,9 @@ python-dotenv
 pygam
 flask_compress
 
+celery
+redis
+
 ./libraries/SDFC-python
 ./libraries/zxarray
 ./libraries/ANKIALE
