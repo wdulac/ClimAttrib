@@ -3,7 +3,7 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
 import datetime as dt
-from components.analysis.event_description import chosen_event
+from components.analysis.event_description import test_component
 from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
@@ -94,7 +94,7 @@ def layout(extreme_type=None,
             n_intervals=0,
             disabled=False
         ),
-        chosen_event(parsed_event), # Dummy component with event's description
+        test_component(parsed_event), # Dummy component for testing
         html.Div(children=_loading_screen, id='analysis-content',
                  className='carousel-container')
         ], className='analysis-container', id='analysis-container'

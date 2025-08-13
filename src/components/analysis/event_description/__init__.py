@@ -1,1 +1,1 @@
-from .chosen_event import chosen_event
+from .test import test_component
