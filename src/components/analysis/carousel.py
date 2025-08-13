@@ -2,9 +2,9 @@ from dash import clientside_callback, ClientsideFunction, Input, Output
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
-from components import probability_plot
-from components import PR_FAR_plot
-from components import intensity_plot, intensity_change_plot
+from components.analysis.plotly_plots import probability_plot
+from components.analysis.plotly_plots import PR_FAR_plot
+from components.analysis.plotly_plots import intensity_plot, intensity_change_plot
 
 
 DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]

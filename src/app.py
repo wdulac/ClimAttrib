@@ -4,8 +4,8 @@ from dash import Dash, html, page_container
 # Mantine
 import dash_mantine_components as dmc
 # Custom components for the layout
-from components import header
-from components import footer
+from components.header import header
+from components.footer import footer
 
 # Initialize
 server = Flask(__name__)

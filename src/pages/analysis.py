@@ -3,8 +3,8 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
 import datetime as dt
-from components import chosen_event
-from components import carousel
+from components.analysis.chosen_event import chosen_event
+from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
 
