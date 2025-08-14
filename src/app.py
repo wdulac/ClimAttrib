@@ -1,6 +1,6 @@
 # Essentials
 from flask import Flask
-from dash import Dash, html, page_container
+from dash import Dash, dcc, html, page_container
 # Mantine
 import dash_mantine_components as dmc
 # Custom components for the layout
@@ -28,6 +28,7 @@ application = Dash(
 
 # Define the page layout
 layout = html.Div([
+    dcc.Location(id='url'),
     dmc.NotificationContainer(id='notification-container'),
     header,
     page_container, # Page content loaded from `pages` folder
