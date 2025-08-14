@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure
+import xarray as xr
+
+from pathlib import Path
 
 from io import BytesIO
 import base64
@@ -23,12 +26,26 @@ def _fig_to_uri(in_fig: matplotlib.figure.Figure, close_all=True, **save_args) -
     return "data:image/png;base64,{}".format(encoded)
 
 
+def _identify_Yo_filename(event: dict | None = None) -> str:
+
+    return Path('data/Yo/tx3d/tx3d_era5_1940-2022_g025.nc')
+
+
+def _load_observed_timeseries(event) -> xr.DataArray:
+
+    filename = _identify_Yo_filename(event)
+    lat = event['lat']
+    lon = event['lon']
+    Yo = xr.open_dataset(filename)['tasmax'].sel(lat=lat, lon=lon)
+    Yo = xr.DataArray(Yo.values, dims=Yo.dims, coords=[Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
+    return Yo
+
+
 def make_temperature_plot(event: dict) -> str:
 
-    fig, ax = plt.subplots(figsize=(4,2))
+    Yo = _load_observed_timeseries(event)
 
-    X = np.linspace(0, 2*np.pi, 100)
-    Y = np.sin(X)
-    ax.plot(X, Y)
+    fig, ax = plt.subplots(figsize=(6,2))
+    ax.plot(Yo.time, Yo.values)
 
     return _fig_to_uri(fig)

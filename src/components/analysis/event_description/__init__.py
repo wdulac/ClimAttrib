@@ -1,1 +1,1 @@
-from .test import test_component
+from .analysis_description_component import description
