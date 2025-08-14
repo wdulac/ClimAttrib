@@ -37,7 +37,7 @@ def _load_observed_timeseries(event) -> xr.DataArray:
     lat = event['lat']
     lon = event['lon']
     Yo = xr.open_dataset(filename)['tasmax'].sel(lat=lat, lon=lon)
-    Yo = xr.DataArray(Yo.values, dims=Yo.dims, coords=[Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
+    Yo = xr.DataArray(Yo.values - 273.15, dims=Yo.dims, coords=[Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
     return Yo
 
 
@@ -45,7 +45,10 @@ def make_temperature_plot(event: dict) -> str:
 
     Yo = _load_observed_timeseries(event)
 
-    fig, ax = plt.subplots(figsize=(6,2))
-    ax.plot(Yo.time, Yo.values)
+    fig, ax = plt.subplots(figsize=(6,1.5))
+    ax.plot(Yo.time, Yo.values, lw=1.2, c='#b5504a')
+    ax.set_xlim((Yo.time[0], Yo.time[-1]))
+    ax.set_ylim(bottom=np.floor(Yo.min()) - 1)
+    ax.grid()
 
-    return _fig_to_uri(fig)
+    return _fig_to_uri(fig, bbox_inches='tight')
