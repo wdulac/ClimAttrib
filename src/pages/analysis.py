@@ -3,7 +3,7 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
 import datetime as dt
-from components.analysis.event_description import test_component
+from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
@@ -94,7 +94,6 @@ def layout(extreme_type=None,
             n_intervals=0,
             disabled=False
         ),
-        test_component(parsed_event), # Dummy component for testing
         html.Div(children=_loading_screen, id='analysis-content',
                  className='carousel-container')
         ], className='analysis-container', id='analysis-container'
@@ -123,9 +122,10 @@ def run_task(data):
     Output('update-interval', 'disabled'),
     Input('update-interval', 'n_intervals'),
     State('task-id', 'data'),
+    State('event-data', 'data'),
     prevent_initial_call=True
 )
-def update_results(n, task_id):
+def update_results(n, task_id, event):
 
     if not task_id:
         raise PreventUpdate
@@ -133,7 +133,7 @@ def update_results(n, task_id):
     task = attribution.AsyncResult(task_id)
     if task.ready():
         stats = task.result
-        return carousel(stats, task_id), True
+        return [description(event), carousel(stats, task_id)], True
     return no_update, False
 
 
