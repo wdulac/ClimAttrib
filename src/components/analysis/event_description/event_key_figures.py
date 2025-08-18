@@ -2,6 +2,8 @@ from dash import html
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
+from .shp_reverse_geocode import reverse_lookup
+
 
 def create_stat_card(icon: str, label: str, value: str, extra: str | None=None) -> dmc.Group:
     """Creates a single card for a statistic (icon + text)"""
@@ -35,6 +37,8 @@ def key_figures(event: dict):
     intensity_str = f"{event['intensity'] - 273.15:.2f} °C"
     duration_str = f"{event['duration']} days"
     coords_str = f"{event['lat']} N; {event['lon']} E"
+    lookup = reverse_lookup(event['lat'], event['lon'])
+    location_extra_str = f"{lookup['country']}; {lookup['region']}" if lookup else None
     method_str = {
         'yearmax': 'Annual maximum',
         'calendar': 'Calendar lock-in'
@@ -49,7 +53,8 @@ def key_figures(event: dict):
                     create_stat_card(
                         icon="fluent:location-48-regular",
                         label="Coord.",
-                        value=coords_str
+                        value=coords_str,
+                        extra=location_extra_str
                     ),
                     create_stat_card(
                         icon="fluent:calendar-48-regular",
