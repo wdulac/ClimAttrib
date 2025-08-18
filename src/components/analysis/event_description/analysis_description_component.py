@@ -10,28 +10,44 @@ _back_button = dmc.Button(
     'Back',
     size='lg',
     variant='gradient',
-    id='back-button'
+    id='back-button',
+    style={
+        'margin-left': 'auto'
+    }
 )
 
 
+
 def description(event):
-
     component = html.Div(
-        children = [
-            dmc.Group(children=[
-                html.Img(src=make_temperature_plot(event)),
-                debug_table(event),
-                _back_button
-            ], justify='flex-start', gap='10rem')
+        children=[
+            dmc.Group(
+                children=[
+                    # Left block
+                    dmc.Group(
+                        children=[
+                            html.Img(src=make_temperature_plot(event)),
+                            debug_table(event),
+                        ],
+                        gap="xl",          # contrôle espace entre plot et tableau
+                        justify="flex-start" # Justify left
+                    ),
+                    # Back button after the left block
+                    _back_button,
+                ],
+                justify="space-around",  # Fills up space between blocls
+                grow=False,
+                wrap="nowrap"
+            )
         ],
-        id='event-description-container',
+        id="event-description-container",
         style={
-            'padding-block': '5px',
-            'padding-inline': '1rem'
-        }
+            "padding-block": "5px",
+            "padding-inline": "3rem",
+        },
     )
-
     return component
+
 
 
 @callback(

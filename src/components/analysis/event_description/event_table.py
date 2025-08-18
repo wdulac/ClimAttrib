@@ -28,7 +28,7 @@ def debug_table(event):
         withTableBorder=True,
         striped=True,
         style={
-            'width': '50%'
+            'width': 'auto'
         }
     ), className='chosen-event')
 
