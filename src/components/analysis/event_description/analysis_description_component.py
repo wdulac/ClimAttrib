@@ -2,7 +2,7 @@ from dash import html, callback, Input, Output
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
-from .event_table import debug_table
+from .event_key_figures import key_figures
 from .temperature_plot import make_temperature_plot
 
 
@@ -26,8 +26,8 @@ def description(event):
                     # Left block
                     dmc.Group(
                         children=[
-                            html.Img(src=make_temperature_plot(event)),
-                            debug_table(event),
+                            # html.Img(src=make_temperature_plot(event)),
+                            key_figures(event),
                         ],
                         gap="xl",          # contrôle espace entre plot et tableau
                         justify="flex-start" # Justify left
