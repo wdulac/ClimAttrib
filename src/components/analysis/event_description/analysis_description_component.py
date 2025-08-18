@@ -7,19 +7,22 @@ from .temperature_plot import make_temperature_plot
 
 
 _back_button = dmc.Button(
-    'Back',
+    'Back to event selection',
     size='lg',
     variant='gradient',
     id='back-button',
     style={
-        'margin-left': 'auto'
+        'margin-left': 'auto',
+        'margin-right': '2rem'
     }
 )
 
 
 
 def description(event):
-    component = html.Div(
+    component = dmc.Paper(
+        withBorder=True,
+        p='md',
         children=[
             dmc.Group(
                 children=[
