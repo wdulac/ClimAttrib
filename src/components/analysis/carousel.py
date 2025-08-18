@@ -23,8 +23,8 @@ CAROUSEL_SETTINGS = {
         'align': 'center',
         'loop': False
     },
-    'previousControlIcon': DashIconify(icon="icons8:up-round", width=50),
-    'nextControlIcon': DashIconify(icon="icons8:down-round", width=50),
+    'previousControlIcon': DashIconify(icon="fluent:arrow-circle-up-48-regular", width=50),
+    'nextControlIcon': DashIconify(icon="fluent:arrow-circle-down-48-regular", width=50),
     'classNames': {
         'indicator': 'dmc-indicator',
         'control': 'dmc-control'
