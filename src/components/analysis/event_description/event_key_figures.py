@@ -37,8 +37,13 @@ def key_figures(event: dict):
     intensity_str = f"{event['intensity'] - 273.15:.2f} °C"
     duration_str = f"{event['duration']} days"
     coords_str = f"{event['lat']} N; {event['lon']} E"
-    lookup = reverse_lookup(event['lat'], event['lon'])
-    location_extra_str = f"{lookup['country']}; {lookup['region']}" if lookup else None
+
+    location = reverse_lookup(event['lat'], event['lon'])
+    if location:
+        location_extra_str = ", ".join([
+            location[level] for level in ['country', 'region', 'sub-region'] if location[level]
+        ])
+
     method_str = {
         'yearmax': 'Annual maximum',
         'calendar': 'Calendar lock-in'
