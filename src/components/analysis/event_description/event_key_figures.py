@@ -57,7 +57,7 @@ def key_figures(event: dict):
                 children=[
                     create_stat_card(
                         icon="fluent:location-48-regular",
-                        label="Coord.",
+                        label="Location",
                         value=coords_str,
                         extra=location_extra_str
                     ),
@@ -78,7 +78,7 @@ def key_figures(event: dict):
                         value=intensity_str
                     ),
                     create_stat_card(
-                        icon="fluent:calendar-lock-48-regular",
+                        icon="fluent:calendar-settings-48-regular",
                         label="Method",
                         value=method_str
                     ),
