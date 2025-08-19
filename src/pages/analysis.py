@@ -133,6 +133,10 @@ def update_results(n, task_id, event):
     task = attribution.AsyncResult(task_id)
     if task.ready():
         stats = task.result
+        # Convert back dates to datetime objets after being serialized through the dcc.Store
+        for key in ['date_start', 'date_stop', 'date']:
+            if isinstance(event.get(key), str):
+                event[key] = dt.datetime.strptime(event[key], '%Y-%m-%d')
         return [description(event), carousel(stats, task_id)], True
     return no_update, False
 

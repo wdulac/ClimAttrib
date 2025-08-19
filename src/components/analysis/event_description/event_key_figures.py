@@ -35,7 +35,13 @@ def key_figures(event: dict):
     """
 
     intensity_str = f"{event['intensity'] - 273.15:.2f} °C"
+
     duration_str = f"{event['duration']} days"
+    duration_extra_str = (
+        f"from {event['date_start'].strftime('%b %d, %Y')} "
+        f"to {event['date_stop'].strftime('%b %d, %Y')}"
+    )
+    
     coords_str = f"{event['lat']} N; {event['lon']} E"
 
     location = reverse_lookup(event['lat'], event['lon'])
@@ -65,7 +71,7 @@ def key_figures(event: dict):
                         icon="fluent:calendar-48-regular",
                         label="Duration",
                         value=duration_str,
-                        extra=f"from {event['date']}"
+                        extra=duration_extra_str
                     ),
                     create_stat_card(
                         icon="fluent:braces-variable-48-regular",
