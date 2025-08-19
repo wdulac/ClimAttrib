@@ -17,7 +17,7 @@ def create_stat_card(icon: str, label: str, value: str, extra: str | None=None) 
         gap='xs',
         align='center',
         children=[
-            DashIconify(icon=icon, width=50, color='black'),
+            DashIconify(icon=icon, width=48, color='black'),
             dmc.Stack(
                 gap=0,
                 children=[
