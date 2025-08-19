@@ -56,7 +56,7 @@ def carousel(stats, task_id):
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
                 children=dmc.Stack(
                     style={
-                        'maxHeight': '80%',
+                        'maxHeight': '100%',
                         'overflowY': 'auto',
                         'width': '100%'
                     },
@@ -80,7 +80,7 @@ def carousel(stats, task_id):
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
                 children=dmc.Stack(
                     style={
-                        'maxHeight': '80%',
+                        'maxHeight': '100%',
                         'overflowY': 'auto',
                         'width': '100%'
                     },
@@ -104,7 +104,7 @@ def carousel(stats, task_id):
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
                 children=dmc.Stack(
                     style={
-                        'maxHeight': '80%',
+                        'maxHeight': 'calc(100% - 130px)',
                         'overflowY': 'auto',
                         'alignItems': 'center'
                     },
