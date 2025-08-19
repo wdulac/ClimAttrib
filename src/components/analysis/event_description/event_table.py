@@ -1,7 +1,7 @@
 from dash import html
 import dash_mantine_components as dmc
 
-def chosen_event(event):
+def debug_table(event):
     """
     Early prototype for a dynamic component that presents
     the settings chosen by the user
@@ -28,7 +28,7 @@ def chosen_event(event):
         withTableBorder=True,
         striped=True,
         style={
-            'width': '50%'
+            'width': 'auto'
         }
     ), className='chosen-event')
 
