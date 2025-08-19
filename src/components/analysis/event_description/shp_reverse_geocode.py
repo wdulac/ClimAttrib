@@ -29,5 +29,5 @@ def reverse_lookup(lat: float, lon: float, cell_size: float = 2.5):
     return {
         "country": best["admin"],
         "region": best["region"],
-        "sub-region": best["gn_name"]
+        "sub-region": best["name"]
     }
