@@ -5,6 +5,7 @@ from dash_iconify import DashIconify
 
 import os
 import json
+import base64
 import xarray as xr
 import datetime as dt
 
@@ -297,12 +298,25 @@ def update_link(
                 coords = json.loads(grid_point)
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
-                href = ("/analysis?"
-                        f"extreme_type={extreme_type}"
-                        f"&method={computation_method}"
-                        f"&date={date[0].__str__()}_{date[1].__str__()}"
-                        f"&To={To}"
-                        f"&loc={str(lat)}_{str(lon)}")
+                start, stop = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
+
+                event_params = {
+                    'extreme_type': extreme_type,
+                    'method': computation_method,
+                    'start_date': start.strftime('%Y-%m-%d'),
+                    'stop_date': stop.strftime('%Y-%m-%d'),
+                    'duration': (stop-start).days + 1,
+                    'lat': lat,
+                    'lon': lon,
+                    'intensity': To
+                }
+
+                href = (
+                    "/analysis?event=" +
+                    base64.b64encode(
+                        json.dumps(event_params).encode('utf-8')
+                    ).decode('utf-8')
+                )
                 
                 return href
             else:

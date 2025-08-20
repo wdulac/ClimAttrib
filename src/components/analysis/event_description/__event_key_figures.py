@@ -38,8 +38,8 @@ def key_figures(event: dict):
 
     duration_str = f"{event['duration']} days"
     duration_extra_str = (
-        f"from {event['date_start'].strftime('%b %d, %Y')} "
-        f"to {event['date_stop'].strftime('%b %d, %Y')}"
+        f"from {event['start_date'].strftime('%b %d, %Y')} "
+        f"to {event['stop_date'].strftime('%b %d, %Y')}"
     )
     
     coords_str = f"{event['lat']} °N; {event['lon']} °E"
