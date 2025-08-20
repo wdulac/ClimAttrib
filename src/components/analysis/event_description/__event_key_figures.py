@@ -2,7 +2,7 @@ from dash import html
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-from .shp_reverse_geocode import reverse_lookup
+from .__reverse_geocode import reverse_lookup
 
 
 def create_stat_card(icon: str, label: str, value: str, extra: str | None=None) -> dmc.Group:
@@ -42,7 +42,7 @@ def key_figures(event: dict):
         f"to {event['date_stop'].strftime('%b %d, %Y')}"
     )
     
-    coords_str = f"{event['lat']} N; {event['lon']} E"
+    coords_str = f"{event['lat']} °N; {event['lon']} °E"
 
     location = reverse_lookup(event['lat'], event['lon'])
     if location:
