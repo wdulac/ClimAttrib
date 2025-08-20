@@ -40,7 +40,6 @@ application.layout = dmc.MantineProvider(layout)
 
 # imports from utils need to take place after initialization of the app
 from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
-from utils import redirects
 from utils import geojson_tiles
 from utils import download_csv
 
