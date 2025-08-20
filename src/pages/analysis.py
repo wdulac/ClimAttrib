@@ -43,6 +43,8 @@ def layout(event=None):
     rules in utils/redirects.py
     """
     
+    # TODO Check for JSON validity and protect further against tampering
+
     # Decode and desialize the query string
     event = json.loads(base64.b64decode(event))
 
