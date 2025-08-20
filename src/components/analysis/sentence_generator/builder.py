@@ -1,8 +1,8 @@
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from datetime import datetime
-from .loader import load_template, fill_template
-from .formatter import format_prob, format_return_period, format_year, format_PR, format_FAR
-from .logic import should_include_today_phrase
+from .__loader import load_template, fill_template
+from .__formatter import format_prob, format_return_period, format_year, format_PR, format_FAR
+from .__logic import should_include_today_phrase
 
 def build_summary_component(stats):
 
