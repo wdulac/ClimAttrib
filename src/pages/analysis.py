@@ -4,7 +4,7 @@ import dash_mantine_components as dmc
 
 import datetime as dt
 
-import hmac, hashlib, base64, json, os
+import hmac, hashlib, base64, json, os, struct
 
 from components.analysis.event_description import description
 from components.analysis.carousel import carousel
@@ -36,6 +36,41 @@ _loading_screen = [
 ]
 
 
+def _decode_token(token: str) -> dict:
+
+    SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY').encode('utf-8')
+
+    EXTREME_MAP = {0: 'hot', 1: 'cold'}
+    METHOD_MAP = {0: 'yearmax', 1: 'calendar'}
+
+    raw = base64.urlsafe_b64decode(token + '=' * (-len(token) % 4))
+    
+    payload, sig = raw[:-16], raw[-16:]  # 16 bytes HMAC
+    expected_sig = hmac.new(SECRET_KEY, payload, hashlib.sha256).digest()[:16]
+    
+    if not hmac.compare_digest(sig, expected_sig):
+        raise ValueError("Invalid signature")
+    
+    # Unpack payload
+    extreme_code, method_code, start_date, stop_date, lat, lon, intensity = struct.unpack('>BBIIf f f', payload)
+
+    start_date_dt = dt.datetime.strptime(str(start_date), '%Y%m%d')
+    stop_date_dt  = dt.datetime.strptime(str(stop_date), '%Y%m%d')
+
+    return {
+        'extreme_type': EXTREME_MAP[extreme_code],
+        'method': METHOD_MAP[method_code],
+        'start_date': start_date_dt,
+        'stop_date': stop_date_dt,
+        'date': start_date_dt + (stop_date_dt - start_date_dt)/2,
+        'duration': (stop_date_dt - start_date_dt).days + 1,
+        'lat': float(lat),
+        'lon': float(lon),
+        'intensity': float(intensity)
+    }
+    
+
+
 def layout(p=None):
     """
     Note: It is good practice to catch unexpected query event here through 
@@ -43,23 +78,10 @@ def layout(p=None):
     rules in utils/redirects.py
     """
     
-    ## Decode and validate the payload's signature
-    raw = base64.urlsafe_b64decode(p + '=' * (-len(p) % 4)) # Add back trimming characters
-    payload, sig = raw[:-32], raw[-32:] # Expecting 32 bytes SHA256 hash
-
-    expected_sig = hmac.new(os.getenv('URL_SIG_SECRET_KEY').encode('utf-8'), payload, hashlib.sha256).digest()
-    if not hmac.compare_digest(sig, expected_sig):
-        # TODO Redirect to a separate page
-        return html.Div('Tampering attempt detected')
-    
-    event = json.loads(payload.decode('utf-8'))
-
-    # Split and parse start and stop dates. Compute center date and duration
-    start_date, stop_date = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in event['dates'].split('_')]
-    event['start_date'] = start_date
-    event['stop_date'] = stop_date
-    event['duration'] = (stop_date - start_date).days + 1
-    event['date'] = event['start_date'] + (event['stop_date'] - event['start_date'])/2
+    try:
+        event = _decode_token(p)
+    except ValueError:
+        return html.Div('Tampering detected')
 
     # Compose and return layout
     layout = html.Div([

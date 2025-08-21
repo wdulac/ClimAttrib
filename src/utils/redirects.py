@@ -15,7 +15,7 @@ def analysis():
         if 'p' not in request.args.keys():
             return redirect(HOMEPAGE)
 
-        # Check if parameter is at least 32 bytes long
+        # Check if parameter is at least 16 bytes long
         p = request.args['p']
-        if len(base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))) <= 32:
+        if len(base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))) <= 16:
             return redirect(HOMEPAGE)

@@ -7,7 +7,7 @@ import os
 import xarray as xr
 import datetime as dt
 
-import hmac, hashlib, base64, json
+import hmac, hashlib, base64, json, struct
 
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -30,10 +30,10 @@ _extreme_type_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
-            {"value": "hot", "label": "Hot"},
-            {"value": "cold", "label": "Cold"}
+            {"value": 0, "label": "Hot"},
+            {"value": 1, "label": "Cold"}
         ],
-        value="hot",
+        value=0,
         persistence=True,
         persistence_type='session',
     )],
@@ -63,10 +63,10 @@ _computation_method_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:computation-method',
         data= [
-            {"value": "calendar", "label": "Yes"},
-            {"value": "yearmax", "label": "No"},
+            {"value": 1, "label": "Yes"}, # Calendar case
+            {"value": 0, "label": "No"}, # Year max case
         ],
-        value="yearmax",
+        value=0,
         persistence=True,
         persistence_type='session',
     )],
@@ -220,9 +220,9 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                 lat, lon = json.loads(grid_point)
                 start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
                                 for _ in date]
-                if extreme_type == 'hot':
+                if extreme_type == 0: # Hot
                     var = 'tasmax'
-                elif extreme_type == 'cold':
+                elif extreme_type == 1: # Cold
                     var = 'tasmin'
 
                 cwd = os.path.basename(os.getcwd())
@@ -279,8 +279,8 @@ def notify_user(n_clicks, selected_point_data):
 )
 def update_link(
     grid_point: str, # JSON serialized
-    extreme_type: str,
-    computation_method: str,
+    extreme_type: int,
+    computation_method: int,
     date: list,
     date_error: str,
     intensity: str #JSON serialized
@@ -299,25 +299,32 @@ def update_link(
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
 
-                # Use least amount of dict keys to keep the url short
-                event_params = {
-                    'extreme_type': extreme_type,
-                    'method': computation_method,
-                    'dates': '_'.join(date),
-                    'lat': lat,
-                    'lon': lon,
-                    'intensity': To
-                }
+                start_date = int(date[0].replace('-', ''))
+                stop_date  = int(date[1].replace('-', ''))
 
-                # Serialize and encode in bytes the event dict
-                payload = json.dumps(event_params).encode('utf-8')
-                # Compute SHA256 signature digest to prevent tampering
-                sig = hmac.new(os.getenv('URL_SIG_SECRET_KEY').encode('utf-8'), payload, hashlib.sha256).digest()
-                # Build href and pass base64 encoded string of the total package
-                href = (
-                    "/analysis?p=" +
-                    base64.urlsafe_b64encode(payload + sig).decode('utf-8').rstrip('=')
+                print(type(extreme_type))
+
+                # Pack valeus straight into binary for minimal footprint
+                payload = struct.pack(
+                    '>BBIIfff', # 1 + 1 + 4 + 4 + 4 + 4 + 4 = 22 bytes
+                    extreme_type,
+                    computation_method,
+                    start_date,
+                    stop_date,
+                    lat,
+                    lon,
+                    To
                 )
+
+                SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY').encode('utf-8')
+                
+                # Compute 16 bytes SHA256 HMAC to prevent tampering
+                sig = hmac.new(SECRET_KEY, payload, hashlib.sha256).digest()[:16]
+                # Create token
+                token = base64.urlsafe_b64encode(payload + sig).decode('utf-8').rstrip('=')
+
+                # Create and return href
+                href = f"/analysis?p={token}"
                 
                 return href
             else:
