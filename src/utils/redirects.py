@@ -1,5 +1,6 @@
 from app import server
 from flask import request, redirect
+import base64
 
 HOMEPAGE = '/'
 
@@ -11,6 +12,10 @@ def analysis():
         if len(request.args.keys()) != 1:
             return redirect(HOMEPAGE)
         
-        # Check if any query parameter is empty
-        if '' in request.args.values():
+        if 'p' not in request.args.keys():
+            return redirect(HOMEPAGE)
+
+        # Check if parameter is at least 32 bytes long
+        p = request.args['p']
+        if len(base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))) <= 32:
             return redirect(HOMEPAGE)

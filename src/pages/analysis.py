@@ -44,7 +44,7 @@ def layout(p=None):
     """
     
     ## Decode and validate the payload's signature
-    raw = base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))
+    raw = base64.urlsafe_b64decode(p + '=' * (-len(p) % 4)) # Add back trimming characters
     payload, sig = raw[:-32], raw[-32:] # Expecting 32 bytes SHA256 hash
 
     expected_sig = hmac.new(os.getenv('URL_SIG_SECRET_KEY').encode('utf-8'), payload, hashlib.sha256).digest()
