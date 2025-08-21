@@ -2,9 +2,9 @@ from dash import register_page, html, dcc, callback, Input, Output, State, no_up
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
-import json
-import base64
 import datetime as dt
+
+import hmac, hashlib, base64, json, os
 
 from components.analysis.event_description import description
 from components.analysis.carousel import carousel
@@ -36,22 +36,29 @@ _loading_screen = [
 ]
 
 
-def layout(event=None):
+def layout(p=None):
     """
     Note: It is good practice to catch unexpected query event here through 
     **kwargs However in our case it is already handled through redirection
     rules in utils/redirects.py
     """
     
-    # TODO Check for JSON validity and protect further against tampering
+    ## Decode and validate the payload's signature
+    raw = base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))
+    payload, sig = raw[:-32], raw[-32:] # Expecting 32 bytes SHA256 hash
 
-    # Decode and desialize the query string
-    event = json.loads(base64.b64decode(event))
+    expected_sig = hmac.new(os.getenv('URL_SIG_SECRET_KEY').encode('utf-8'), payload, hashlib.sha256).digest()
+    if not hmac.compare_digest(sig, expected_sig):
+        # TODO Redirect to a separate page
+        return html.Div('Tampering attempt detected')
+    
+    event = json.loads(payload.decode('utf-8'))
 
-    # Convert dates back from strings to datetime
-    event['start_date'] = dt.datetime.strptime(event['start_date'], '%Y-%m-%d')
-    event['stop_date'] = dt.datetime.strptime(event['stop_date'], '%Y-%m-%d')
-    # Evaluate middle date
+    # Split and parse start and stop dates. Compute center date and duration
+    start_date, stop_date = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in event['dates'].split('_')]
+    event['start_date'] = start_date
+    event['stop_date'] = stop_date
+    event['duration'] = (stop_date - start_date).days + 1
     event['date'] = event['start_date'] + (event['stop_date'] - event['start_date'])/2
 
     # Compose and return layout

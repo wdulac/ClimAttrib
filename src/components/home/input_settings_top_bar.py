@@ -4,10 +4,10 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 import os
-import json
-import base64
 import xarray as xr
 import datetime as dt
+
+import hmac, hashlib, base64, json
 
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -298,24 +298,25 @@ def update_link(
                 coords = json.loads(grid_point)
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
-                start, stop = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
 
+                # Use least amount of dict keys to keep the url short
                 event_params = {
                     'extreme_type': extreme_type,
                     'method': computation_method,
-                    'start_date': start.strftime('%Y-%m-%d'),
-                    'stop_date': stop.strftime('%Y-%m-%d'),
-                    'duration': (stop-start).days + 1,
+                    'dates': '_'.join(date),
                     'lat': lat,
                     'lon': lon,
                     'intensity': To
                 }
 
+                # Serialize and encode in bytes the event dict
+                payload = json.dumps(event_params).encode('utf-8')
+                # Compute SHA256 signature digest to prevent tampering
+                sig = hmac.new(os.getenv('URL_SIG_SECRET_KEY').encode('utf-8'), payload, hashlib.sha256).digest()
+                # Build href and pass base64 encoded string of the total package
                 href = (
-                    "/analysis?event=" +
-                    base64.b64encode(
-                        json.dumps(event_params).encode('utf-8')
-                    ).decode('utf-8')
+                    "/analysis?p=" +
+                    base64.urlsafe_b64encode(payload + sig).decode('utf-8').rstrip('=')
                 )
                 
                 return href
