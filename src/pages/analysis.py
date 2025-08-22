@@ -11,6 +11,8 @@ from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
 from utils.url_token import decode_token
+from utils.redis_cache import make_cache_key, get_cache
+from utils.results import get_result
 
 register_page(__name__, path='/analysis')
 
@@ -52,7 +54,7 @@ def layout(p=None):
     # Compose and return layout
     layout = html.Div([
         dcc.Store(data=event, id='event-data'),
-        dcc.Store(data=None, id='task-id'),
+        dcc.Store(data=None, id='result_id'),
         dcc.Interval(
             id='update-interval',
             interval=1000,
@@ -67,7 +69,7 @@ def layout(p=None):
 
 
 @callback(
-        Output('task-id', 'data'),
+        Output('result_id', 'data'),
         Input('event-data', 'data')
 )
 def run_task(data):
@@ -77,32 +79,38 @@ def run_task(data):
     
     data['date'] = dt.datetime.fromisoformat(data['date'])
 
-    task = attribution.apply_async(args=[data])
+    cache_key = make_cache_key(data)
 
-    return task.id
+    cached = get_cache(cache_key)
+
+    if cached is not None:
+        return f"CACHE:{cache_key}"
     
-# TODO Find better way to retrieve stats datasets later on, than to pass task_id all the way down to create_plotly_figure
+    task = attribution.apply_async(args=[data, cache_key])
+
+    return f"TASK:{task.id}"
+
+    
+# TODO Find better way to retrieve stats datasets later on, than to pass result_id all the way down to create_plotly_figure
 @callback(
     Output('analysis-content', 'children'),
     Output('update-interval', 'disabled'),
     Input('update-interval', 'n_intervals'),
-    State('task-id', 'data'),
+    State('result_id', 'data'),
     State('event-data', 'data'),
     prevent_initial_call=True
 )
-def update_results(n, task_id, event):
+def update_results(n, result_id, event):
 
-    if not task_id:
+    if not result_id:
         raise PreventUpdate
     
-    task = attribution.AsyncResult(task_id)
-    if task.ready():
-        stats = task.result
-        # Convert back dates to datetime objets after being serialized through the dcc.Store
-        for key in ['start_date', 'stop_date', 'date']:
-            if isinstance(event.get(key), str):
-                event[key] = dt.datetime.fromisoformat(event[key]).date()
-        return [description(event), carousel(stats, task_id)], True
-    return no_update, False
-
-
+    stats = get_result(result_id)
+    if stats is None:
+        return no_update, False
+    
+    for key in ['start_date', 'stop_date', 'date']:
+        if isinstance(event.get(key), str):
+            event[key] = dt.datetime.fromisoformat(event[key]).date()
+            
+    return [description(event), carousel(stats, result_id)], True
