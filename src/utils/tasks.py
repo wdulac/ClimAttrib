@@ -7,15 +7,16 @@ import os
 celery_app = Celery(
     "tasks",
     broker=f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0", # Redis for tasks queuing
-    backend=f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0", # Redis for passing/storing results
+    backend=None,
     task_serializer="pickle",
     result_serializer="pickle",
-    accept_content=["json", "pickle"]
+    accept_content=["json", "pickle"],
+    task_ignore_result=True
 )
 
 @celery_app.task(name="attribution")
 def attribution(event, cache_key=None):
-    
+
     result = attribute_event(event)
 
     if cache_key:
