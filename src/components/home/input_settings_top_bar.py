@@ -4,10 +4,11 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 import os
-import json
 import xarray as xr
 import datetime as dt
 
+import json
+from utils.url_token import encode_token
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
@@ -29,10 +30,10 @@ _extreme_type_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
-            {"value": "hot", "label": "Hot"},
-            {"value": "cold", "label": "Cold"}
+            {"value": 'hot', "label": "Hot"},
+            {"value": 'cold', "label": "Cold"}
         ],
-        value="hot",
+        value='hot',
         persistence=True,
         persistence_type='session',
     )],
@@ -297,12 +298,12 @@ def update_link(
                 coords = json.loads(grid_point)
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
-                href = ("/analysis?"
-                        f"extreme_type={extreme_type}"
-                        f"&method={computation_method}"
-                        f"&date={date[0].__str__()}_{date[1].__str__()}"
-                        f"&To={To}"
-                        f"&loc={str(lat)}_{str(lon)}")
+
+                # Create signed URL token
+                token = encode_token(extreme_type, computation_method, date, lat, lon, To)
+
+                # Create and return href
+                href = f"/analysis?p={token}"
                 
                 return href
             else:

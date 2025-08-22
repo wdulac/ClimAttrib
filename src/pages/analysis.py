@@ -3,40 +3,16 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
 import datetime as dt
+
+import hmac, hashlib, base64, json, os, struct
+
 from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
+from utils.url_token import decode_token
 
 register_page(__name__, path='/analysis')
-
-def _parse_event(query: dict) -> dict:
-    """
-    Convert values from the query string to their correct data types
-    """
-
-    event = dict()
-
-    event['method'], event['extreme_type'] = query['method'], query['extreme_type']
-
-    # Read date string as datetime object
-    event['date_start'], event['date_stop'] = [
-        dt.datetime.strptime(_, '%Y-%m-%d').date() for _ in query['date'].split('_')
-    ]
-
-    # Evaluate middle date
-    event['date'] = event['date_start'] + (event['date_stop'] - event['date_start'])/2
-
-    # Evaluate event duration in days
-    event['duration'] = (event['date_stop'] - event['date_start']).days + 1
-
-    # Split lat_lon string into a (lat, lon) float tuple
-    event['lat'], event['lon'] = [float(_) for _ in query['loc'].split('_')]
-
-    # Parse query intensity into float
-    event['intensity'] = float(query['To'])
-
-    return event
 
 
 def _make_skeleton_lines(n, width='100%'):
@@ -59,34 +35,23 @@ _loading_screen = [
         ], gutter=100, style={'width': '100%'}, align='center'),
     ], className='loading-skeleton')
 ]
+    
 
-
-def layout(extreme_type=None,
-           method=None,
-           date=None,
-           To=None,
-           loc=None):
+def layout(p=None):
     """
     Note: It is good practice to catch unexpected query event here through 
     **kwargs However in our case it is already handled through redirection
     rules in utils/redirects.py
     """
     
-    # Equivalent to event = locals() but more explanatory
-    query_dict = {
-        "extreme_type": extreme_type,
-        "method": method,
-        "date": date,  
-        "To": To,  
-        "loc": loc  
-    }
-
-    # Beware not to modify the original event dict
-    parsed_event = _parse_event(query_dict.copy())
+    try:
+        event = decode_token(p)
+    except ValueError:
+        return html.Div('Tampering detected')
 
     # Compose and return layout
     layout = html.Div([
-        dcc.Store(data=parsed_event, id='event-data'),
+        dcc.Store(data=event, id='event-data'),
         dcc.Store(data=None, id='task-id'),
         dcc.Interval(
             id='update-interval',
@@ -134,9 +99,9 @@ def update_results(n, task_id, event):
     if task.ready():
         stats = task.result
         # Convert back dates to datetime objets after being serialized through the dcc.Store
-        for key in ['date_start', 'date_stop', 'date']:
+        for key in ['start_date', 'stop_date', 'date']:
             if isinstance(event.get(key), str):
-                event[key] = dt.datetime.strptime(event[key], '%Y-%m-%d')
+                event[key] = dt.datetime.fromisoformat(event[key]).date()
         return [description(event), carousel(stats, task_id)], True
     return no_update, False
 

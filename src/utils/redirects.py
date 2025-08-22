@@ -1,33 +1,21 @@
 from app import server
 from flask import request, redirect
-import datetime as dt
+import base64
 
 HOMEPAGE = '/'
-ALLOWED_QUERY_VALUES = {
-    'extreme_type': ['hot', 'cold'],
-    'method': ['yearmax', 'calendar'],
-    'date': {
-        'MIN_DATE': dt.date(1940, 1, 1),
-        'MAX_DATE': dt.date(2022, 12, 31)
-    },
-    'loc': []
-}
 
 # Redirect incorrect analysis requests back to homepage
 @server.before_request
 def analysis():
     if request.method == 'GET' and request.path == '/analysis':
         # Check if the query string has an inappropriate amount of parameters
-        if len(request.args.keys()) != 5:
+        if len(request.args.keys()) != 1:
             return redirect(HOMEPAGE)
         
-        # Check if any query parameter key is unexpected
-        if not all([param in ['extreme_type', 'method', 'date', 'To', 'loc']\
-                        for param in request.args.keys()]):
-            return redirect(HOMEPAGE)
-        
-        # Check if any query parameter is empty
-        if '' in request.args.values():
+        if 'p' not in request.args.keys():
             return redirect(HOMEPAGE)
 
-        # TODO Check each parameter value against a set of allowed values
+        # Check if parameter is at least 16 bytes long
+        p = request.args['p']
+        if len(base64.urlsafe_b64decode(p + '=' * (-len(p) % 4))) <= 16:
+            return redirect(HOMEPAGE)
