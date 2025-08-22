@@ -6,8 +6,8 @@ from science import plot_intensity
 from science import plot_intensity_change
 
 
-def intensity_change_plot(stats, task_id):
-    fig = plot_intensity_change(stats, task_id)
+def intensity_change_plot(stats, result_id):
+    fig = plot_intensity_change(stats, result_id)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'dI'}),
@@ -17,8 +17,8 @@ def intensity_change_plot(stats, task_id):
     return component
 
 
-def intensity_plot(stats, task_id):
-    fig = plot_intensity(stats, task_id)
+def intensity_plot(stats, result_id):
+    fig = plot_intensity(stats, result_id)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'intensity'}),
@@ -28,8 +28,8 @@ def intensity_plot(stats, task_id):
     return component
 
 
-def PR_FAR_plot(stats, task_id):
-    fig = plot_PR_FAR(stats, task_id)
+def PR_FAR_plot(stats, result_id):
+    fig = plot_PR_FAR(stats, result_id)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'PR'}),
@@ -39,8 +39,8 @@ def PR_FAR_plot(stats, task_id):
     return component
 
 
-def probability_plot(stats, task_id):
-    fig = plot_probability(stats, task_id)
+def probability_plot(stats, result_id):
+    fig = plot_probability(stats, result_id)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'probability'}),
