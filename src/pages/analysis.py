@@ -10,6 +10,7 @@ from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
 from utils.tasks import attribution
+from utils.url_token import decode_token
 
 register_page(__name__, path='/analysis')
 
@@ -34,42 +35,7 @@ _loading_screen = [
         ], gutter=100, style={'width': '100%'}, align='center'),
     ], className='loading-skeleton')
 ]
-
-
-def _decode_token(token: str) -> dict:
-
-    SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY').encode('utf-8')
-
-    EXTREME_MAP = {0: 'hot', 1: 'cold'}
-    METHOD_MAP = {0: 'yearmax', 1: 'calendar'}
-
-    raw = base64.urlsafe_b64decode(token + '=' * (-len(token) % 4))
     
-    payload, sig = raw[:-16], raw[-16:]  # 16 bytes HMAC
-    expected_sig = hmac.new(SECRET_KEY, payload, hashlib.sha256).digest()[:16]
-    
-    if not hmac.compare_digest(sig, expected_sig):
-        raise ValueError("Invalid signature")
-    
-    # Unpack payload
-    extreme_code, method_code, start_date, stop_date, lat, lon, intensity = struct.unpack('>BBIIf f f', payload)
-
-    start_date_dt = dt.datetime.strptime(str(start_date), '%Y%m%d')
-    stop_date_dt  = dt.datetime.strptime(str(stop_date), '%Y%m%d')
-
-    return {
-        'extreme_type': EXTREME_MAP[extreme_code],
-        'method': METHOD_MAP[method_code],
-        'start_date': start_date_dt,
-        'stop_date': stop_date_dt,
-        'date': start_date_dt + (stop_date_dt - start_date_dt)/2,
-        'duration': (stop_date_dt - start_date_dt).days + 1,
-        'lat': float(lat),
-        'lon': float(lon),
-        'intensity': float(intensity)
-    }
-    
-
 
 def layout(p=None):
     """
@@ -79,7 +45,7 @@ def layout(p=None):
     """
     
     try:
-        event = _decode_token(p)
+        event = decode_token(p)
     except ValueError:
         return html.Div('Tampering detected')
 

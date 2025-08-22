@@ -7,8 +7,8 @@ import os
 import xarray as xr
 import datetime as dt
 
-import hmac, hashlib, base64, json, struct
-
+import json
+from utils.url_token import encode_token
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
@@ -30,10 +30,10 @@ _extreme_type_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:extreme-type',
         data=[
-            {"value": 0, "label": "Hot"},
-            {"value": 1, "label": "Cold"}
+            {"value": 'hot', "label": "Hot"},
+            {"value": 'cold', "label": "Cold"}
         ],
-        value=0,
+        value='hot',
         persistence=True,
         persistence_type='session',
     )],
@@ -63,10 +63,10 @@ _computation_method_segmented = dmc.Stack(children=[
     dmc.SegmentedControl(
         id='input:computation-method',
         data= [
-            {"value": 1, "label": "Yes"}, # Calendar case
-            {"value": 0, "label": "No"}, # Year max case
+            {"value": "calendar", "label": "Yes"},
+            {"value": "yearmax", "label": "No"},
         ],
-        value=0,
+        value="yearmax",
         persistence=True,
         persistence_type='session',
     )],
@@ -220,9 +220,9 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                 lat, lon = json.loads(grid_point)
                 start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
                                 for _ in date]
-                if extreme_type == 0: # Hot
+                if extreme_type == 'hot':
                     var = 'tasmax'
-                elif extreme_type == 1: # Cold
+                elif extreme_type == 'cold':
                     var = 'tasmin'
 
                 cwd = os.path.basename(os.getcwd())
@@ -279,8 +279,8 @@ def notify_user(n_clicks, selected_point_data):
 )
 def update_link(
     grid_point: str, # JSON serialized
-    extreme_type: int,
-    computation_method: int,
+    extreme_type: str,
+    computation_method: str,
     date: list,
     date_error: str,
     intensity: str #JSON serialized
@@ -299,29 +299,8 @@ def update_link(
                 lat, lon = coords[0], coords[1]
                 To = json.loads(intensity)
 
-                start_date = int(date[0].replace('-', ''))
-                stop_date  = int(date[1].replace('-', ''))
-
-                print(type(extreme_type))
-
-                # Pack valeus straight into binary for minimal footprint
-                payload = struct.pack(
-                    '>BBIIfff', # 1 + 1 + 4 + 4 + 4 + 4 + 4 = 22 bytes
-                    extreme_type,
-                    computation_method,
-                    start_date,
-                    stop_date,
-                    lat,
-                    lon,
-                    To
-                )
-
-                SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY').encode('utf-8')
-                
-                # Compute 16 bytes SHA256 HMAC to prevent tampering
-                sig = hmac.new(SECRET_KEY, payload, hashlib.sha256).digest()[:16]
-                # Create token
-                token = base64.urlsafe_b64encode(payload + sig).decode('utf-8').rstrip('=')
+                # Create signed URL token
+                token = encode_token(extreme_type, computation_method, date, lat, lon, To)
 
                 # Create and return href
                 href = f"/analysis?p={token}"
