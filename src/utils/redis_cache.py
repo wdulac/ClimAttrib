@@ -18,6 +18,10 @@ def set_cache(cache_key: str, value, ttl: int = 60*60*24):
     redis_client.set(cache_key, pickle.dumps(value), ex=ttl)
 
 
+def cache_exists(*args: list):
+    return redis_client.exists(*args) == len(args)
+
+
 def get_cache(cache_key: str):
     data = redis_client.get(cache_key)
     return pickle.loads(data) if data else None
