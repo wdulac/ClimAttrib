@@ -195,9 +195,9 @@ function downloadCSV(el) {
     }
 
     const vars = plot.layout.meta.variables;
-    const resultID = plot.layout.meta.result_id;
+    const cacheKey = plot.layout.meta.key;
 
-    fetch(`/download_csv?result_id=${resultID}&variables=${vars}`)
+    fetch(`/download_csv?key=${cacheKey}&variables=${vars}`)
         .then(response => {
             if (!response.ok) throw new Error("Failed to download CSV");
 

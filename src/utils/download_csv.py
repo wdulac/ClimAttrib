@@ -34,13 +34,13 @@ CSV_HEADERS = {
 @server.route("/download_csv")
 def download_csv():
 
-    result_id = request.args.get("result_id")
+    cache_key = request.args.get("key")
     variables = request.args.get("variables")
 
-    if not result_id or not variables:
+    if not cache_key or not variables:
         return "Missing parameters", 400
     
-    stats = get_cache(result_id)
+    stats = get_cache(cache_key)
     if stats is None:
         return "Data not available", 500
 

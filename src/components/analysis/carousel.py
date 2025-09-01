@@ -49,7 +49,7 @@ _lorem_ipsum = dmc.Text(
 )
 
 
-def carousel(stats, result_id):
+def carousel(stats, cache_key):
 
     component = dmc.Carousel([
         dmc.CarouselSlide(
@@ -83,8 +83,8 @@ def carousel(stats, result_id):
                             'userSelect': 'none'
                         },
                         children=[
-                            probability_plot(stats, result_id),
-                            PR_FAR_plot(stats, result_id)
+                            probability_plot(stats, cache_key),
+                            PR_FAR_plot(stats, cache_key)
                         ]
                     )
                 )
@@ -107,8 +107,8 @@ def carousel(stats, result_id):
                             'userSelect': 'none'
                         },
                         children=[
-                            intensity_plot(stats, result_id),
-                            intensity_change_plot(stats, result_id)
+                            intensity_plot(stats, cache_key),
+                            intensity_change_plot(stats, cache_key)
                         ]
                     )
                 )

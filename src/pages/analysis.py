@@ -69,7 +69,7 @@ def layout(p=None):
         attribution.apply_async(args=[event, cache_key])
 
         layout.children.extend([
-            dcc.Store(data=cache_key, id='result_id'),
+            dcc.Store(data=cache_key, id='cache-key'),
             dcc.Interval(
                 id='update-interval',
                 interval=1000,
@@ -83,18 +83,18 @@ def layout(p=None):
     return layout
 
     
-# TODO Find better way to retrieve stats datasets later on, than to pass result_id all the way down to create_plotly_figure
+# TODO Find better way to retrieve stats datasets later on, than to pass cache_key all the way down to create_plotly_figure
 @callback(
     Output('analysis-content', 'children'),
     Output('update-interval', 'disabled'),
     Input('update-interval', 'n_intervals'),
-    State('result_id', 'data'),
+    State('cache-key', 'data'),
     prevent_initial_call=True
 )
-def update_results(n, result_id):
+def update_results(n, key):
 
-    if not cache_exists(result_id):
+    if not cache_exists(key):
         raise PreventUpdate
     
-    stats = get_cache(result_id)
-    return carousel(stats, result_id), True
+    stats = get_cache(key)
+    return carousel(stats, key), True
