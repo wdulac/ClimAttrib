@@ -20,6 +20,6 @@ def attribution(event, cache_key=None):
     result = attribute_event(event)
 
     if cache_key:
-        set_cache(cache_key, result, ttl=60*60*24)
+        set_cache(cache_key, result)
 
     return result
