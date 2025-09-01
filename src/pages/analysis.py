@@ -59,6 +59,7 @@ def layout(p=None):
         cached_result = get_cache(cache_key)
         
         layout.children.extend([
+            dcc.Store(data=False, id='is-loading'),
             html.Div(children=carousel(cached_result, cache_key),
                      id='analysis-content',
                      className='carousel-container')
@@ -69,6 +70,7 @@ def layout(p=None):
         attribution.apply_async(args=[event, cache_key])
 
         layout.children.extend([
+            dcc.Store(data=True, id='is-loading'),
             dcc.Store(data=cache_key, id='cache-key'),
             dcc.Interval(
                 id='update-interval',
@@ -87,6 +89,7 @@ def layout(p=None):
 @callback(
     Output('analysis-content', 'children'),
     Output('update-interval', 'disabled'),
+    Output('is-loading', 'data'),
     Input('update-interval', 'n_intervals'),
     State('cache-key', 'data'),
     prevent_initial_call=True
@@ -97,4 +100,4 @@ def update_results(n, key):
         raise PreventUpdate
     
     stats = get_cache(key)
-    return carousel(stats, key), True
+    return carousel(stats, key), True, False
