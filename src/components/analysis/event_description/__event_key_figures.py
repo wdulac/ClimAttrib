@@ -34,7 +34,7 @@ def key_figures(event: dict):
     Assemble cards to describe event selected by the user
     """
 
-    intensity_str = f"{event['intensity'] - 273.15:.2f} °C"
+    intensity_str = f"{event['intensity'] - 273.15:.1f} °C"
 
     duration_str = f"{event['duration']} days"
     duration_extra_str = (
