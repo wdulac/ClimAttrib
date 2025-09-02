@@ -5,9 +5,12 @@ import dash_mantine_components as dmc
 from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
-from utils.tasks import attribution
 from utils.url_token import decode_token
 from utils.redis_cache import make_cache_key, get_cache, cache_exists
+
+# Make sure to import the Celery task named "attribution" task and not just the "attribution" function from utils.tasks
+from utils.tasks import celery_app
+attribution = celery_app.tasks['attribution']
 
 
 register_page(__name__, path='/analysis')
@@ -67,7 +70,7 @@ def layout(p=None):
 
     else:
         # Run async attribution calculation and set loading screen with 1s checks
-        attribution.apply_async(args=[event, cache_key])
+        attribution.delay(event) # Result is cached into Redis
 
         layout.children.extend([
             dcc.Store(data=True, id='is-loading'),
