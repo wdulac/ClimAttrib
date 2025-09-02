@@ -42,17 +42,19 @@
 
 /* Slide indicators : Highlight active slide */
 .dmc-indicator {
-  width: 4px;
+  width: 15px;
   height: 15px;
-  transition: height 250ms ease;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+  background-color: rgba(0, 0, 0, 0.3);
   opacity: 0.6;
+  transition: height 400ms ease, background-color 200ms ease, opacity 200ms ease;
 
   &[data-active] {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
     opacity: 1;
-    height: 40px;
   }
+
 }
 
 /* Slide controls : Hide inactive controls */
