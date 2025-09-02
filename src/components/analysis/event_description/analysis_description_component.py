@@ -8,6 +8,8 @@ from .__event_key_figures import key_figures
 _back_button = dmc.Button(
     'Back to event selection',
     size='lg',
+    loading=False,
+    disabled=True,
     variant='gradient',
     id='back-button',
     style={
@@ -58,3 +60,13 @@ def go_home(_):
         return "/"
     else:
         raise PreventUpdate
+    
+
+@callback(
+    # Output('back-button', 'loading'),
+    Output('back-button', 'disabled'),
+    Input('is-loading', 'data'),
+    prevent_initial_callback=False
+)
+def toggle_back_button_loading(is_loading):
+    return is_loading

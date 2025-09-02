@@ -1,16 +1,17 @@
-from dash import register_page, html, dcc, callback, Input, Output, State, no_update
+from dash import register_page, html, dcc, callback, Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
-
-import datetime as dt
-
-import hmac, hashlib, base64, json, os, struct
 
 from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
-from utils.tasks import attribution
 from utils.url_token import decode_token
+from utils.redis_cache import make_cache_key, get_cache, cache_exists
+
+# Make sure to import the Celery task named "attribution" task and not just the "attribution" function from utils.tasks
+from utils.tasks import celery_app
+attribution = celery_app.tasks['attribution']
+
 
 register_page(__name__, path='/analysis')
 
@@ -48,61 +49,58 @@ def layout(p=None):
         event = decode_token(p)
     except ValueError:
         return html.Div('Tampering detected')
+    
+    cache_key = make_cache_key(event)
 
-    # Compose and return layout
-    layout = html.Div([
-        dcc.Store(data=event, id='event-data'),
-        dcc.Store(data=None, id='task-id'),
-        dcc.Interval(
-            id='update-interval',
-            interval=1000,
-            n_intervals=0,
-            disabled=False
-        ),
-        html.Div(children=_loading_screen, id='analysis-content',
-                 className='carousel-container')
-        ], className='analysis-container', id='analysis-container'
-    )
+    # Initialise layout with the event's description
+    layout = html.Div(children=[
+        description(event)
+    ], className='analysis-container', id='analysis-container')
+
+    if cache_exists(cache_key):
+        # Retrieve cached attribution result and extend layout with the results
+        cached_result = get_cache(cache_key)
+        
+        layout.children.extend([
+            dcc.Store(data=False, id='is-loading'),
+            html.Div(children=carousel(cached_result, cache_key),
+                     id='analysis-content',
+                     className='carousel-container')
+        ])
+
+    else:
+        # Run async attribution calculation and set loading screen with 1s checks
+        attribution.delay(event) # Result is cached into Redis
+
+        layout.children.extend([
+            dcc.Store(data=True, id='is-loading'),
+            dcc.Store(data=cache_key, id='cache-key'),
+            dcc.Interval(
+                id='update-interval',
+                interval=1000,
+                n_intervals=0,
+                disabled=False
+            ),
+            html.Div(children=_loading_screen, id='analysis-content',
+                     className='carousel-container')
+        ])
+
     return layout
 
-
-@callback(
-        Output('task-id', 'data'),
-        Input('event-data', 'data')
-)
-def run_task(data):
-
-    if not data:
-        raise PreventUpdate
     
-    data['date'] = dt.datetime.fromisoformat(data['date'])
-
-    task = attribution.apply_async(args=[data])
-
-    return task.id
-    
-# TODO Find better way to retrieve stats datasets later on, than to pass task_id all the way down to create_plotly_figure
+# TODO Find better way to retrieve stats datasets later on, than to pass cache_key all the way down to create_plotly_figure
 @callback(
     Output('analysis-content', 'children'),
     Output('update-interval', 'disabled'),
+    Output('is-loading', 'data'),
     Input('update-interval', 'n_intervals'),
-    State('task-id', 'data'),
-    State('event-data', 'data'),
+    State('cache-key', 'data'),
     prevent_initial_call=True
 )
-def update_results(n, task_id, event):
+def update_results(n, key):
 
-    if not task_id:
+    if not cache_exists(key):
         raise PreventUpdate
     
-    task = attribution.AsyncResult(task_id)
-    if task.ready():
-        stats = task.result
-        # Convert back dates to datetime objets after being serialized through the dcc.Store
-        for key in ['start_date', 'stop_date', 'date']:
-            if isinstance(event.get(key), str):
-                event[key] = dt.datetime.fromisoformat(event[key]).date()
-        return [description(event), carousel(stats, task_id)], True
-    return no_update, False
-
-
+    stats = get_cache(key)
+    return carousel(stats, key), True, False

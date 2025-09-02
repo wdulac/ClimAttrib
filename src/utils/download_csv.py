@@ -2,7 +2,7 @@ from app import server
 from flask import request, Response
 import io
 
-from .tasks import attribution
+from .redis_cache import get_cache
 
 CSV_HEADERS = {
     'All': """# This CSV contains the time series data for the selected graph resulting from the attribution analysis.
@@ -34,19 +34,16 @@ CSV_HEADERS = {
 @server.route("/download_csv")
 def download_csv():
 
-    task_id = request.args.get("task_id")
+    cache_key = request.args.get("key")
     variables = request.args.get("variables")
 
-    if not task_id or not variables:
+    if not cache_key or not variables:
         return "Missing parameters", 400
     
-    task = attribution.AsyncResult(task_id)
+    stats = get_cache(cache_key)
+    if stats is None:
+        return "Data not available", 500
 
-    try:
-        stats = task.result
-    except Exception as e:
-        return f"Failed to retrieve task result: {e}", 500
-    
     try:
         df = stats[variables.split('_')].to_dataframe().unstack("quantile")
         df.columns = [f"{var}_{q}" for var, q in df.columns]

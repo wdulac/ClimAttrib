@@ -35,7 +35,7 @@ else: # Root of the app (hopefully).
 METHOD = 'MAR2'
 
 # Pour la contrainte Y
-N_SAMPLES_COV = 10 # Tirages de covariables
+N_SAMPLES_COV = 100 # Tirages de covariables
 SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
 USE_STAN = True
 
