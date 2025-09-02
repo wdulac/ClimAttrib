@@ -116,9 +116,9 @@ clientside_callback(
 
 clientside_callback(
     ClientsideFunction(
-        namespace='carousel',
-        function_name='blockSwiper'
+        namespace="carousel",
+        function_name="addTooltips"
     ),
-    Output('my-carousel', 'data-lorem-ipsum-swiper'),
-    Input('lorem-ipsum-demo', 'id')
+    Output("my-carousel", "data-tooltips"),  # prop factice
+    Input("my-carousel", "id"),              # déclenche une seule fois
 )

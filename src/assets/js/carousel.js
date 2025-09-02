@@ -35,6 +35,21 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         }
       });
       return null;  // dcc.Store n’a pas besoin de vraie valeur ici
+    },
+
+    addTooltips: function(containerId) {
+      const labels = ["Summary", "Probability", "Intensity"];
+      const parent = document.getElementById(containerId);
+      if (!parent) return null;
+
+      const indicators = parent.querySelectorAll(".dmc-indicator");
+      if (!indicators.length) {
+          return false; // pas encore rendus
+      }
+      indicators.forEach((el, i) => {
+          el.setAttribute("title", labels[i] || `Slide ${i + 1}`);
+      });
+      return true;
     }
   }
 });
