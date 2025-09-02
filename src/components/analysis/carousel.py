@@ -32,23 +32,6 @@ CAROUSEL_SETTINGS = {
     }
 }
 
-_lorem_ipsum = dmc.Text(
-    ("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sed ipsum ut ",
-     "tellus tincidunt ullamcorper at eu metus. Phasellus et mi auctor, molestie "
-     "sapien ut, vulputate nisl. Etiam non est vestibulum nibh commodo pulvinar. "
-     "Quisque vulputate commodo tellus nec malesuada. Praesent a semper massa. "
-     "Aliquam tortor risus, dapibus eget vestibulum vel, rutrum quis lorem. "
-     "Vivamus ut cursus nunc. Morbi sit amet rhoncus urna. Quisque volutpat a orci "
-     "quis tincidunt. Nullam euismod dictum turpis eget sagittis. Aenean facilisis "
-     "est arcu, ac tincidunt ipsum lobortis vitae. Curabitur a enim tristique, "
-     "maximus erat sed, pharetra lorem. Proin laoreet congue porttitor. Donec "
-     "luctus justo semper ex varius tristique. In ultrices lacus est, a rhoncus "
-     "nisi ullamcorper in. Proin placerat tristique convallis.")*10,
-    id='lorem-ipsum-demo',
-    style={'userSelect': 'text', 'width': '30%'},
-)
-
-
 def carousel(stats, cache_key):
 
     component = dmc.Carousel([
@@ -114,31 +97,6 @@ def carousel(stats, cache_key):
                 )
             )
         ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Stack(
-                    style={
-                        'maxHeight': 'calc(100% - 130px)',
-                        'overflowY': 'auto',
-                        'alignItems': 'center'
-                    },
-                    children=_lorem_ipsum
-                )
-            )
-        ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Text("Page 3")
-            )
-        ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Text('Page 4')
-            )
-        )
     ],
     **CAROUSEL_SETTINGS, 
     id='my-carousel' )
