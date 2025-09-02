@@ -40,7 +40,7 @@ def carousel(stats, cache_key):
                 style=DEFAULT_CENTERED_SLIDE_STYLE,
                 children=dmc.Stack(
                     style={
-                        'maxHeight': '100%',
+                        'maxHeight': 'calc(100% - 130px)',
                         'overflowY': 'auto',
                         'width': '100%',
                         'alignItems': 'center'
