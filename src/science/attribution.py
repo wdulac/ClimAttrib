@@ -46,8 +46,10 @@ MODE = 'quantile'
 CI = 0.05
 
 # Loading the prior
-_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS.nc'
+_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS_EBM.nc'
 CLIM = ank.Climatology.init_from_file(_CLIM_FILE)
+# Set XN to CMIP5 (custom file dropped in place of CMIP5 forcings: it's actually dT from EBM made from CMIP6 forcings file)
+CLIM._Xconfig['XN_version'] = 'CMIP5'
 # Initializing CmdStan local work directory
 STAN_WORK_DIR = path_to_science_dir + './stan_files/'
 NSLAW = CLIM._nslaw_class
