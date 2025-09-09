@@ -83,6 +83,7 @@ _date_selector_calendar = dmc.DatePickerInput(
     allowSingleDateInRange=True,
     w=300,
     highlightToday=False,
+    weekendDays=[],
     minDate=dt.date(1940, 1, 1),
     maxDate=dt.date(2022, 12, 31),
     persistence=True,
