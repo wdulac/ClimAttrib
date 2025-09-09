@@ -44,7 +44,7 @@ def key_figures(event: dict):
     
     coords_str = f"{event['lat']} °N; {event['lon']} °E"
 
-    location = reverse_lookup(event['lat'], event['lon'])
+    location = reverse_lookup(event['lat'], event['lon'], cell_size=1.5)
     if location:
         location_extra_str = ", ".join([
             location[level] for level in ['country', 'region', 'sub-region'] if location[level]
