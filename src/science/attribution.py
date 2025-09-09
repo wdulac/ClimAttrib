@@ -33,9 +33,6 @@ else: # Root of the app (hopefully).
 
 ## Paramètres généraux
 
-# Pour la contrainte X
-METHOD = 'IND'
-
 # Pour la contrainte Y
 N_SAMPLES_COV = 100 # Tirages de covariables
 SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
@@ -48,7 +45,7 @@ MODE = 'quantile'
 CI = 0.05
 
 # Loading the prior
-_CLIM_FILE = path_to_data_parent_dir + 'data/SYNTHESIS_1.1.0a22_EBM_dof6.nc'
+_CLIM_FILE = path_to_data_parent_dir + 'data/tmx3d_CONSTRAIN_X.nc'
 CLIM = ank.Climatology.init_from_file(_CLIM_FILE)
 # Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
 CLIM.cconfig.vXN = 'CMIP5'
@@ -62,6 +59,9 @@ TIME = CLIM.time
 BPER = CLIM.bper
 # Matrices de projection factuel / contre-factuel
 PROJF, PROJC = CLIM.projection()
+# Réorganisation **temporaire** des dimensions car event d'indexation dans zattribute_event
+PROJF = PROJF.transpose('period', 'name', 'time', 'hpar')
+PROJC = PROJC.transpose('period', 'name', 'time', 'hpar')
 # Lissage
 MPS = MPeriodSmoother(
     XN = CLIM.XN,
@@ -92,10 +92,10 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
     lon = lon % 360
 
     Xo_file = path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.nc'
-    Yo_file = path_to_data_parent_dir + 'data/Yo/tx3d/tx3d_era5_1940-2022_g025.nc'
+    Yo_file = path_to_data_parent_dir + 'data/Yo/tm3d/tmx3d_ERA5_1940-2022_1p5deg.nc'
 
     Xo = xr.open_dataset(Xo_file)['tas']
-    Yo = xr.open_dataset(Yo_file)['tasmax'].sel(lat=lat, lon=lon)
+    Yo = xr.open_dataset(Yo_file)['tmx3d'].sel(lat=lat, lon=lon)
 
     # On remplace l'axe du temps par les années
     Xo = xr.DataArray(Xo.values, dims=('time0',),
@@ -108,9 +108,9 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 
 def attribute_event(event:dict) -> xr.Dataset:
 
-    # hpar et hcov du prior
-    hpar_prior = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
-    hcov_prior = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    # Lecture du prior contraint par la covariable
+    hpar_CX = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    hcov_CX = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
     Xo, Yo = _load_obs(event['lat'], event['lon'])
@@ -121,18 +121,6 @@ def attribute_event(event:dict) -> xr.Dataset:
     # Expression de la variable en anomalie
     Yo_anom = Yo - bias_arr
 
-    ### Contrainte par la covariable
-    
-    # Paramètres de la fonction de conditionnement
-    ihpar = hpar_prior.values
-    ihcov = hcov_prior.values
-    iXo = Xo.values
-    timeXo = Xo.time0
-    P = _projection_matrix({'tas': Xo})
-
-    # Application de la contrainte par la covariable
-    hpar_CX, hcov_CX = constraint_covar(ihpar, ihcov, iXo, P=P, timeXo=[timeXo], method_oerror=METHOD)
-
     ### Contrainte par les observations de la variable
 
     # Paramètres de la fonction mcmc
@@ -142,7 +130,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     P = _projection_matrix({'tas': fake_Xo})
     
     # Initialisation du résultat
-    ohpars = np.zeros((ihpar.size, samples.size, SIZE_CHAIN)) + np.nan
+    ohpars = np.zeros((hpar_CX.values.size, samples.size, SIZE_CHAIN)) + np.nan
     # Boucle sur les tirages de covariable
     mcmc_args = [SIZE_CHAIN, CNSLAW, USE_STAN, STAN_WORK_DIR]
     for s in samples:

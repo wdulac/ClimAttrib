@@ -221,18 +221,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
                 lat, lon = json.loads(grid_point)
                 start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
                                 for _ in date]
-                if extreme_type == 'hot':
-                    var = 'tasmax'
-                elif extreme_type == 'cold':
-                    var = 'tasmin'
-
                 cwd = os.path.basename(os.getcwd())
                 if cwd == 'src':
                     path_fix = '../data/daily/'
                 elif cwd == 'app' or cwd == 'EET-app':
                     path_fix = './data/daily/'
                 
-                To = xr.open_dataset(path_fix + f"era5_sfc_{var}_G025.nc")[var].\
+                To = xr.open_dataset(path_fix + f"era5_sfc_tas_1p5deg.nc")['tas'].\
                     sel(
                         time=slice(start, stop + dt.timedelta(days=1)),
                         lat=lat, lon=lon % 360
