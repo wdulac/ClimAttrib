@@ -101,8 +101,6 @@ def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
-
-    TODO Add support for more variables than tx3d
     """
 
     # Convert to 0 -- 360°
