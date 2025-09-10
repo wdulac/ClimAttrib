@@ -97,7 +97,7 @@ def _load_prior(extreme_type: str) -> dict:
     }
     
 
-def _load_obs(lat: float, lon: float, extreme_type: str) -> tuple[xr.DataArray, xr.DataArray]:
+def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
@@ -115,19 +115,15 @@ def _load_obs(lat: float, lon: float, extreme_type: str) -> tuple[xr.DataArray, 
         var_dir = 'tn3d'
         var_name = 'tmn3d'
 
-    Xo_file = path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.nc'
     Yo_file = path_to_data_parent_dir + f'data/Yo/{var_dir}/{var_name}_ERA5_1940-2022_1p5deg.nc'
 
-    Xo = xr.open_dataset(Xo_file)['tas']
     Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
     # On remplace l'axe du temps par les années
-    Xo = xr.DataArray(Xo.values, dims=('time0',),
-                      coords=[Xo.time.dt.year.values] + [Xo.coords[d] for d in Xo.dims[1:]])
     Yo = xr.DataArray(Yo.values, dims=Yo.dims,
                       coords = [Yo.time.dt.year.values] + [Yo.coords[d] for d in Yo.dims[1:]])
     
-    return Xo, Yo
+    return Yo
 
 
 def attribute_event(event:dict) -> xr.Dataset:
@@ -139,7 +135,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
-    Xo, Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'])
+    Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'])
 
     # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
     bias_arr = Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time')
