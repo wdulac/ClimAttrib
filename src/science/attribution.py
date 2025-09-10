@@ -40,47 +40,64 @@ USE_STAN = True
 
 # Pour l'attribution
 N_SAMPLES_ATTRIB = 1000 # Nombre de valeurs de hpars à tirer pour l'intervalle de confiance
-SIDE = 'right'
 MODE = 'quantile'
 CI = 0.05
 
-# Loading the prior
-_CLIM_FILE = path_to_data_parent_dir + 'data/tmx3d_CONSTRAIN_X.nc'
-CLIM = ank.Climatology.init_from_file(_CLIM_FILE)
-# Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
-CLIM.cconfig.vXN = 'CMIP5'
-# Initializing CmdStan local work directory
 STAN_WORK_DIR = path_to_science_dir + './stan_files/'
-CNSLAW = CLIM.cnslaw
-CNSLAW().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
-# Total time axis (1850 -- 2100)
-TIME = CLIM.time
-# Reference period for bias
-BPER = CLIM.bper
-# Matrices de projection factuel / contre-factuel
-PROJF, PROJC = CLIM.projection()
-# Réorganisation **temporaire** des dimensions car event d'indexation dans zattribute_event
-PROJF = PROJF.transpose('period', 'name', 'time', 'hpar')
-PROJC = PROJC.transpose('period', 'name', 'time', 'hpar')
-# Lissage
-MPS = MPeriodSmoother(
-    XN = CLIM.XN,
-    cnames = CLIM.cnames,
-    dpers = CLIM.dpers,
-    spl_config = CLIM.cconfig.spl_config
-)
 
-
-def _projection_matrix(X: dict, constraint: dict | None = None) -> np.ndarray:
+def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = None) -> np.ndarray:
 
     time_size = X[next(iter(X))].time0.values.size
     return np.hstack((
-        build_projection_matrix(MPS, X, constraint),
-        np.zeros((time_size, CLIM.vsize))
+        build_projection_matrix(smoother, X, constraint),
+        np.zeros((time_size, vsize))
     ))
 
 
-def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
+def _load_prior(extreme_type: str) -> dict:
+
+    if extreme_type == 'hot':
+        var = 'tmx3d'
+        side = 'right'
+    elif extreme_type == 'cold':
+        var = 'tmn3d'
+        side = 'left'
+
+    clim_file = path_to_data_parent_dir + f'data/{var}_CONSTRAIN_X.nc'
+
+    clim = ank.Climatology.init_from_file(clim_file)
+    # Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
+    clim.cconfig.vXN = 'CMIP5'
+    # Initialize CmdStan local work directory
+    clim.cnslaw().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
+    # Matrices de projection factuel / contre-factuel
+    projF, projC = clim.projection()
+    # Réorganisation **temporaire** des dimensions car erreur d'indexation dans zattribute_event
+    projF = projF.transpose('period', 'name', 'time', 'hpar')
+    projC = projC.transpose('period', 'name', 'time', 'hpar')
+    # Lissage
+    mps = MPeriodSmoother(
+        XN = clim.XN,
+        cnames = clim.cnames,
+        dpers = clim.dpers,
+        spl_config = clim.cconfig.spl_config
+    )
+
+    return {
+        'cnslaw': clim.cnslaw,
+        'side': side,
+        'time': clim.time, # Total time axis (1850 -- 2100)
+        'bper': clim.bper, # Reference period for bias
+        'vsize': clim.vsize,
+        'projF': projF,
+        'projC': projC,
+        'smoother': mps,
+        'hpar': clim.hpar,
+        'hcov': clim.hcov
+    }
+    
+
+def _load_obs(lat: float, lon: float, extreme_type: str) -> tuple[xr.DataArray, xr.DataArray]:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
@@ -91,11 +108,18 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
     # Convert to 0 -- 360°
     lon = lon % 360
 
+    if extreme_type == 'hot':
+        var_dir = 'tm3d'
+        var_name = 'tmx3d'
+    elif extreme_type == 'cold':
+        var_dir = 'tn3d'
+        var_name = 'tmn3d'
+
     Xo_file = path_to_data_parent_dir + 'data/Xo/HadCRUT5_GSAT.nc'
-    Yo_file = path_to_data_parent_dir + 'data/Yo/tm3d/tmx3d_ERA5_1940-2022_1p5deg.nc'
+    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_dir}/{var_name}_ERA5_1940-2022_1p5deg.nc'
 
     Xo = xr.open_dataset(Xo_file)['tas']
-    Yo = xr.open_dataset(Yo_file)['tmx3d'].sel(lat=lat, lon=lon)
+    Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
     # On remplace l'axe du temps par les années
     Xo = xr.DataArray(Xo.values, dims=('time0',),
@@ -108,15 +132,17 @@ def _load_obs(lat: float, lon: float) -> tuple[xr.DataArray, xr.DataArray]:
 
 def attribute_event(event:dict) -> xr.Dataset:
 
+    prior = _load_prior(event['extreme_type'])
+
     # Lecture du prior contraint par la covariable
-    hpar_CX = CLIM.hpar.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
-    hcov_CX = CLIM.hcov.sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
-    Xo, Yo = _load_obs(event['lat'], event['lon'])
+    Xo, Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'])
 
     # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
-    bias_arr = Yo.sel( time = slice(*[str(y) for y in BPER]) ).mean('time')
+    bias_arr = Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time')
 
     # Expression de la variable en anomalie
     Yo_anom = Yo - bias_arr
@@ -127,12 +153,12 @@ def attribute_event(event:dict) -> xr.Dataset:
     iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
     fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
-    P = _projection_matrix({'tas': fake_Xo})
+    P = _projection_matrix({'tas': fake_Xo}, prior['vsize'], prior['smoother'])
     
     # Initialisation du résultat
     ohpars = np.zeros((hpar_CX.values.size, samples.size, SIZE_CHAIN)) + np.nan
     # Boucle sur les tirages de covariable
-    mcmc_args = [SIZE_CHAIN, CNSLAW, USE_STAN, STAN_WORK_DIR]
+    mcmc_args = [SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR]
     for s in samples:
         oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
         ohpars[:,s,:] = oh
@@ -147,12 +173,12 @@ def attribute_event(event:dict) -> xr.Dataset:
     ihcov = hcov_CXCB[np.newaxis, np.newaxis, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
     bias = bias_arr.values[np.newaxis, np.newaxis, np.newaxis] # (lat, lon, period)
     To = event['intensity'] - bias # idem
-    iprojF = PROJF.values
-    iprojC = PROJC.values
-    idx_event = int(np.argwhere(TIME == event['date'].year).ravel())
+    iprojF = prior['projF'].values
+    iprojC = prior['projC'].values
+    idx_event = int(np.argwhere(prior['time'] == event['date'].year).ravel())
 
     # Calcul des statistiques de l'évènement
-    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, CNSLAW, SIDE, MODE, N_SAMPLES_ATTRIB, CI)
+    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, prior['cnslaw'], prior['side'], MODE, N_SAMPLES_ATTRIB, CI)
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
     out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
 
@@ -163,7 +189,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     for key, value in out_CXCB.items():
         da = xr.DataArray(
             value,
-            coords=[TIME, modes],
+            coords=[prior['time'], modes],
             dims=['time', 'quantile'],
             name=key
         )
