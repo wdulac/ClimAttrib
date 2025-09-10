@@ -51,7 +51,7 @@ def key_figures(event: dict):
         ])
 
     method_str = {
-        'yearmax': 'Annual maximum',
+        'yearmax': 'Annual maximum' if event['extreme_type'] == 'hot' else 'Annual minimum',
         'calendar': 'Calendar lock-in'
     }.get(event['method'])
 
@@ -76,7 +76,7 @@ def key_figures(event: dict):
                     create_stat_card(
                         icon="fluent:braces-variable-48-regular",
                         label="Variable",
-                        value="Maximum temperature"
+                        value="Mean temperature"
                     ),
                     create_stat_card(
                         icon="fluent:temperature-48-regular",
