@@ -1,1 +1,0 @@
-This implies that **{FAR_then}** of the likelihood of this event can be attributed to climate change.
