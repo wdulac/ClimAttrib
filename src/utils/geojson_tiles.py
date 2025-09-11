@@ -11,7 +11,7 @@ compress = Compress()
 compress.init_app(server)
 
 TILE_SIZE =10
-GRID_TILES_DIR = "src/assets/static/grid_tiles/"
+GRID_TILES_DIR = "src/assets/static/grid_tiles_1_5/"
 
 @lru_cache(maxsize=128)
 def load_tile(x, y):

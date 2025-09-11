@@ -44,14 +44,14 @@ def key_figures(event: dict):
     
     coords_str = f"{event['lat']} °N; {event['lon']} °E"
 
-    location = reverse_lookup(event['lat'], event['lon'])
+    location = reverse_lookup(event['lat'], event['lon'], cell_size=1.5)
     if location:
         location_extra_str = ", ".join([
             location[level] for level in ['country', 'region', 'sub-region'] if location[level]
         ])
 
     method_str = {
-        'yearmax': 'Annual maximum',
+        'yearmax': 'Annual maximum' if event['extreme_type'] == 'hot' else 'Annual minimum',
         'calendar': 'Calendar lock-in'
     }.get(event['method'])
 
@@ -76,7 +76,7 @@ def key_figures(event: dict):
                     create_stat_card(
                         icon="fluent:braces-variable-48-regular",
                         label="Variable",
-                        value="Maximum temperature"
+                        value="Mean temperature"
                     ),
                     create_stat_card(
                         icon="fluent:temperature-48-regular",
