@@ -177,15 +177,27 @@ def format_return_period_ci(rp: float, lo: float, hi: float, unit: str = "year",
 
 # ---------- Ratio PR (× plus probable, CI-aware via sig figs) ----------
 def format_PR_ci(r: float, lo: float, hi: float) -> str:
-    if _is_nan(r): return "NaN"
-    if r <= 0: return "0"
-    rel = _rel_width(r, lo, hi)
-    sig = _sig_from_rel(rel)
-    val = _round_sig(r, sig)
+    if _is_nan(r):
+        return "NaN"
+    if r <= 0:
+        return "0"
 
+    rel = _rel_width(r, lo, hi)
+    sig = _sig_from_rel(rel)  # 1–3 sig figs en fonction de la largeur relative
+
+    # Ne pas “écraser” 1.x à 1 : garder au moins 2 sig figs autour de 1
+    if 0.5 < r < 0.95 or 1.05 < r < 2.0:
+        sig = max(sig, 2)
+
+    val = _round_sig(r, sig)
     a = abs(val)
+
     if a < 10:
+        # Toujours au moins une décimale < 10
         s = f"{val:.1f}".rstrip("0").rstrip(".")
+        # Sécurité: si val ∈ (1,2) et que le strip a tout enlevé, remet 1 décimale
+        if 1.0 < val < 2.0 and "." not in s:
+            s = f"{val:.1f}"
     elif a < 100:
         s = f"{int(round(val))}"
     elif a < 10_000:
@@ -196,6 +208,7 @@ def format_PR_ci(r: float, lo: float, hi: float) -> str:
         s = f"{val/1_000_000:.1f}M"
     else:
         s = f"{val/1_000_000_000:.1f}G"
+
     return s
 
 # ---------- FAR (fraction → %, CI-aware) ----------
