@@ -2,7 +2,8 @@ from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Outp
 from datetime import datetime
 from .__loader import render_template, register_filters
 from .__formatter import (
-    format_prob_adaptive, format_return_period_adaptive, format_ratio_adaptive, format_far_adaptive
+    format_prob_adaptive, format_return_period_adaptive, format_ratio_adaptive, format_far_adaptive,
+    format_prob_ci, format_return_period_ci, format_PR_ci, format_FAR_ci
 )
 from .__logic import should_include_today_update
 
@@ -20,27 +21,97 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
         format_year=lambda y: f"{int(y)}",
         format_PR=format_ratio_adaptive,
         format_FAR=format_far_adaptive,
+        # CI-aware
+        format_prob_ci=format_prob_ci,
+        format_return_period_ci=format_return_period_ci,
+        format_PR_ci=format_PR_ci,
+        format_FAR_ci=format_FAR_ci
     )
 
+    def q(ds, var, t, qlabel='BE'):
+        return float(ds[var].sel(time=t, quantile=qlabel))
+
+    def far_of(pr: float) -> float:
+        # FAR = 1 - 1/PR ; garde la valeur brute (peut être < 0 si PR < 1)
+        # protège la division si jamais PR≈0 (cas pathologique)
+        return 1.0 - (1.0 / pr) if pr and abs(pr) > 1e-15 else float('nan')
+
     year_then = stats.attrs["time"]
-    pF_then = float(stats['pF'].sel(time=year_then, quantile='BE'))
-    pC_then = float(stats['pC'].sel(time=year_then, quantile='BE'))
-    RF_then = float(stats['RF'].sel(time=year_then, quantile='BE'))
-    RC_then = float(stats['RC'].sel(time=year_then, quantile='BE'))
-    PR_then = float(stats['PR'].sel(time=year_then, quantile='BE'))
-    FAR_then = 1 - (1/PR_then)
     today = datetime.today().year
 
+    # --- BE (année de l'évènement) ---
+    pF_be = q(stats, 'pF', year_then, 'BE')
+    pC_be = q(stats, 'pC', year_then, 'BE')
+    RF_be = q(stats, 'RF', year_then, 'BE')
+    RC_be = q(stats, 'RC', year_then, 'BE')
+    PR_be = q(stats, 'PR', year_then, 'BE')
+    FAR_be = far_of(PR_be)
+
+    # --- QL / QU (année de l'évènement) ---
+    pF_ql, pF_qu = q(stats, 'pF', year_then, 'QL'), q(stats, 'pF', year_then, 'QU')
+    pC_ql, pC_qu = q(stats, 'pC', year_then, 'QL'), q(stats, 'pC', year_then, 'QU')
+    RF_ql, RF_qu = q(stats, 'RF', year_then, 'QL'), q(stats, 'RF', year_then, 'QU')
+    RC_ql, RC_qu = q(stats, 'RC', year_then, 'QL'), q(stats, 'RC', year_then, 'QU')
+    PR_ql, PR_qu = q(stats, 'PR', year_then, 'QL'), q(stats, 'PR', year_then, 'QU')
+    FAR_ql, FAR_qu = far_of(PR_ql), far_of(PR_qu)
+
+    # --- Today (BE + QL/QU) ---
+    pF_today     = q(stats, 'pF', today, 'BE')
+    pF_today_ql  = q(stats, 'pF', today, 'QL')
+    pF_today_qu  = q(stats, 'pF', today, 'QU')
+
+    PR_today     = q(stats, 'PR', today, 'BE')
+    PR_today_ql  = q(stats, 'PR', today, 'QL')
+    PR_today_qu  = q(stats, 'PR', today, 'QU')
+
+    FAR_today    = far_of(PR_today)
+    FAR_today_ql = far_of(PR_today_ql)
+    FAR_today_qu = far_of(PR_today_qu)
+
+    # Ratios pF_today / pF_then (BE + QL/QU sur today ; dénominateur = BE de l'année passée)
+    ratio_now_then       = pF_today    / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
+    ratio_now_then_ql    = pF_today_ql / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
+    ratio_now_then_qu    = pF_today_qu / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
+
     variables = {
+        # repères temporels
         "year_then": year_then,
-        "pF_then": pF_then,
-        "RP_F_then": RF_then,
-        "RP_C_then": RC_then,
-        "pC_then": pC_then,
-        "PR_then": PR_then,
-        "FAR_then": FAR_then,
-        "change": "more" if PR_then > 1 else "less",
-        "has_had": "has" if year_then == today else 'had'
+        "year_today": today,
+        "has_had": "has" if year_then == today else "had",
+        "change": "more" if PR_be > 1 else "less",
+
+        # BE (intro)
+        "pF_then": pF_be,
+        "pC_then": pC_be,
+        "RP_F_then": RF_be,
+        "RP_C_then": RC_be,
+        "PR_then": PR_be,
+        "FAR_then": FAR_be,
+
+        # quantiles (intro, pour filtres *_ci)
+        "pF_then_ql": pF_ql, "pF_then_qu": pF_qu,
+        "pC_then_ql": pC_ql, "pC_then_qu": pC_qu,
+        "RP_F_then_ql": RF_ql, "RP_F_then_qu": RF_qu,
+        "RP_C_then_ql": RC_ql, "RP_C_then_qu": RC_qu,
+        "PR_then_ql": PR_ql, "PR_then_qu": PR_qu,
+        "FAR_then_ql": FAR_ql, "FAR_then_qu": FAR_qu,
+
+        # today_update (BE + QL/QU)
+        "pF_today": pF_today,
+        "pF_today_ql": pF_today_ql, "pF_today_qu": pF_today_qu,
+        "PR_today": PR_today,
+        "PR_today_ql": PR_today_ql, "PR_today_qu": PR_today_qu,
+        "FAR_today": FAR_today,
+        "FAR_today_ql": FAR_today_ql, "FAR_today_qu": FAR_today_qu,
+
+        # ratios
+        "pF_ratio_now_then":     ratio_now_then,
+        "pF_ratio_now_then_ql":  ratio_now_then_ql,
+        "pF_ratio_now_then_qu":  ratio_now_then_qu,
+
+        # libellés
+        "change_PR_today": "more" if PR_today > 1 else "less",
+        "change_today": "an increase" if ratio_now_then > 1 else "a decrease",
     }
 
     paragraphs: list[str] = []
@@ -54,22 +125,9 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
         # Lookup updated quantities
         pF_today = float(stats['pF'].sel(time=today, quantile='BE'))
         PR_today = float(stats['PR'].sel(time=today, quantile='BE'))
-        ratio_now_then = pF_today/pF_then
         FAR_today = 1 - (1/PR_today)
         paragraphs.append(
-            render_template(
-                "today_update", {
-                    "year_today": today,
-                    "year_then": variables.get('year_then'),
-                    "pF_today": pF_today,
-                    "pF_ratio_now_then": ratio_now_then,
-                    "PR_today": PR_today,
-                    "FAR_today": FAR_today,
-                    "change": "an increase" if ratio_now_then > 1 else "a decrease",
-                    "change_PR_today": "more" if PR_today > 1 else "less"
-                },
-                lang=lang
-            )
+            render_template("today_update", variables, lang=lang)
         )
 
     # Markdown → HTML
