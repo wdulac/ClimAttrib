@@ -3,7 +3,6 @@ from datetime import datetime
 from .__loader import render_template, register_filters
 from .__formatter import (
     format_prob_adaptive, format_return_period_adaptive, format_ratio_adaptive, format_far_adaptive,
-    format_prob_ci, format_return_period_ci, format_PR_ci, format_FAR_ci
 )
 from .__logic import should_include_today_update
 
@@ -21,11 +20,6 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
         format_year=lambda y: f"{int(y)}",
         format_PR=format_ratio_adaptive,
         format_FAR=format_far_adaptive,
-        # CI-aware
-        format_prob_ci=format_prob_ci,
-        format_return_period_ci=format_return_period_ci,
-        format_PR_ci=format_PR_ci,
-        format_FAR_ci=format_FAR_ci
     )
 
     def q(ds, var, t, qlabel='BE'):

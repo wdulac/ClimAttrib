@@ -38,39 +38,30 @@ def _format_int_or_float(x: float, max_decimals: int = 2) -> str:
         return f"{int(round(x))}"
     return f"{x:.{max_decimals}f}".rstrip("0").rstrip(".")
 
-# ---------- Probabilité (fraction → %) ----------
-def format_prob_adaptive(p: float, fp: int = 2, min_pct: float = 0.01, zero_str="0", unit="%") -> str:
-    """p en [0,1]. Affiche en %, précision selon l’ordre de grandeur."""
+# -------- Probabilité (p∈[0,1]) — mêmes règles que _safe_prob --------
+def format_prob_adaptive(p: float, fp: int = 2, min_val: float = EPSILON,
+                         zero_str="0", unit="%") -> str:
     if _is_nan(p):
         return "NaN"
     pct = p * 100.0
 
-    # bornes
-    if pct <= 0:
+    # 0 (seuil ultra-faible) — même test que _safe_prob (100*p <= min_val)
+    if 100 * p <= min_val:
         return f"{zero_str}{(' ' + unit) if unit else ''}"
-    if pct >= 99.995:  # 100% propre
-        return f"100{unit and ' ' + unit or ''}"
 
-    # très petit
-    if pct < min_pct:
-        return f"< {min_pct}{unit and ' ' + unit or ''}"
+    # borne "< 10^-fp"
+    if 100 * p < pow(10, -fp):
+        return f"< {pow(10, -fp)}{(' ' + unit) if unit else ''}"
 
-    # magnitude → décimales
-    if pct < 0.1:
-        s = f"{pct:.3f}"
-    elif pct < 1:
-        s = f"{pct:.2f}"
-    elif pct < 10:
-        s = f"{pct:.2f}"
-    elif pct < 100:
-        s = f"{pct:.1f}"
+    # 100% propre si round(pct, 2) == 100
+    if round(pct, 2) == 100:
+        s = format(pct, ".0f")
     else:
-        s = f"{pct:.0f}"
+        s = format(pct, f".{fp}f")
 
-    s = s.rstrip("0").rstrip(".")
-    return f"{s}{unit and ' ' + unit or ''}"
+    return f"{s}{(' ' + unit) if unit else ''}"
 
-# ---------- Durée de retour (années) ----------
+# -------- Durée de retour — mêmes règles que _safe_ret --------
 def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
                                   inf_str="infinity", unit="year") -> str:
     if _is_nan(rp):
@@ -78,13 +69,13 @@ def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
     if math.isinf(rp) or rp >= max_val:
         return inf_str
 
-    # pas variable en fonction de l’échelle
+    # paliers identiques à _safe_ret._format_years
     if rp < 20:
         s = f"{rp:.1f}"
     elif rp < 100:
         s = f"{round(rp)}"
     elif rp < 1_000:
-        s = f"{int(round(rp / 5) * 5)}"
+        s = f"{int(round(rp/5) * 5)}"
     elif rp < 1_000_000:
         s = f"{rp/1_000:.1f}k"
     elif rp < 1_000_000_000:
@@ -92,53 +83,51 @@ def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
     else:
         s = f"{rp/1_000_000_000:.1f}G"
 
-    plural = "s" if rp > 1.05 else ""  # seuil léger pour éviter 1.0 → "years"
+    # Pluriel identique (round(value, 1) > 1)
+    plural = "s" if round(rp, 1) > 1 else ""
     return f"{s} {unit}{plural}".strip()
 
-# ---------- Ratio PR (× plus probable) ----------
-def format_ratio_adaptive(r: float, small_cut=1.5) -> str:
-    if _is_nan(r):
+# -------- Ratio PR — mêmes règles que _safe_PR --------
+def format_ratio_adaptive(value: float, max_val: float = 1e5, min_val: float = 1e-3) -> str:
+    if _is_nan(value):
         return "NaN"
-    if r < small_cut:
-        # autour de 1 → 2 décimales
-        return _format_int_or_float(r, max_decimals=2)
-    elif r < 10:
-        return _format_int_or_float(r, max_decimals=1)
-    elif r < 100:
-        return f"{int(round(r))}"
-    elif r < 10_000:
-        # pas de 5
-        return f"{int(round(r/5)*5)}"
-    else:
-        # notation abrégée
-        if r < 1_000_000:
-            return f"{r/1_000:.1f}k"
-        elif r < 1_000_000_000:
-            return f"{r/1_000_000:.1f}M"
-        else:
-            return f"{r/1_000_000_000:.1f}G"
 
-# ---------- FAR ----------
-def format_far_adaptive(far: float, min_pct=0.1, unit="%") -> str:
-    # FAR exprimée en fraction [0,1] → %
+    if value >= max_val:
+        # même rendu que _safe_PR : '> 100 000' (espaces comme séparateur)
+        return f"> {int(max_val):,}".replace(",", " ")
+
+    if value > 1:
+        if value < 10:
+            return f"{value:.2f}"
+        elif value < 20:
+            return f"{value:.1f}"
+        elif value < 100:
+            return str(round(value))
+        elif value < 1_000:
+            return str(round(value / 5) * 5)
+        elif value < 10_000:
+            return str(round(value / 50) * 50)
+        else:
+            return str(round(value / 500) * 500)
+    else:
+        if value >= 0.01:
+            return f"{value:.2f}"
+        elif value < min_val:
+            return f"< {min_val:.3f}"
+        else:
+            return f"{value:.3f}"
+
+# -------- FAR — mêmes règles que _safe_FAR --------
+def format_far_adaptive(far: float) -> str:
     if _is_nan(far):
         return "NaN"
-    pct = far * 100.0
-    if pct < 0:
-        return "0" + (f" {unit}" if unit else "")
-    if pct < min_pct:
-        return f"< {min_pct}{unit and ' ' + unit or ''}"
-    if pct > 99.95:
-        return f"~100{unit and ' ' + unit or ''}"
-    # magnitude
-    if pct < 1:
-        s = f"{pct:.2f}"
-    elif pct < 10:
-        s = f"{pct:.1f}"
+    if far < 0:
+        return "--"
+    p = far * 100.0
+    if round(p, 2) > 99.99:
+        return "> 99.99%"
     else:
-        s = f"{pct:.1f}"
-    s = s.rstrip("0").rstrip(".")
-    return f"{s}{unit and ' ' + unit or ''}"
+        return f"{p:.2f}%"
 
 # ---------- Probabilité (fraction → %, CI-aware) ----------
 def format_prob_ci(p: float, lo: float, hi: float, min_pct: float = 0.01, unit: str = "%") -> str:
