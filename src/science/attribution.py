@@ -42,6 +42,7 @@ USE_STAN = True
 N_SAMPLES_ATTRIB = 1000 # Nombre de valeurs de hpars à tirer pour l'intervalle de confiance
 MODE = 'quantile'
 CI = 0.05
+SCENARIO = 'ssp370'
 
 STAN_WORK_DIR = path_to_science_dir + './stan_files/'
 
@@ -174,7 +175,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     # Calcul des statistiques de l'évènement
     out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, prior['cnslaw'], prior['side'], MODE, N_SAMPLES_ATTRIB, CI)
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
-    out_CXCB  = { key : out_CXCB[ikey][0,0,0,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
+    out_CXCB  = { key : out_CXCB[ikey][0,0,:,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
 
     # Conversion en xr.Dataset
     modes = np.array(["QL","BE","QU"])
@@ -183,8 +184,8 @@ def attribute_event(event:dict) -> xr.Dataset:
     for key, value in out_CXCB.items():
         da = xr.DataArray(
             value,
-            coords=[prior['time'], modes],
-            dims=['time', 'quantile'],
+            coords=[['ssp370', 'ssp585'], prior['time'], modes],
+            dims=['scenario', 'time', 'quantile'],
             name=key
         )
         data_arrays.append(da)
@@ -193,4 +194,4 @@ def attribute_event(event:dict) -> xr.Dataset:
 
     dataset.attrs['time'] = int(event['date'].year)
 
-    return dataset
+    return dataset.sel(scenario=SCENARIO)
