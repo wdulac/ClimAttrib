@@ -47,11 +47,11 @@ def format_prob_adaptive(p: float, fp: int = 2, min_val: float = EPSILON,
 
     # 0 (seuil ultra-faible) — même test que _safe_prob (100*p <= min_val)
     if 100 * p <= min_val:
-        return f"{zero_str}{(' ' + unit) if unit else ''}"
+        return f"{zero_str}{('\u00A0' + unit) if unit else ''}"
 
     # borne "< 10^-fp"
     if 100 * p < pow(10, -fp):
-        return f"< {pow(10, -fp)}{(' ' + unit) if unit else ''}"
+        return f"less than {pow(10, -fp)}{('\u00A0' + unit) if unit else ''}"
 
     # 100% propre si round(pct, 2) == 100
     if round(pct, 2) == 100:
@@ -59,7 +59,7 @@ def format_prob_adaptive(p: float, fp: int = 2, min_val: float = EPSILON,
     else:
         s = format(pct, f".{fp}f")
 
-    return f"{s}{(' ' + unit) if unit else ''}"
+    return f"{s}{('\u00A0' + unit) if unit else ''}"
 
 # -------- Durée de retour — mêmes règles que _safe_ret --------
 def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
@@ -77,15 +77,18 @@ def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
     elif rp < 1_000:
         s = f"{int(round(rp/5) * 5)}"
     elif rp < 1_000_000:
-        s = f"{rp/1_000:.1f}k"
+        s = f"{int(round(rp/100) * 100):n}"
+        # s = f"{rp/1_000:.1f} thousand"
     elif rp < 1_000_000_000:
-        s = f"{rp/1_000_000:.1f}M"
+        s = f"{int(round(rp/100_000) * 100_000):n}"
+        # s = f"{rp/1_000_000:.1f} million"
     else:
-        s = f"{rp/1_000_000_000:.1f}G"
+        s = f"{int(round(rp/100_000_000) * 100_000_000):n}"
+        # s = f"{rp/1_000_000_000:.1f} billion"
 
     # Pluriel identique (round(value, 1) > 1)
     plural = "s" if round(rp, 1) > 1 else ""
-    return f"{s} {unit}{plural}".strip()
+    return f"{s}\u00A0{unit}{plural}".strip()
 
 # -------- Ratio PR — mêmes règles que _safe_PR --------
 def format_ratio_adaptive(value: float, max_val: float = 1e5, min_val: float = 1e-3) -> str:
@@ -125,9 +128,9 @@ def format_far_adaptive(far: float) -> str:
         return "--"
     p = far * 100.0
     if round(p, 2) > 99.99:
-        return "> 99.99%"
+        return "more than 99.99\u00A0%"
     else:
-        return f"{p:.2f}%"
+        return f"{p:.2f}\u00A0%"
 
 # ---------- Probabilité (fraction → %, CI-aware) ----------
 def format_prob_ci(p: float, lo: float, hi: float, min_pct: float = 0.01, unit: str = "%") -> str:
