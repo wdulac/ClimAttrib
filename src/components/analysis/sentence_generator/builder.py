@@ -4,6 +4,7 @@ from .__loader import render_template, register_filters
 from .__formatter import (
     ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR
 )
+from .__text_with_tooltip import render_text_with_tooltips
 from .__logic import should_include_today_update
 
 
@@ -151,7 +152,7 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
 
     # Markdown → HTML
     return html.Div(children=[
-        dcc.Markdown(paragraph) for paragraph in paragraphs
+        render_text_with_tooltips(paragraph) for paragraph in paragraphs
     ], style={'userSelect': 'text', 'width': '70%'}, id='generated-sentences')
 
 
