@@ -65,7 +65,7 @@ def format_ratio_adaptive(value: float, max_val: float = 1e5, min_val: float = 1
 
     if value >= max_val:
         # même rendu que _safe_PR : '> 100 000' (espaces comme séparateur)
-        return f"> {int(max_val):,}".replace(",", " ")
+        return f"over {int(max_val):,}".replace(",", " ")
 
     if value > 1:
         if value < 10:
@@ -84,7 +84,7 @@ def format_ratio_adaptive(value: float, max_val: float = 1e5, min_val: float = 1
         if value >= 0.01:
             return f"{value:.2f}"
         elif value < min_val:
-            return f"< {min_val:.3f}"
+            return f"less than {min_val:.3f}"
         else:
             return f"{value:.3f}"
 
@@ -96,7 +96,7 @@ def format_far_adaptive(far: float) -> str:
         return "--"
     p = far * 100.0
     if round(p, 2) > 99.99:
-        return "more than 99.99\u00A0%"
+        return "over 99.99\u00A0%"
     else:
         return f"{p:.2f}\u00A0%"
 
@@ -106,7 +106,7 @@ def format_far_adaptive(far: float) -> str:
 ## LABEL : La partie à afficher en tooltip
 ## DISPLAY : La partie à afficher in-line
  
-TOOLTIP_LABEL_PREFIX = "95% CI"
+TOOLTIP_LABEL_PREFIX = "95% C.I"
 
 def ci_token_prob(value, lo, hi) -> str:
     disp = format_prob_adaptive(value)
