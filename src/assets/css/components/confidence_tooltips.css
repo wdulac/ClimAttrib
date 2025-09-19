@@ -1,0 +1,23 @@
+.ci {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: help;
+  color: inherit;              /* garde la couleur du texte courant */
+
+  background-image: linear-gradient(rgba(34, 139, 230, 0.18), rgba(34, 139, 230, 0.18));
+  background-size: 0% 100%;       /* au repos : invisible */
+  background-repeat: no-repeat;
+  transition: background-size 120ms ease;
+}
+
+.ci:hover,
+.ci:focus-within {
+  background-size: 100% 100%;
+}
+
+/* Accessibilité : en contraste élevé, remplace le pointillé par un souligné plein */
+@media (prefers-contrast: more) {
+  .ci { text-decoration-style: solid; }
+}
+

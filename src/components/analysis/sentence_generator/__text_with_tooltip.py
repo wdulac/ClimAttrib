@@ -22,9 +22,11 @@ def render_text_with_tooltips(paragraph: str) -> dmc.Text:
                 label=label,
                 withArrow=True,
                 position="top",
-                withinPortal=True,
-                children=dmc.Text(display, span=True, w=700),
-                boxWrapperProps={"style": {"display": "inline-block"}}
+                children=dmc.Text(display, span=True, fw=700),
+                boxWrapperProps={
+                    "className": "ci", # class defined assets/components/confidence_tooltips.css
+                    "style": {"display": "inline-block"}
+                    }
             )
         )
         pos = match.end() # Update position to the end of this token
@@ -33,4 +35,5 @@ def render_text_with_tooltips(paragraph: str) -> dmc.Text:
         # Residual text between last token and end of paragraph.
         children.append(paragraph[pos:])
 
-    return dmc.Text(children, span=True)
+    # Don't use span on the main element to get an actual paragraph
+    return dmc.Text(children, span=False, style={"margin-block": "18px"}) # Use same margin as dcc.Markdown
