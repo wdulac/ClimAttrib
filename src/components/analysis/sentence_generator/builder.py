@@ -2,7 +2,7 @@ from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Outp
 from datetime import datetime
 from .__loader import render_template, register_filters
 from .__formatter import (
-    format_prob_adaptive, format_return_period_adaptive, format_ratio_adaptive, format_far_adaptive,
+    ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR
 )
 from .__logic import should_include_today_update
 
@@ -15,11 +15,11 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
     # Register formatting functions as filters usable in the .md templates
     register_filters(
         lang,
-        format_prob=format_prob_adaptive,
-        format_return_period=format_return_period_adaptive,
+        format_prob=ci_token_prob,
+        format_return_period=ci_token_ret,
         format_year=lambda y: f"{int(y)}",
-        format_PR=format_ratio_adaptive,
-        format_FAR=format_far_adaptive,
+        format_PR=ci_token_PR,
+        format_FAR=ci_token_FAR,
     )
 
     def q(ds, var, t, qlabel='BE'):
