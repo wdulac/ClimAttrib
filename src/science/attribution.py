@@ -163,10 +163,10 @@ def attribute_event(event:dict) -> xr.Dataset:
 
     ### Attribution de l'évènement
 
-    # Paramètre de la fonction d'attribution
-    ihpar = hpar_CXCB[np.newaxis, np.newaxis, np.newaxis, :] # (lat, lon, period, hpar).
-    ihcov = hcov_CXCB[np.newaxis, np.newaxis, np.newaxis, :, :] # (lat, lon, period, hpar0, hpar1)
-    bias = bias_arr.values[np.newaxis, np.newaxis, np.newaxis] # (lat, lon, period)
+    # Paramètres de la fonction d'attribution
+    ihpar = hpar_CXCB[np.newaxis, np.newaxis, :] # (lat, lon, hpar).
+    ihcov = hcov_CXCB[np.newaxis, np.newaxis, :, :] # (lat, lon, hpar0, hpar1)
+    bias = bias_arr.values[np.newaxis, np.newaxis] # (lat, lon)
     To = event['intensity'] - bias # idem
     iprojF = prior['projF'].values
     iprojC = prior['projC'].values
@@ -175,7 +175,7 @@ def attribute_event(event:dict) -> xr.Dataset:
     # Calcul des statistiques de l'évènement
     out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, prior['cnslaw'], prior['side'], MODE, N_SAMPLES_ATTRIB, CI)
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
-    out_CXCB  = { key : out_CXCB[ikey][0,0,:,:,:] for ikey,key in enumerate(keys) } # Mono point de grille + mono scénario'
+    out_CXCB  = { key : out_CXCB[ikey][0,:,:,:] for ikey,key in enumerate(keys) } # Sort en (1, period, time, quantile)
 
     # Conversion en xr.Dataset
     modes = np.array(["QL","BE","QU"])
