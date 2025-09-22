@@ -106,28 +106,28 @@ def format_far_adaptive(far: float) -> str:
 ## LABEL : La partie à afficher en tooltip
 ## DISPLAY : La partie à afficher in-line
  
-TOOLTIP_LABEL_PREFIX = "95% C.I"
+token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
 
 def ci_token_prob(value, lo, hi) -> str:
     disp = format_prob_adaptive(value)
     lo_s = format_prob_adaptive(lo)
     hi_s = format_prob_adaptive(hi)
-    return f"[[CI:{TOOLTIP_LABEL_PREFIX}: from {lo_s} to {hi_s}|{disp}]]"
+    return token(disp, lo_s, hi_s)
 
 def ci_token_ret(value, lo, hi) -> str:
     disp = format_return_period_adaptive(value)
     lo_s = format_return_period_adaptive(lo)
     hi_s = format_return_period_adaptive(hi)
-    return f"[[CI:{TOOLTIP_LABEL_PREFIX}: from {lo_s} to {hi_s}|{disp}]]"
+    return token(disp, lo_s, hi_s)
 
 def ci_token_PR(value, lo, hi) -> str:
     disp = format_ratio_adaptive(value)
     lo_s = format_ratio_adaptive(lo)
     hi_s = format_ratio_adaptive(hi)
-    return f"[[CI:{TOOLTIP_LABEL_PREFIX}: from {lo_s} to {hi_s}|{disp}]]"
+    return token(disp, lo_s, hi_s)
 
 def ci_token_FAR(value, lo, hi) -> str:
     disp = format_far_adaptive(value)
     lo_s = format_far_adaptive(lo)
     hi_s = format_far_adaptive(hi)
-    return f"[[CI:{TOOLTIP_LABEL_PREFIX}: from {lo_s} to {hi_s}|{disp}]]"
+    return token(disp, lo_s, hi_s)
