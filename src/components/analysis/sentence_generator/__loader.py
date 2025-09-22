@@ -27,6 +27,6 @@ def register_filters(lang: str, **filters):
 def render_template(name: str, variables: dict, lang: str = "en") -> str:
 
     env = get_env(lang)
-    template = env.get_template(f"{name}.md")
+    template = env.get_template(f"{name}.tmpl")
 
     return template.render(**variables)

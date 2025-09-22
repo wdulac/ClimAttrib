@@ -1,0 +1,60 @@
+.ci {
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: help;
+  color: inherit;              /* garde la couleur du texte courant */
+
+  background-image: linear-gradient(rgba(34, 139, 230, 0.18), rgba(34, 139, 230, 0.18));
+  background-size: 0% 100%;       /* au repos : invisible */
+  background-repeat: no-repeat;
+  transition: background-size 120ms ease;
+}
+
+.ci:hover,
+.ci:focus-within {
+  background-size: 100% 100%;
+}
+
+/* Accessibilité : en contraste élevé, remplace le pointillé par un souligné plein */
+@media (prefers-contrast: more) {
+  .ci { text-decoration-style: solid; }
+}
+
+/* Proposition 1 : style carte / clean */
+.ci-tooltip {
+  background: #fff;
+  color: #111;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 10px 14px;
+  font-size: 14.5px;
+  line-height: 1.35;
+  border-radius: 6px;
+}
+
+.ci-tooltip-arrow {
+  background: #fff;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* Proposition 2 : Moderne glossy */
+/* .ci-tooltip {
+  background: rgba(255,255,255,0.25);
+  color: #0f172a;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 12px 36px rgba(0,0,0,.14);
+  padding: 12px 14px;
+  font-size: 14.5px;
+  line-height: 1.35;
+  border-radius: 10px;
+  backdrop-filter: blur(8px) saturate(160%);
+  -webkit-backdrop-filter: blur(8px) saturate(160%);
+}
+
+.ci-tooltip-arrow {
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+} */
