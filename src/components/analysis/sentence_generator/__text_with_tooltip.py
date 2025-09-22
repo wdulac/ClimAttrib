@@ -30,10 +30,16 @@ def render_text_with_tooltips(paragraph: str) -> dmc.Text:
                 label=label,
                 withArrow=True,
                 position="top",
+                openDelay=0,
+                closeDelay=0,
                 children=dmc.Text(display, span=True, fw=700),
                 boxWrapperProps={
                     "className": "ci", # Styling in assets/components/confidence_tooltips.css
-                    "style": {"display": "inline-block"}
+                    "style": {
+                        "display": "inline-block",
+                        },
+                    "tabIndex": 0, # Presumably makes tooltips touchscreen compatible (not tested)
+                    "aria-label": label # Presumably makes the tooltip content accessible to screen readers (not tested)
                     }
             )
         )
