@@ -59,34 +59,53 @@ def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
     return f"{s}\u00A0{unit}{plural}".strip()
 
 # -------- Ratio PR — mêmes règles que _safe_PR --------
-def format_ratio_adaptive(value: float, max_val: float = 1e5, min_val: float = 1e-3) -> str:
+def format_ratio_adaptive(
+    value: float,
+    max_val: float = 1e5,
+    min_val: float = 1e-3,
+    unit: str = "time",
+    include_unit: bool = True,
+) -> str:
     if _is_nan(value):
         return "NaN"
 
-    if value >= max_val:
-        # même rendu que _safe_PR : '> 100 000' (espaces comme séparateur)
-        return f"over {int(max_val):,}".replace(",", " ")
+    # utilitaire pour nettoyer "1.50" -> "1.5", "2.00" -> "2"
+    def _trim(x: str) -> str:
+        return x.rstrip("0").rstrip(".") if "." in x else x
 
-    if value > 1:
+    # 1) cas "au-delà de la borne"
+    if value >= max_val:
+        s = f"over {int(max_val):n}"
+
+    # 2) ratios > 1
+    elif value > 1:
         if value < 10:
-            return f"{value:.2f}"
+            s = _trim(f"{value:.2f}")
         elif value < 20:
-            return f"{value:.1f}"
+            s = _trim(f"{value:.1f}")
         elif value < 100:
-            return str(round(value))
+            s = str(round(value))
         elif value < 1_000:
-            return str(round(value / 5) * 5)
+            s = str(round(value / 5) * 5)
         elif value < 10_000:
-            return str(round(value / 50) * 50)
+            s = str(round(value / 50) * 50)
         else:
-            return str(round(value / 500) * 500)
+            s = str(round(value / 500) * 500)
+
+    # 3) ratios <= 1
     else:
         if value >= 0.01:
-            return f"{value:.2f}"
+            s = _trim(f"{value:.2f}")
         elif value < min_val:
-            return f"less than {min_val:.3f}"
+            s = f"less than {min_val:.3f}".rstrip("0").rstrip(".")
         else:
-            return f"{value:.3f}"
+            s = _trim(f"{value:.3f}")
+
+    if include_unit:
+        plural = "s" if round(value, 1) > 1 else ""
+        return f"{s}\u00A0{unit}{plural}".strip()
+
+    return s
 
 # -------- FAR — mêmes règles que _safe_FAR --------
 def format_far_adaptive(far: float) -> str:
@@ -108,26 +127,26 @@ def format_far_adaptive(far: float) -> str:
  
 token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
 
-def ci_token_prob(value, lo, hi) -> str:
-    disp = format_prob_adaptive(value)
-    lo_s = format_prob_adaptive(lo)
-    hi_s = format_prob_adaptive(hi)
+def ci_token_prob(value, lo, hi, **kwargs) -> str:
+    disp = format_prob_adaptive(value, **kwargs)
+    lo_s = format_prob_adaptive(lo, **kwargs)
+    hi_s = format_prob_adaptive(hi, **kwargs)
     return token(disp, lo_s, hi_s)
 
-def ci_token_ret(value, lo, hi) -> str:
-    disp = format_return_period_adaptive(value)
-    lo_s = format_return_period_adaptive(lo)
-    hi_s = format_return_period_adaptive(hi)
+def ci_token_ret(value, lo, hi, **kwargs) -> str:
+    disp = format_return_period_adaptive(value, **kwargs)
+    lo_s = format_return_period_adaptive(lo, **kwargs)
+    hi_s = format_return_period_adaptive(hi, **kwargs)
     return token(disp, lo_s, hi_s)
 
-def ci_token_PR(value, lo, hi) -> str:
-    disp = format_ratio_adaptive(value)
-    lo_s = format_ratio_adaptive(lo)
-    hi_s = format_ratio_adaptive(hi)
+def ci_token_PR(value, lo, hi, **kwargs) -> str:
+    disp = format_ratio_adaptive(value, **kwargs)
+    lo_s = format_ratio_adaptive(lo, **kwargs)
+    hi_s = format_ratio_adaptive(hi, **kwargs)
     return token(disp, lo_s, hi_s)
 
-def ci_token_FAR(value, lo, hi) -> str:
-    disp = format_far_adaptive(value)
-    lo_s = format_far_adaptive(lo)
-    hi_s = format_far_adaptive(hi)
+def ci_token_FAR(value, lo, hi, **kwargs) -> str:
+    disp = format_far_adaptive(value, **kwargs)
+    lo_s = format_far_adaptive(lo, **kwargs)
+    hi_s = format_far_adaptive(hi, **kwargs)
     return token(disp, lo_s, hi_s)
