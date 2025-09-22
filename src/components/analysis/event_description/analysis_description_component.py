@@ -50,7 +50,7 @@ def description(event: dict) -> html.Div:
 
 
 @callback(
-    Output('url', 'pathname'),
+    Output('url', 'href'),
     Input('back-button', 'n_clicks'),
     prevent_initial_call=True
 )
