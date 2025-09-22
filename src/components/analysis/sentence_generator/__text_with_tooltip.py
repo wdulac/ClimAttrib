@@ -29,10 +29,12 @@ def render_text_with_tooltips(paragraph: str) -> dmc.Text:
             dmc.Tooltip(
                 label=label,
                 withArrow=True,
+                arrowSize=10,
                 position="top",
                 openDelay=0,
                 closeDelay=0,
                 children=dmc.Text(display, span=True, fw=700),
+                classNames={"tooltip": "ci-tooltip", "arrow": "ci-tooltip-arrow"},
                 boxWrapperProps={
                     "className": "ci", # Styling in assets/components/confidence_tooltips.css
                     "style": {
