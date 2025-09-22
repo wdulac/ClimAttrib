@@ -7,6 +7,10 @@ import dash_mantine_components as dmc
 from components.header import header
 from components.footer import footer
 
+import locale
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
 # Initialize
 server = Flask(__name__)
 application = Dash(

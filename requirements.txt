@@ -6,6 +6,7 @@ plotly
 python-dotenv
 pygam
 flask_compress
+jinja2
 
 celery
 redis
