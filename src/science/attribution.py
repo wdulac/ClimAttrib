@@ -108,13 +108,13 @@ def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
     lon = lon % 360
 
     if extreme_type == 'hot':
-        var_dir = 'tm3d'
         var_name = 'tmx3d'
+        file_prefix = var_name
     elif extreme_type == 'cold':
-        var_dir = 'tn3d'
         var_name = 'tmn3d'
+        file_prefix = var_name
 
-    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_dir}/{var_name}_ERA5_1940-2022_1p5deg.nc'
+    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_name}/{file_prefix}_ERA5_1940-2022_1p5deg.nc'
 
     Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
