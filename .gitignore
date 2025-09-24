@@ -7,4 +7,6 @@ __pycache__/
 src/utils/.env
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL.stan
+src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL
+src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL.stan
 dump.rdb
