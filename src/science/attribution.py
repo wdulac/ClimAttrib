@@ -64,7 +64,7 @@ def _load_prior(extreme_type: str) -> dict:
         var = 'tmn3d'
         side = 'left'
 
-    clim_file = path_to_data_parent_dir + f'data/{var}_CONSTRAIN_X.nc'
+    clim_file = path_to_data_parent_dir + f'data/prior/{var}_CONSTRAIN_X.nc'
 
     clim = ank.Climatology.init_from_file(clim_file)
     # Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
