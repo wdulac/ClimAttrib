@@ -46,6 +46,12 @@ SCENARIO = 'ssp370'
 
 STAN_WORK_DIR = path_to_science_dir + './stan_files/'
 
+# Pour le calendaire
+# longueurs des mois en année commune (365 jours)
+MONTH_LENGTHS = [31,28,31,30,31,30,31,31,30,31,30,31]
+MONTH_OFFSETS = [0] + [sum(MONTH_LENGTHS[:i]) for i in range(1,12)]
+
+
 def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = None) -> np.ndarray:
 
     time_size = X[next(iter(X))].time0.values.size
@@ -55,15 +61,89 @@ def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = 
     ))
 
 
-def _load_prior(extreme_type: str) -> dict:
+def _day_of_year_no_leap(date: dt.date) -> int:
+    """Retourne le jour de l'année (1..365) en ignorant les années bissextiles."""
+    return MONTH_OFFSETS[date.month-1] + date.day
 
-    if extreme_type == 'hot':
-        var = 'tmx3d'
-        side = 'right'
-    elif extreme_type == 'cold':
-        var = 'tmn3d'
-        side = 'left'
 
+def _best_window_from_range(day_start, day_end, n_days=365, win_len=15, step=5):
+    """
+    day_start, day_end : jours de l'année (1-based), inclusifs.
+        - Peut traverser le 31 déc → 1 jan (ex: 361..2).
+    n_days : 365 ou 366.
+    win_len : longueur de la fenêtre (par défaut 15).
+    step : pas entre débuts de fenêtre (par défaut 5).
+    
+    Retourne (s, e) : bornes 1-based de la fenêtre [s, e] qui
+    (1) contient l'épisode et (2) centre au mieux l'épisode.
+    """
+    a = int(day_start)
+    b = int(day_end)
+
+    # Déplier l'intervalle épisode sur une droite (gestion wrap)
+    # Exemple: a=361, b=2 (wrap) → b_unwrapped = 2 + 365 = 367
+    b_unwrapped = b if b >= a else b + n_days
+    d = b_unwrapped - a + 1  # durée de l'épisode
+
+    if d > win_len:
+        raise ValueError(f"Épisode de durée {d} > fenêtre {win_len} : impossible de contenir.")
+
+    # Centre de l'épisode dans l'espace déplié
+    cb = a + (d - 1) / 2.0
+
+    # Bornes d'inclusion admissibles pour le début de fenêtre (dans l'espace déplié)
+    # Il faut s <= a et a+d-1 <= s+win_len-1  ⇒  s >= a + d - win_len
+    lo = a + d - win_len
+    hi = a
+
+    # Génère les starts ≡ 1 (mod step) dans [lo, hi] (déplié),
+    # puis replie modulo n_days pour renvoyer en 1..n_days
+    def starts_in(lo, hi):
+        res = []
+        # intervalle non-wrap car on est en "déplié"
+        r = (lo - 1) % step
+        first = lo if r == 0 else lo + (step - r)
+        s = first
+        while s <= hi:
+            res.append(s)
+            s += step
+        return res
+
+    cand_unwrapped = starts_in(lo, hi)
+    if not cand_unwrapped:
+        raise ValueError("Aucun début de fenêtre admissible (vérifier paramètres).")
+
+    # Choisir le s dont le centre de fenêtre est le plus proche du centre épisode
+    def dist(s):
+        cw = s + (win_len - 1) / 2.0
+        return abs(cw - cb)
+
+    s_best_unwrapped = min(cand_unwrapped, key=dist)
+
+    # Replier le résultat dans [1, n_days]
+    s_best = ((s_best_unwrapped - 1) % n_days) + 1
+    e_best = ((s_best + win_len - 1 - 1) % n_days) + 1
+    return s_best, e_best
+
+
+def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datetime, stop_date: dt.datetime) -> dict:
+
+    if computation_method == 'yearmax':
+        if extreme_type == 'hot':
+            var = 'tmx3d'
+            side = 'right'
+        elif extreme_type == 'cold':
+            var = 'tmn3d'
+            side = 'left'
+    elif computation_method == 'calendar':
+        if extreme_type == 'hot':
+            window = _best_window_from_range(_day_of_year_no_leap(start_date),
+                                             _day_of_year_no_leap(stop_date))
+            var = f'tmx3d15w_{window[0]:03d}-{window[1]:03d}'
+            side = 'right'
+        else:
+            raise NotImplementedError
+        
     clim_file = path_to_data_parent_dir + f'data/prior/{var}_CONSTRAIN_X.nc'
 
     clim = ank.Climatology.init_from_file(clim_file)
@@ -98,7 +178,7 @@ def _load_prior(extreme_type: str) -> dict:
     }
     
 
-def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
+def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str, start_date: dt.datetime, stop_date: dt.datetime) -> xr.DataArray:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
@@ -107,12 +187,22 @@ def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
     # Convert to 0 -- 360°
     lon = lon % 360
 
-    if extreme_type == 'hot':
-        var_name = 'tmx3d'
-        file_prefix = var_name
-    elif extreme_type == 'cold':
-        var_name = 'tmn3d'
-        file_prefix = var_name
+    if computation_method == 'yearmax':
+        if extreme_type == 'hot':
+            var_name = 'tmx3d'
+            file_prefix = var_name
+        elif extreme_type == 'cold':
+            var_name = 'tmn3d'
+            file_prefix = var_name
+    elif computation_method == 'calendar':
+        if extreme_type == 'hot':
+            var_name = 'tmx3d15w'
+            window = _best_window_from_range(_day_of_year_no_leap(start_date),
+                                             _day_of_year_no_leap(stop_date))
+            file_prefix = f"{var_name}_{window[0]:03d}-{window[1]:03d}"
+        elif extreme_type == 'cold':
+            raise NotImplementedError
+
 
     Yo_file = path_to_data_parent_dir + f'data/Yo/{var_name}/{file_prefix}_ERA5_1940-2022_1p5deg.nc'
 
@@ -127,14 +217,16 @@ def _load_obs(lat: float, lon: float, extreme_type: str) -> xr.DataArray:
 
 def attribute_event(event:dict) -> xr.Dataset:
 
-    prior = _load_prior(event['extreme_type'])
+    prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
 
+    print('Law :', prior['cnslaw'])
+    
     # Lecture du prior contraint par la covariable
     hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
     hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
-    Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'])
+    Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
 
     # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
     bias_arr = Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time')

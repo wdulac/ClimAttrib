@@ -52,7 +52,7 @@ def key_figures(event: dict):
 
     method_str = {
         'yearmax': 'Annual maximum' if event['extreme_type'] == 'hot' else 'Annual minimum',
-        'calendar': 'Calendar lock-in'
+        'calendar': 'Calendar locked maximum' if event['extreme_type'] == 'hot' else 'Calendar locked minimum'
     }.get(event['method'])
 
     component = html.Div(
