@@ -20,7 +20,7 @@ LINK_DEFAULT_HREF = '/'
 
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10] # In days
 
-COMPUTE_TOOLTIP_MD_FILE = 'src/components/home/compute_tooltip_content_usecase.md'
+COMPUTE_TOOLTIP_MD_FILE = 'src/components/resources/compute_tooltip_content_usecase.md'
 with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
     COMPUTE_TOOLTIP_CONTENT = f.read()
 

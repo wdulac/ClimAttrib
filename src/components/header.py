@@ -18,7 +18,7 @@ _about_button = html.A(
     ]
 )
 
-HOW_TO_USE_FILE = 'src/components/how_to_use.md'
+HOW_TO_USE_FILE = 'src/components/resources/how_to_use.md'
 with open(HOW_TO_USE_FILE, 'r') as f:
     HOW_TO_USE_CONTENT = f.read()
 
