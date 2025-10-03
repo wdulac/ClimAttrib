@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 import pandas as pd
+import sys
 
 import datetime as dt
 
@@ -8,10 +9,7 @@ import ANKIALE as ank
 # Specific imports
 from ANKIALE.stats import MPeriodSmoother
 from ANKIALE.stats import build_projection_matrix
-from ANKIALE.stats import constraint_covar
 from ANKIALE.stats.__constraint import constraint_var
-from ANKIALE.cmd.__cmd_attribute import zattribute_event
-from ANKIALE.__linalg import mean_cov_hpars
 
 # Evaluate both relative path to the directory right above the main data
 # directory and also to the science dir (parent to another data folder)
@@ -153,9 +151,7 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
     clim.cnslaw().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
     # Matrices de projection factuel / contre-factuel
     projF, projC = clim.projection()
-    # Réorganisation **temporaire** des dimensions car erreur d'indexation dans zattribute_event
-    projF = projF.transpose('period', 'name', 'time', 'hpar')
-    projC = projC.transpose('period', 'name', 'time', 'hpar')
+    nper = projF.shape[1]
     # Lissage
     mps = MPeriodSmoother(
         XN = clim.XN,
@@ -173,6 +169,7 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
         'projF': projF,
         'projC': projC,
         'smoother': mps,
+        'n_scenario': nper,
         'hpar': clim.hpar,
         'hcov': clim.hcov
     }
@@ -227,10 +224,10 @@ def attribute_event(event:dict) -> xr.Dataset:
     Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
 
     # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
-    bias_arr = Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time')
+    bias = float(Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time'))
 
     # Expression de la variable en anomalie
-    Yo_anom = Yo - bias_arr
+    Yo_anom = Yo - bias
 
     ### Contrainte par les observations de la variable
 
@@ -241,39 +238,104 @@ def attribute_event(event:dict) -> xr.Dataset:
     P = _projection_matrix({'tas': fake_Xo}, prior['vsize'], prior['smoother'])
     
     # Initialisation du résultat
-    ohpars = np.zeros((hpar_CX.values.size, samples.size, SIZE_CHAIN)) + np.nan
+    hpars = np.zeros((N_SAMPLES_COV*SIZE_CHAIN, prior['n_scenario'], hpar_CX.size)) + np.nan
     # Boucle sur les tirages de covariable
     mcmc_args = [SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR]
     for s in samples:
         oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
-        ohpars[:,s,:] = oh
-    
-    # calcul des paramètres de la distribution des tirages MCMC
-    hpar_CXCB, hcov_CXCB = mean_cov_hpars(ohpars)
+        # On réplique la sortie du MCMC le long de la dimension "scenario" de la matrice hpars
+        hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, 2, 1))
 
     ### Attribution de l'évènement
 
     # Paramètres de la fonction d'attribution
-    ihpar = hpar_CXCB[np.newaxis, np.newaxis, :] # (lat, lon, hpar).
-    ihcov = hcov_CXCB[np.newaxis, np.newaxis, :, :] # (lat, lon, hpar0, hpar1)
-    bias = bias_arr.values[np.newaxis, np.newaxis] # (lat, lon)
     To = event['intensity'] - bias # idem
-    iprojF = prior['projF'].values
-    iprojC = prior['projC'].values
+    projF = prior['projF'].sel(name='GMST').values
+    projC = prior['projC'].sel(name='GMST').values
     idx_event = int(np.argwhere(prior['time'] == event['date'].year).ravel())
 
-    # Calcul des statistiques de l'évènement
-    out_CXCB = zattribute_event(ihpar, ihcov, bias, To, iprojF, iprojC, idx_event, prior['cnslaw'], prior['side'], MODE, N_SAMPLES_ATTRIB, CI)
+    ## Construction de la covariable dans le monde factuel et contre-factuel
+    n_sample = N_SAMPLES_COV*SIZE_CHAIN
+    n_scenario = prior['n_scenario']
+    ntime = prior['time'].size
+    x_dims = ["scenario", "sample", "time"]
+    x_coords = [range(n_scenario), range(n_sample), range(ntime)]
+
+    # On transforme dans l'espace de la covariable
+    XF = xr.DataArray(
+        np.stack([hpars[:, i, :] @ projF[i, :, :].T for i in range(n_scenario)]),
+        dims=x_dims,
+        coords=x_coords
+    )
+
+    XC = xr.DataArray(
+        np.stack([hpars[:, i, :] @ projC[i, :, :].T for i in range(n_scenario)]),
+        dims=x_dims,
+        coords=x_coords
+    )
+
+    ## Construction des paramètres non-stationnaires
+    law = prior['cnslaw']()
+    p_dims = ["sample", "scenario", "hpar"]
+    p_coords = [range(n_sample), range(n_scenario), list(law.h_name)]
+    # Rappel : On conserve les mêmes mêmes tirages MCMC entre scénario. Seule la covariable change
+    nspars = xr.DataArray(
+        hpars[:, :, -law.nhpar:], # Conserve de hpars uniquement les paramètres de loi
+        dims=p_dims,
+        coords=p_coords
+    )
+
+    # Composition des paramtères finaux e.g mu(t) = mu0 + X(t)*mu1 etc...
+    kwargsF = law.draw_params(XF, nspars) # Dictionnaire avec DataArray (sample, scenario, time) pour chaque param
+    kwargsC = law.draw_params(XC, nspars)
+
+    # Transposition
+    kwargsF = { key : kwargsF[key].transpose("scenario", "time", "sample") for key in kwargsF }
+    kwargsC = { key : kwargsC[key].transpose("scenario", "time", "sample") for key in kwargsF }
+
+    ## Calcul des statistiques de l'évènement
+    
+    # Initialisation des sorties
+    pF = np.zeros((n_scenario, ntime, n_sample)) + np.nan
+    pF = np.zeros((n_scenario, ntime, n_sample)) + np.nan
+    IF = np.zeros((n_scenario, ntime, n_sample)) + np.nan
+    IC = np.zeros((n_scenario, ntime, n_sample)) + np.nan
+
+    # Calcul des probabilités factuelles et contre-factuelles
+    pF = law.cdf_sf(To, side=prior['side'], **kwargsF)
+    pC = law.cdf_sf(To, side=prior['side'], **kwargsC)
+    # Bornes à 10x la précision machine
+    e = 10 * sys.float_info.epsilon
+    pF = np.where(pF > e, pF, e)
+    pC = np.where(pC > e, pC, e)
+    pF = np.where(pF < 1-e, pF, 1-e)
+    pC = np.where(pC < 1-e, pC, 1-e)
+
+
+    # Calcul des intensités factuelles et contre-factuelles
+    pf = np.broadcast_to(pF[:, idx_event, :][:, np.newaxis, :], pF.shape)
+    IF = law.icdf_sf(pf, side=prior['side'], **kwargsF) + bias
+    IC = law.icdf_sf(pf, side=prior['side'], **kwargsC) + bias
+
+    # Durées de retour, PR et DeltaI
+    RF = 1./pF
+    RC = 1./pC
+    dI = IF - IC
+    PR = pF/pC
+
+    # Calcul de la médiane et de son incertitude
+    data = [pF, pC, RF, RC, IF, IC, dI, PR]
     keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
-    out_CXCB  = { key : out_CXCB[ikey][0,:,:,:] for ikey,key in enumerate(keys) } # Sort en (1, period, time, quantile)
+    result_dict  = { key : data[ikey] for ikey,key in enumerate(keys) }
 
     # Conversion en xr.Dataset
     modes = np.array(["QL","BE","QU"])
     data_arrays = []
     
-    for key, value in out_CXCB.items():
+    for key, value in result_dict.items():
+        array = np.quantile(value, [CI/2, 0.5, 1-CI/2], axis=-1, method='median_unbiased').transpose((1,2,0))
         da = xr.DataArray(
-            value,
+            array,
             coords=[['ssp370', 'ssp585'], prior['time'], modes],
             dims=['scenario', 'time', 'quantile'],
             name=key
