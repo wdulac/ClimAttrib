@@ -219,8 +219,6 @@ def attribute_event(event:dict) -> xr.Dataset:
 
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
 
-    print('Law :', prior['cnslaw'])
-    
     # Lecture du prior contraint par la covariable
     hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
     hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
