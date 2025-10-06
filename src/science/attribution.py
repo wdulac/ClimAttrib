@@ -201,7 +201,7 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
             raise NotImplementedError
 
 
-    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_name}/{file_prefix}_ERA5_1940-2022_1p5deg.nc'
+    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_name}/{file_prefix}_ERA5_1940-2024_1p5deg.nc'
 
     Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
