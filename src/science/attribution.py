@@ -4,6 +4,7 @@ import pandas as pd
 import sys
 
 import datetime as dt
+import calendar
 
 import ANKIALE as ank
 # Specific imports
@@ -127,14 +128,14 @@ def _best_window_from_range(day_start, day_end, n_days=365, win_len=15, step=5):
     return s_best, e_best
 
 
-def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datetime, stop_date: dt.datetime) -> dict:
+def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datetime, stop_date: dt.datetime, duration: int) -> dict:
 
     if computation_method == 'yearmax':
         if extreme_type == 'hot':
-            var = 'tmx3d'
+            var = f'tmx{duration}d'
             side = 'right'
         elif extreme_type == 'cold':
-            var = 'tmn3d'
+            var = f'tmn{duration}d'
             side = 'left'
     elif computation_method == 'calendar':
         if duration == 3:
@@ -181,7 +182,9 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
     }
     
 
-def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str, start_date: dt.datetime, stop_date: dt.datetime) -> xr.DataArray:
+def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str,
+              start_date: dt.datetime, stop_date: dt.datetime,
+              duration: int) -> xr.DataArray:
     """
     Return observed covariate (GSAT timeseries) and the observed variable
     timeseries at the given grid point.
@@ -192,10 +195,10 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
 
     if computation_method == 'yearmax':
         if extreme_type == 'hot':
-            var_name = 'tmx3d'
+            var_name = f'tmx{duration}d'
             file_prefix = var_name
         elif extreme_type == 'cold':
-            var_name = 'tmn3d'
+            var_name = f'tmn{duration}d'
             file_prefix = var_name
     elif computation_method == 'calendar':
         if extreme_type == 'hot':
@@ -220,14 +223,17 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
 
 def attribute_event(event:dict) -> xr.Dataset:
 
-    prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
+    prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
 
     # Lecture du prior contraint par la covariable
     hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
     hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
     # Lecture des observations
-    Yo = _load_obs(event['lat'], event['lon'], event['extreme_type'], event['method'], event['start_date'], event['stop_date'])
+    Yo = _load_obs(event['lat'], event['lon'],
+                   event['extreme_type'], event['method'],
+                   event['start_date'], event['stop_date'],
+                   event['duration'])
 
     # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
     bias = float(Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time'))
