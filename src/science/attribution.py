@@ -59,9 +59,12 @@ def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = 
     ))
 
 
-def _day_of_year_no_leap(date: dt.date) -> int:
-    """Retourne le jour de l'année (1..365) en ignorant les années bissextiles."""
-    return MONTH_OFFSETS[date.month-1] + date.day
+def _datetime_to_doy(date: dt.datetime) -> int:
+    doy = date.timetuple().tm_yday
+    if not calendar.isleap(date.year):
+        if date.month >= 3:
+            doy += 1
+    return doy
 
 
 def _best_window_from_range(day_start, day_end, n_days=365, win_len=15, step=5):
@@ -134,11 +137,14 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
             var = 'tmn3d'
             side = 'left'
     elif computation_method == 'calendar':
-        if extreme_type == 'hot':
-            window = _best_window_from_range(_day_of_year_no_leap(start_date),
-                                             _day_of_year_no_leap(stop_date))
-            var = f'tmx3d15w_{window[0]:03d}-{window[1]:03d}'
-            side = 'right'
+        if duration == 3:
+            if extreme_type == 'hot':
+                window = _best_window_from_range(_datetime_to_doy(start_date),
+                                                _datetime_to_doy(stop_date))
+                var = f'tmx3d15w_{window[0]:03d}-{window[1]:03d}'
+                side = 'right'
+            else:
+                raise NotImplementedError
         else:
             raise NotImplementedError
         
@@ -194,8 +200,8 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     elif computation_method == 'calendar':
         if extreme_type == 'hot':
             var_name = 'tmx3d15w'
-            window = _best_window_from_range(_day_of_year_no_leap(start_date),
-                                             _day_of_year_no_leap(stop_date))
+            window = _best_window_from_range(_datetime_to_doy(start_date),
+                                             _datetime_to_doy(stop_date))
             file_prefix = f"{var_name}_{window[0]:03d}-{window[1]:03d}"
         elif extreme_type == 'cold':
             raise NotImplementedError
