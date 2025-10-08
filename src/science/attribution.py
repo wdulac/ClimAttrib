@@ -221,7 +221,7 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     return Yo
 
 
-def attribute_event(event:dict, save_to_disk=True) -> xr.Dataset:
+def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
 
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
 
@@ -329,14 +329,16 @@ def attribute_event(event:dict, save_to_disk=True) -> xr.Dataset:
     IF = law.icdf_sf(pf, side=prior['side'], **kwargsF) + bias
     IC = law.icdf_sf(pf, side=prior['side'], **kwargsC) + bias
 
-    # PR et DeltaI
+    # Durées de retour, PR et DeltaI
+    RF = 1./pF
+    RC = 1./pC
     dI = IF - IC
     PR = pF/pC
 
     ## Calcul de la médiane et de son incertitude
     # On conserve également les paramètres non stationnaires de la loi utilisée
-    data = [pF, pC, IF, IC, dI, PR] + [kwargsF[_].values for _ in kwargsF.keys()]
-    keys = ["pF","pC","IF","IC","dI","PR"] + [f"{param}F" for param in kwargsF.keys()]
+    data = [pF, pC, IF, IC, dI, PR, RF, RC] + [kwargsF[_].values for _ in kwargsF.keys()]
+    keys = ["pF","pC","IF","IC","dI","PR", "RF", "RC"] + [f"{param}F" for param in kwargsF.keys()]
     result_dict  = { key : data[ikey] for ikey,key in enumerate(keys) }
 
     # Conversion en xr.Dataset
