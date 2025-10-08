@@ -221,7 +221,7 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     return Yo
 
 
-def attribute_event(event:dict) -> xr.Dataset:
+def attribute_event(event:dict, save_to_disk=True) -> xr.Dataset:
 
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
 
@@ -329,26 +329,28 @@ def attribute_event(event:dict) -> xr.Dataset:
     IF = law.icdf_sf(pf, side=prior['side'], **kwargsF) + bias
     IC = law.icdf_sf(pf, side=prior['side'], **kwargsC) + bias
 
-    # Durées de retour, PR et DeltaI
-    RF = 1./pF
-    RC = 1./pC
+    # PR et DeltaI
     dI = IF - IC
     PR = pF/pC
 
-    # Calcul de la médiane et de son incertitude
-    data = [pF, pC, RF, RC, IF, IC, dI, PR]
-    keys = ["pF","pC","RF","RC","IF","IC","dI","PR"]
+    ## Calcul de la médiane et de son incertitude
+    # On conserve également les paramètres non stationnaires de la loi utilisée
+    data = [pF, pC, IF, IC, dI, PR] + [kwargsF[_].values for _ in kwargsF.keys()]
+    keys = ["pF","pC","IF","IC","dI","PR"] + [f"{param}F" for param in kwargsF.keys()]
     result_dict  = { key : data[ikey] for ikey,key in enumerate(keys) }
 
     # Conversion en xr.Dataset
+    scenarios = ['ssp370', 'ssp585']
+    time = prior['time'] # 1850 -- 2100
     modes = np.array(["QL","BE","QU"])
+
     data_arrays = []
     
     for key, value in result_dict.items():
         array = np.quantile(value, [CI/2, 0.5, 1-CI/2], axis=-1, method='median_unbiased').transpose((1,2,0))
         da = xr.DataArray(
             array,
-            coords=[['ssp370', 'ssp585'], prior['time'], modes],
+            coords=[scenarios, time, modes],
             dims=['scenario', 'time', 'quantile'],
             name=key
         )
@@ -357,5 +359,20 @@ def attribute_event(event:dict) -> xr.Dataset:
     dataset = xr.Dataset({da.name: da for da in data_arrays})
 
     dataset.attrs['time'] = int(event['date'].year)
+    dataset['bias'] = bias
+
+    if save_to_disk:
+        if event['method'] == 'yearmax':
+            if event['extreme_type'] == 'hot':
+                var_name = f'tmx{event['duration']}d'
+            elif event['extreme_type'] == 'cold':
+                var_name = f'tmn{event['duration']}d'
+        elif event['method'] == 'calendar':
+            if event['extreme_type'] == 'hot':
+                window = _best_window_from_range(_datetime_to_doy(event['start_date']),
+                                                 _datetime_to_doy(event['stop_date']))
+                var_name = f'tmx3d15w_{window[0]:03d}-{window[1]:03d}'
+
+        dataset.to_netcdf(f'{var_name}_{event['lat']}_{event['lon'] % 360}_{event['intensity']:.2f}.nc')
 
     return dataset.sel(scenario=SCENARIO)
