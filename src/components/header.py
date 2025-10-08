@@ -1,4 +1,6 @@
-from dash import html
+from dash import html, dcc
+from dash import Output, Input, State, callback
+from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
 
@@ -15,6 +17,31 @@ _about_button = html.A(
         dmc.Button("About", variant='subtle')
     ]
 )
+
+HOW_TO_USE_FILE = 'src/components/resources/how_to_use.md'
+with open(HOW_TO_USE_FILE, 'r') as f:
+    HOW_TO_USE_CONTENT = f.read()
+
+_how_to_use = html.Div(children=[
+    dmc.Button(
+        "How to use",
+        id='how-to-button',
+        variant='subtle',
+        rightSection=DashIconify(icon="fluent:book-question-mark-24-regular", width=28)
+    ),
+    dmc.Modal(
+        title="How to use",
+        id='how-to-modal',
+        children=dcc.Markdown(HOW_TO_USE_CONTENT),
+        size='55%',
+        styles={
+            'title': {
+                'fontSize': '32px',
+                'fontWeight': 700
+            },
+        }
+    )
+])
 
 # _language_menu = dmc.Menu(
 #     children=[
@@ -58,6 +85,7 @@ _github_action_button = html.A(
 _header_right = dmc.Group(
     children=dmc.Group(
         children=[
+            _how_to_use,
             _about_button,
             # _language_menu,
             dmc.Space(w='10px'), # For even spacing of the buttons
@@ -96,3 +124,13 @@ header = html.Header(
         )
     ], className='header-parent'
 )
+
+
+@callback(
+    Output('how-to-modal', 'opened'),
+    Input('how-to-button', 'n_clicks'),
+    State('how-to-modal', 'opened'),
+    prevent_initial_call=True
+)
+def toggle_how_to_use(n_cliks, opened):
+    return not opened
