@@ -7,9 +7,11 @@ python-dotenv
 pygam
 flask_compress
 jinja2
+geopandas
 
 celery
 redis
+gunicorn
 
 ./libraries/SDFC-python
 ./libraries/zxarray
