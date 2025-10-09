@@ -256,7 +256,7 @@ def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
     for s in samples:
         oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
         # On réplique la sortie du MCMC le long de la dimension "scenario" de la matrice hpars
-        hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, 2, 1))
+        hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, prior['n_scenario'], 1))
 
     ### Attribution de l'évènement
 
