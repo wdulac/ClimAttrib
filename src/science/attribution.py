@@ -19,6 +19,9 @@ from ANKIALE.stats.__constraint import constraint_var
 # the cwd in production should always be `app/`
 import os
 
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Sequence, Tuple
+
 current_dir = os.path.basename(os.getcwd())
 if current_dir == 'science':
     path_to_data_parent_dir = '../../'
@@ -221,6 +224,80 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     return Yo
 
 
+def _worker_block(sample_chunk: Sequence[int],
+                  hpar_CX: np.ndarray,
+                  hcov_CX: np.ndarray,
+                  iYo_anom: np.ndarray,
+                  P: np.ndarray,
+                  SIZE_CHAIN: int,
+                  cnslaw,
+                  USE_STAN: bool,
+                  STAN_WORK_DIR: str,
+                  n_scenario: int) -> Tuple[Sequence[int], np.ndarray]:
+    """
+    Exécuté dans chaque process : calcule les oh pour chaque sample du chunk,
+    et renvoie (sample_chunk, block_hpars).
+    block_hpars shape = (len(sample_chunk)*SIZE_CHAIN, n_scenario, hpar_dim)
+    """
+    # limiter BLAS/OpenMP dans le worker (évite oversubscription si numpy/MKL multithread)
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
+
+    # Assure que constraint_var est importable ici (si défini dans le même module, ce n'est pas nécessaire)
+    # from your_module import constraint_var
+
+    hpar_dim = hpar_CX.size
+    block = np.zeros((len(sample_chunk) * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
+
+    for i, s in enumerate(sample_chunk):
+        # appel inchangé à constraint_var
+        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, STAN_WORK_DIR)
+        block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, n_scenario, 1))
+
+    return sample_chunk, block
+
+
+def parallel_fill_hpars(samples: Sequence[int],
+                       hpar_CX: np.ndarray,
+                       hcov_CX: np.ndarray,
+                       iYo_anom: np.ndarray,
+                       P: np.ndarray,
+                       prior: dict,
+                       SIZE_CHAIN: int,
+                       USE_STAN: bool,
+                       STAN_WORK_DIR: str,
+                       n_workers: int = 4) -> np.ndarray:
+    """
+    Simple wrapper qui répartit samples en n_workers chunks et calcule hpars en parallèle.
+    Renvoie hpars shape = (N_SAMPLES_COV*SIZE_CHAIN, prior['n_scenario'], hpar_CX.size)
+    """
+    samples = list(samples)
+    N = len(samples)
+    n_scenario = prior['n_scenario']
+    hpar_dim = hpar_CX.size
+
+    # découpe en chunks approximativement égaux
+    raw_chunks = np.array_split(np.array(samples), n_workers)
+    chunks = [c.tolist() for c in raw_chunks if len(c) > 0]
+
+    # pré-alloc résultat
+    hpars = np.zeros((N * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
+
+    # lance un process par chunk
+    with ProcessPoolExecutor(max_workers=len(chunks)) as ex:
+        futures = [ex.submit(_worker_block, chunk, hpar_CX, hcov_CX, iYo_anom, P,
+                             SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR, n_scenario)
+                   for chunk in chunks]
+
+        for fut in as_completed(futures):
+            chunk, block = fut.result()
+            # coller block dans hpars en utilisant l'indice sample s
+            for i, s in enumerate(chunk):
+                hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :]
+
+    return hpars
+
+
 def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
 
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
@@ -249,14 +326,11 @@ def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
     fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
     P = _projection_matrix({'tas': fake_Xo}, prior['vsize'], prior['smoother'])
     
-    # Initialisation du résultat
-    hpars = np.zeros((N_SAMPLES_COV*SIZE_CHAIN, prior['n_scenario'], hpar_CX.size)) + np.nan
-    # Boucle sur les tirages de covariable
-    mcmc_args = [SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR]
-    for s in samples:
-        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
-        # On réplique la sortie du MCMC le long de la dimension "scenario" de la matrice hpars
-        hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, prior['n_scenario'], 1))
+    hpars = parallel_fill_hpars(samples, hpar_CX.values if hasattr(hpar_CX, "values") else hpar_CX,
+                                hcov_CX.values if hasattr(hcov_CX, "values") else hcov_CX,
+                                iYo_anom, P, prior,
+                                SIZE_CHAIN, USE_STAN, STAN_WORK_DIR,
+                                n_workers=4)
 
     ### Attribution de l'évènement
 
