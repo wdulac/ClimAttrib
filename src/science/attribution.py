@@ -285,14 +285,14 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     
     ## Parallélisation de la contrainte Y en répartissant les samples sur n_process
 
-    # Découpe en blocs approximativement égaux
+    # Découpe la liste des samples en chunks approximativement égaux
     raw_chunks = np.array_split(np.array(samples), n_process)
     chunks = [c.tolist() for c in raw_chunks if len(c) > 0]
 
     # Allocation du résultat
     hpars = np.zeros((N_SAMPLES_COV * SIZE_CHAIN, n_scenario, hpar_CX.size)) + np.nan
 
-    # Lance un processus par bloc
+    # Lance un processus par chunk
     with ProcessPoolExecutor(max_workers=len(chunks)) as ex:
         futures = [ex.submit(_worker_block, chunk, hpar_CX, hcov_CX, iYo_anom, P,
                              SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR, n_scenario)
