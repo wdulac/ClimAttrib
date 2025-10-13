@@ -33,12 +33,6 @@ SCENARIO = 'ssp370'
 
 STAN_WORK_DIR =  SRC / 'science/stan_files/'
 
-# Pour le calendaire
-# longueurs des mois en année commune (365 jours)
-MONTH_LENGTHS = [31,28,31,30,31,30,31,31,30,31,30,31]
-MONTH_OFFSETS = [0] + [sum(MONTH_LENGTHS[:i]) for i in range(1,12)]
-
-
 def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = None) -> np.ndarray:
 
     time_size = X[next(iter(X))].time0.values.size
