@@ -235,7 +235,7 @@ def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
                    event['start_date'], event['stop_date'],
                    event['duration'])
 
-    # Calcul du biais. On pourrait utiliser la valeur stockée dans :CLIM: mais elle est légèrement différente.
+    # Calcul du biais.
     bias = float(Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time'))
 
     # Expression de la variable en anomalie
