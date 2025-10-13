@@ -19,6 +19,9 @@ from ANKIALE.stats.__constraint import constraint_var
 # the cwd in production should always be `app/`
 import os
 
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from typing import Sequence, Tuple
+
 current_dir = os.path.basename(os.getcwd())
 if current_dir == 'science':
     path_to_data_parent_dir = '../../'
@@ -221,11 +224,41 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     return Yo
 
 
-def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
+def _worker_block(sample_chunk: Sequence[int],
+                  hpar_CX: np.ndarray,
+                  hcov_CX: np.ndarray,
+                  iYo_anom: np.ndarray,
+                  P: np.ndarray,
+                  SIZE_CHAIN: int,
+                  cnslaw,
+                  USE_STAN: bool,
+                  STAN_WORK_DIR: str,
+                  n_scenario: int) -> Tuple[Sequence[int], np.ndarray]:
+    """
+    Exécuté dans chaque process : calcule les oh pour chaque sample du bloc,
+    et renvoie (sample_chunk, block_hpars).
+    block_hpars shape = (len(sample_chunk)*SIZE_CHAIN, n_scenario, hpar_dim)
+    """
+    # limiter BLAS/OpenMP dans le worker (évite oversubscription si numpy/MKL multithread)
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
 
-    prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
+    hpar_dim = hpar_CX.size
+    block = np.zeros((len(sample_chunk) * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
+
+    for i, s in enumerate(sample_chunk):
+        # Application du MCMC
+        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, STAN_WORK_DIR)
+        # On réplique la sortie du MCMC pour tous les scénarios
+        block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, n_scenario, 1))
+
+    return sample_chunk, block
+
+
+def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     # Lecture du prior contraint par la covariable
+    prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
     hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
     hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
 
@@ -243,20 +276,32 @@ def attribute_event(event:dict, save_to_disk=False) -> xr.Dataset:
 
     ### Contrainte par les observations de la variable
 
-    # Paramètres de la fonction mcmc
+    # Paramètres d'entrée pour la contrainte Y
     iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
     fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
     P = _projection_matrix({'tas': fake_Xo}, prior['vsize'], prior['smoother'])
+    n_scenario = prior['n_scenario']
     
-    # Initialisation du résultat
-    hpars = np.zeros((N_SAMPLES_COV*SIZE_CHAIN, prior['n_scenario'], hpar_CX.size)) + np.nan
-    # Boucle sur les tirages de covariable
-    mcmc_args = [SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR]
-    for s in samples:
-        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, *mcmc_args)
-        # On réplique la sortie du MCMC le long de la dimension "scenario" de la matrice hpars
-        hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, prior['n_scenario'], 1))
+    ## Parallélisation de la contrainte Y en répartissant les samples sur n_process
+
+    # Découpe la liste des samples en chunks approximativement égaux
+    raw_chunks = np.array_split(np.array(samples), n_process)
+    chunks = [c.tolist() for c in raw_chunks if len(c) > 0]
+
+    # Allocation du résultat
+    hpars = np.zeros((N_SAMPLES_COV * SIZE_CHAIN, n_scenario, hpar_CX.size)) + np.nan
+
+    # Lance un processus par chunk
+    with ProcessPoolExecutor(max_workers=len(chunks)) as ex:
+        futures = [ex.submit(_worker_block, chunk, hpar_CX, hcov_CX, iYo_anom, P,
+                             SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR, n_scenario)
+                   for chunk in chunks]
+
+        for future in as_completed(futures):
+            chunk, block = future.result()
+            for i, s in enumerate(chunk):
+                hpars[s*SIZE_CHAIN:(s+1)*SIZE_CHAIN, :, :] = block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :]
 
     ### Attribution de l'évènement
 
