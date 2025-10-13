@@ -6,12 +6,14 @@ from flask import request, jsonify
 from flask_compress import Compress
 from functools import lru_cache
 
+from utils.paths import ASSETS
+
 server.config['COMPRESS_REGISTER'] = False # Disable default compression
 compress = Compress()
 compress.init_app(server)
 
 TILE_SIZE =10
-GRID_TILES_DIR = "src/assets/static/grid_tiles_1_5/"
+GRID_TILES_DIR = ASSETS / "static/grid_tiles_1_5/"
 
 @lru_cache(maxsize=128)
 def load_tile(x, y):

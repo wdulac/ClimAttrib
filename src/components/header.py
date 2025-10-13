@@ -3,6 +3,8 @@ from dash import Output, Input, State, callback
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
+from utils.paths import RESOURCES
+
 
 # debug_style = {
     # "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
@@ -18,7 +20,7 @@ _about_button = html.A(
     ]
 )
 
-HOW_TO_USE_FILE = 'src/components/resources/how_to_use.md'
+HOW_TO_USE_FILE = RESOURCES / 'how_to_use.md'
 with open(HOW_TO_USE_FILE, 'r') as f:
     HOW_TO_USE_CONTENT = f.read()
 

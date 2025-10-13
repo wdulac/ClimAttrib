@@ -1,8 +1,9 @@
 import geopandas as gpd
 from shapely.geometry import box
+from utils.paths import DATA
 
 # Charger shapefile
-gdf = gpd.read_file("data/ne_10_admin/ne_10m_admin_1_states_provinces.shp")
+gdf = gpd.read_file(DATA / "ne_10_admin/ne_10m_admin_1_states_provinces.shp")
 
 def reverse_lookup(lat: float, lon: float, cell_size: float = 2.5):
     """

@@ -2,6 +2,7 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 import sys
+import os
 
 import datetime as dt
 import calendar
@@ -12,26 +13,10 @@ from ANKIALE.stats import MPeriodSmoother
 from ANKIALE.stats import build_projection_matrix
 from ANKIALE.stats.__constraint import constraint_var
 
-# Evaluate both relative path to the directory right above the main data
-# directory and also to the science dir (parent to another data folder)
-# 
-# This mostly serves as a compatibility patch for VsCode interactive mode as
-# the cwd in production should always be `app/`
-import os
-
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Sequence, Tuple
 
-current_dir = os.path.basename(os.getcwd())
-if current_dir == 'science':
-    path_to_data_parent_dir = '../../'
-    path_to_science_dir = './'
-elif current_dir == 'src':
-    path_to_data_parent_dir = '../'
-    path_to_science_dir = './science/'
-else: # Root of the app (hopefully).
-    path_to_data_parent_dir = './'
-    path_to_science_dir = './src/science/'
+from utils.paths import DATA, SRC
 
 ## Paramètres généraux
 
@@ -46,7 +31,7 @@ MODE = 'quantile'
 CI = 0.05
 SCENARIO = 'ssp370'
 
-STAN_WORK_DIR = path_to_science_dir + './stan_files/'
+STAN_WORK_DIR =  SRC / 'science/stan_files/'
 
 # Pour le calendaire
 # longueurs des mois en année commune (365 jours)
@@ -152,7 +137,7 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
         else:
             raise NotImplementedError
         
-    clim_file = path_to_data_parent_dir + f'data/prior/{var}_CONSTRAIN_X.nc'
+    clim_file =  DATA / f'prior/{var}_CONSTRAIN_X.nc'
 
     clim = ank.Climatology.init_from_file(clim_file)
     # Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
@@ -213,7 +198,7 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
             raise NotImplementedError
 
 
-    Yo_file = path_to_data_parent_dir + f'data/Yo/{var_name}/{file_prefix}_ERA5_1940-2024_1p5deg.nc'
+    Yo_file = DATA / f'Yo/{var_name}/{file_prefix}_ERA5_1940-2024_1p5deg.nc'
 
     Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
