@@ -1,10 +1,10 @@
+.env
 data/
 libraries/
 .venv/
 .vscode/
 __pycache__/
 *.pyc
-src/utils/.env
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL.stan
 src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL

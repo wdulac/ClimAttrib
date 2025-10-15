@@ -1,9 +1,8 @@
 import os
-from os.path import join, dirname
+from .paths import ROOT
 from dotenv import load_dotenv
 
-dotenv_path = join(dirname(__file__), '.env')
-load_dotenv(dotenv_path)
+load_dotenv(ROOT / '.env')
 
 APP_HOST=os.getenv('HOST')
 APP_PORT=int(os.getenv('PORT'))

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-def project_root(marker_files=(".git", "requirements.txt", "redis.conf")) -> Path:
+def project_root(marker_files=(".git", "requirements.txt", "redis.conf", '.env')) -> Path:
     """
     Seeks any designated marker by crawling back up the folder tree.
     Returns project root directory.
