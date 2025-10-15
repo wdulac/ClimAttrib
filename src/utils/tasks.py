@@ -17,7 +17,8 @@ celery_app = Celery(
 @celery_app.task(name="attribution")
 def attribution(event, cache_key=None):
 
-    result = attribute_event(event)
+    N_PROCESS = os.getenv('MCMC_N_WORKERS', 1)
+    result = attribute_event(event, n_process=N_PROCESS)
 
     if not cache_key:
         cache_key = make_cache_key(event)
