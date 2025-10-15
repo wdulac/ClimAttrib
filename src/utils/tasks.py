@@ -6,7 +6,7 @@ import os
 # Setting up Celery
 celery_app = Celery(
     "tasks",
-    broker=f"redis://{os.getenv('REDIS_HOST')}:{os.getenv('REDIS_PORT')}/0", # Redis for tasks queuing
+    broker=f"redis://{os.getenv('REDIS_HOST', '127.0.0.1')}:{os.getenv('REDIS_PORT', '6380')}/0", # Redis for tasks queuing
     backend=None,
     task_serializer="pickle",
     result_serializer="pickle",

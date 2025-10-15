@@ -1,4 +1,5 @@
 from base64 import urlsafe_b64encode, urlsafe_b64decode
+import secrets
 import datetime as dt
 import hashlib
 import hmac
@@ -6,7 +7,7 @@ import struct
 import os
 
 
-SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY').encode('utf-8')
+SECRET_KEY = os.getenv('URL_SIG_SECRET_KEY', secrets.token_urlsafe(32)).encode('utf-8')
 STRUCT_FMT = '>BBIIfff' # 1 + 1 + 4 + 4 + 4 + 4 + 4 = 22 bytes
 HASH = hashlib.sha256
 HMAC_SIZE = 16 # 16 bytes HMAC Truncature

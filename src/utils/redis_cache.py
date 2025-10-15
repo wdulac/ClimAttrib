@@ -4,7 +4,7 @@ import xarray
 
 REDIS_TTL=60*60*48 # 48 hours caching
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
-REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
+REDIS_PORT = int(os.getenv('REDIS_PORT', '6380'))
 
 redis_client = redis.Redis(
     host=REDIS_HOST,
