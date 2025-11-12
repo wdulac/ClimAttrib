@@ -2,9 +2,8 @@ dash
 dash_mantine_components
 dash-leaflet
 dash-iconify
-plotly
+plotly==6.1.2
 python-dotenv
-pygam
 flask_compress
 jinja2
 geopandas
@@ -12,6 +11,8 @@ geopandas
 celery
 redis
 gunicorn
+
+toml
 
 ./libraries/SDFC-python
 ./libraries/zxarray
