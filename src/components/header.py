@@ -68,7 +68,7 @@ _how_to_use = html.Div(children=[
 # )
 
 _github_action_button = html.A(
-    href='https://github.com/wdulac/EET-app',
+    href='https://github.com/wdulac/ClimAttrib',
     target='_blank',
     className='github-logo',
     children=[
