@@ -108,7 +108,7 @@ header = html.Header(
                             # TODO Restrict clickable zone to the actual title
                             href="/",
                             children=html.H1(
-                                "Clim@rib",
+                                "Clim@Attrib",
                                 id='page-title'
                             ),
                             id='title-anchor'
