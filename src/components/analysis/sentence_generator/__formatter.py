@@ -1,123 +1,217 @@
 import math
+import sys
 
-EPSILON = 10*__import__("sys").float_info.epsilon
+EPSILON = 10 * sys.float_info.epsilon
 
 # ---------- utilitaires ----------
-def _is_nan(x): return x is None or (isinstance(x, float) and math.isnan(x))
+def _is_nan(x):
+    return x is None or (isinstance(x, float) and math.isnan(x))
 
 
-# -------- Probabilité (p∈[0,1]) — mêmes règles que _safe_prob --------
-def format_prob_adaptive(p: float, fp: int = 2, min_val: float = EPSILON,
-                         zero_str="0", unit="%") -> str:
+def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
+    """Round x to n significant figures. Works for x > 0 and x < 0, returns 0.0 for x == 0."""
+    if x == 0 or x is None or _is_nan(x):
+        return 0.0
+    sign = 1 if x > 0 else -1
+    x_abs = abs(x)
+    exponent = math.floor(math.log10(x_abs))
+    factor = 10 ** (exponent - (n - 1))
+    return sign * round(x / factor) * factor
+
+
+def _fmt_sig(x: float, sig: int = 2, thousands_sep: bool = True) -> str:
+    """
+    Format a number rounded to `sig` significant figures into a human-readable string:
+    - Avoid scientific notation for common ranges.
+    - Use grouping for large integers (via :n).
+    - Trim trailing zeros and trailing dot.
+    """
+    if _is_nan(x):
+        return "NaN"
+
+    # Handle zero explicitly
+    if x == 0:
+        return "0"
+
+    # if it's effectively an integer after rounding, show integer with grouping
+    rounded = _round_to_n_sigfigs(x, sig)
+
+    # For extremely small/large values, prefer plain decimal unless it would produce exponential format.
+    # We'll decide based on magnitude:
+    mag = abs(rounded)
+
+    # If mag >= 1 and rounded is nearly integer, show integer with grouping
+    if mag >= 1 and abs(rounded - round(rounded)) < 1e-12:
+        return f"{int(round(rounded)):n}"
+
+    # For moderate values use decimal without scientific notation:
+    # Compute number of decimal places needed to represent rounded with no exponents:
+    # We'll convert to string via format with enough precision, then trim.
+    # Use 'f' with dynamic precision: compute digits after decimal as max(0, sig - digits_before_decimal)
+    digits_before = math.floor(math.log10(mag)) + 1 if mag >= 1 else 0
+    decimals = max(0, sig - digits_before)
+    fmt = f"{{:.{decimals}f}}"
+    s = fmt.format(rounded)
+
+    # Trim trailing zeros and possible trailing dot
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+
+    # For thousands grouping on the integer part if requested
+    if thousands_sep and "." in s:
+        int_part, frac_part = s.split(".", 1)
+        int_part = f"{int(int_part):n}"
+        s = int_part + "." + frac_part
+    elif thousands_sep and "." not in s and mag >= 1000:
+        s = f"{int(round(rounded)):n}"
+
+    return s
+
+
+# ---------- formats adapted à 2 chiffres significatifs ----------
+# (fp/sig = 2 par défaut, mais paramétrable)
+
+
+def format_prob_adaptive(
+    p: float,
+    sig: int = 2,
+    min_val: float = EPSILON,
+    zero_str: str = "0",
+    unit: str = "%",
+) -> str:
+    """
+    Format a probability p in [0,1] using `sig` significant figures on the percentage.
+    Keeps the ultra-small-zero threshold (100*p <= min_val) and a lower display bound:
+      if pct < 10**(-sig) -> "less than {10**(-sig)}{unit}"
+    """
     if _is_nan(p):
         return "NaN"
+
     pct = p * 100.0
 
-    # 0 (seuil ultra-faible) — même test que _safe_prob (100*p <= min_val)
+    # ultra-small zero threshold (same semantics as before)
     if 100 * p <= min_val:
         return f"{zero_str}{('\u00A0' + unit) if unit else ''}"
 
-    # borne "< 10^-fp"
-    if 100 * p < pow(10, -fp):
-        return f"less than {pow(10, -fp)}{('\u00A0' + unit) if unit else ''}"
+    # lower display bound like "less than 0.01%" for sig=2
+    lower_display = 10 ** (-sig)  # percent units
+    if pct < lower_display:
+        # format lower_display with sig significant figures but ensure we show it as decimal (not exponent)
+        lower_str = _fmt_sig(lower_display, sig)
+        return f"less than {lower_str}{('\u00A0' + unit) if unit else ''}"
 
-    # 100% propre si round(pct, 2) == 100
-    if round(pct, 2) == 100:
-        s = format(pct, ".0f")
-    else:
-        s = format(pct, f".{fp}f")
+    # Otherwise format pct with sig significant figures
+    s = _fmt_sig(pct, sig)
+    # Special-case: if rounded percentage equals 100 => show "100" (no decimals)
+    try:
+        if abs(float(s) - 100.0) < 10 ** (- (sig + 1)):
+            s = "100"
+    except Exception:
+        pass
 
     return f"{s}{('\u00A0' + unit) if unit else ''}"
 
-# -------- Durée de retour — mêmes règles que _safe_ret --------
-def format_return_period_adaptive(rp: float, max_val: float = 1/EPSILON,
-                                  inf_str="infinity", unit="year") -> str:
+
+def format_return_period_adaptive(
+    rp: float,
+    sig: int = 2,
+    max_val: float = 1 / EPSILON,
+    inf_str: str = "infinity",
+    unit: str = "year",
+) -> str:
+    """
+    Format a return period (years) using `sig` significant figures.
+    If rp is infinite or >= max_val -> return inf_str.
+    For very large values, show 'over {max_val:n}' if rp >= max_val.
+    """
     if _is_nan(rp):
         return "NaN"
     if math.isinf(rp) or rp >= max_val:
         return inf_str
 
-    # paliers identiques à _safe_ret._format_years
-    if rp < 20:
-        s = f"{rp:.1f}"
-    elif rp < 100:
-        s = f"{round(rp)}"
-    elif rp < 1_000:
-        s = f"{int(round(rp/5) * 5)}"
-    elif rp < 1_000_000:
-        s = f"{int(round(rp/100) * 100):n}"
-        # s = f"{rp/1_000:.1f} thousand"
-    elif rp < 1_000_000_000:
-        s = f"{int(round(rp/100_000) * 100_000):n}"
-        # s = f"{rp/1_000_000:.1f} million"
-    else:
-        s = f"{int(round(rp/100_000_000) * 100_000_000):n}"
-        # s = f"{rp/1_000_000_000:.1f} billion"
+    rounded = _round_to_n_sigfigs(rp, sig)
 
-    # Pluriel identique (round(value, 1) > 1)
-    plural = "s" if round(rp, 1) > 1 else ""
+    # If rounded is >= 1000, show integer grouping
+    if rounded >= 1000:
+        s = f"{int(round(rounded)):n}"
+    else:
+        s = _fmt_sig(rounded, sig, thousands_sep=False)
+
+    plural = "s" if rounded > 1 else ""
     return f"{s}\u00A0{unit}{plural}".strip()
 
-# -------- Ratio PR — mêmes règles que _safe_PR --------
+
 def format_ratio_adaptive(
     value: float,
+    sig: int = 2,
     max_val: float = 1e5,
     min_val: float = 1e-3,
     unit: str = "time",
     include_unit: bool = True,
 ) -> str:
+    """
+    Format a ratio (e.g. PR) with `sig` significant figures.
+    Keeps upper bound "over {max_val}" and lower bound "less than {min_val}".
+    """
     if _is_nan(value):
         return "NaN"
 
-    # utilitaire pour nettoyer "1.50" -> "1.5", "2.00" -> "2"
-    def _trim(x: str) -> str:
-        return x.rstrip("0").rstrip(".") if "." in x else x
-
-    # 1) cas "au-delà de la borne"
+    # beyond upper bound
     if value >= max_val:
         s = f"over {int(max_val):n}"
-
-    # 2) ratios > 1
-    elif value > 1:
-        if value < 10:
-            s = _trim(f"{value:.2f}")
-        elif value < 20:
-            s = _trim(f"{value:.1f}")
-        elif value < 100:
-            s = str(round(value))
-        elif value < 1_000:
-            s = str(round(value / 5) * 5)
-        elif value < 10_000:
-            s = str(round(value / 50) * 50)
-        else:
-            s = str(round(value / 500) * 500)
-
-    # 3) ratios <= 1
+    # below lower bound
+    elif value < min_val:
+        # show 'less than {min_val}' formatted with sig figs
+        min_str = _fmt_sig(min_val, sig)
+        s = f"less than {min_str}"
     else:
-        if value >= 0.01:
-            s = _trim(f"{value:.2f}")
-        elif value < min_val:
-            s = f"less than {min_val:.3f}".rstrip("0").rstrip(".")
+        # normal formatting: keep unit-appropriate presentation
+        rounded = _round_to_n_sigfigs(value, sig)
+        # if >= 1000, show grouped integer
+        if rounded >= 1000:
+            s = f"{int(round(rounded)):n}"
         else:
-            s = _trim(f"{value:.3f}")
+            s = _fmt_sig(rounded, sig, thousands_sep=False)
 
     if include_unit:
-        plural = "s" if round(value, 1) > 1 else ""
+        plural = "s" if (not ("less than" in s and "over" not in s) and float(_round_to_n_sigfigs(value, sig)) > 1) else ""
+        # plural calculation: if we used 'less than X' or 'over X' keep standard plural rule (value > 1)
         return f"{s}\u00A0{unit}{plural}".strip()
 
     return s
 
-# -------- FAR — mêmes règles que _safe_FAR --------
+
 def format_far_adaptive(far: float) -> str:
+    """
+    Format FAR = 1 - 1/PR with adaptive significant figures:
+    - FAR <= 99%: 2 sig figs
+    - 99% < FAR < 99.9%: 3 sig figs
+    - FAR >= 99.9%: 'over 99.9%'
+    Negative FAR returns '--'.
+    """
     if _is_nan(far):
         return "NaN"
     if far < 0:
         return "--"
+
     p = far * 100.0
-    if round(p, 2) > 99.99:
-        return "over 99.99\u00A0%"
+
+    # Lower bound
+    if p < 0.01:
+        return "less than 0.01\u00A0%"
+
+    # Upper bound: over 99.9%
+    if p >= 99.9:
+        return "over 99.9\u00A0%"
+
+    # Adaptive sig figs
+    if p > 99.0:
+        sig = 3  # 99.0 - 99.9%
     else:
-        return f"{p:.2f}\u00A0%"
+        sig = 2  # <= 99%
+
+    s = _fmt_sig(p, sig)
+    return f"{s}\u00A0%"
 
 # -------- Insertions de jetons parsables dans le rendu jinja2
 

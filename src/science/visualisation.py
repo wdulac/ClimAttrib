@@ -1,5 +1,6 @@
 import xarray as xr
 import numpy as np
+import math
 import sys
 
 from collections.abc import Callable
@@ -18,97 +19,167 @@ def PRlink(x: float, e:float=3) -> float:
 	return np.sign(y) * np.power(np.abs(y), e)
 
 
+def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
+    """Round x to n significant figures. Works for x > 0 and x < 0, returns 0.0 for x == 0."""
+    if x == 0 or x is None or np.isnan(x):
+        return 0.0
+    sign = 1 if x > 0 else -1
+    x_abs = abs(x)
+    exponent = math.floor(math.log10(x_abs))
+    factor = 10 ** (exponent - (n - 1))
+    return sign * round(x / factor) * factor
+
+
+def _fmt_sig_plot(x: float, sig: int = 2) -> str:
+    """
+    Version allégée pour Plotly :
+    - pas de séparateur de milliers
+    - pas de locale
+    - pas d'espaces insécables
+    """
+    if np.isnan(x):
+        return "NaN"
+    if x == 0:
+        return "0"
+
+    rounded = _round_to_n_sigfigs(x, sig)
+    mag = abs(rounded)
+
+    # Si ~entier, on retourne un entier
+    if mag >= 1 and abs(rounded - round(rounded)) < 1e-12:
+        return str(int(round(rounded)))
+
+    # sinon : décimales selon les sig figs
+    digits_before = math.floor(math.log10(mag)) + 1 if mag >= 1 else 0
+    decimals = max(0, sig - digits_before)
+    s = f"{rounded:.{decimals}f}"
+
+    # trim des zéros
+    if "." in s:
+        s = s.rstrip("0").rstrip(".")
+
+    return s
+
+
 def _safe_prob(value, fp=2, min_val=EPSILON, zero_str="0", unit="%"):
-
-    fmt = f".{fp}f"
-
-    def _format_prob(p, fmt=fmt):
-        p *= 100
-        if round(p, 2) == 100:
-            return format(p, ".0f")
-        else:
-            return format(p, fmt)
-        
-
+    """Probabilité p∈[0,1] -> pourcentage à fp chiffres significatifs (sur le %)."""
     if np.isnan(value):
         return "NaN"
-    elif 100*value <= min_val:
-        return " ".join([zero_str, unit]) if unit else\
-            zero_str
-    elif 100*value < pow(10, -fp):
-        return " ".join([f"< {pow(10, -fp)}", unit]) if unit else\
-            f"< {pow(10, -fp)}"
-    else:
-        return " ".join([_format_prob(value), unit]) if unit else\
-            _format_prob(value)
+
+    sig = fp  # on réutilise fp comme nb de chiffres significatifs sur le %
+    pct = value * 100.0
+
+    # ultra-petit -> zéro
+    if 100 * value <= min_val:
+        return f"{zero_str} {unit}" if unit else zero_str
+
+    # borne basse : "< 0.01%" pour sig=2
+    lower_display = 10 ** (-sig)
+    if pct < lower_display:
+        lower_str = _fmt_sig_plot(lower_display, sig)
+        return f"< {lower_str}{unit if unit else ''}"
+
+    # sinon : % avec sig chiffres significatifs
+    s = _fmt_sig_plot(pct, sig)
+
+    # si ça tombe sur 100 pile, on force "100"
+    try:
+        if abs(float(s) - 100.0) < 10 ** (-(sig + 1)):
+            s = "100"
+    except Exception:
+        pass
+
+    return f"{s}{unit if unit else ''}"
+
 
 
 def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
-
-    def _format_years(value):
-        if round(value, 1) == 1:
-            return "1"
-        elif value < 20: # Entre 0 et 20
-            return f"{value:.1f}"
-        elif value < 100: # Entre 20 et 100
-            return f"{round(value)}"
-        elif value < 1000: # Entre 100 et 1000
-            return f"{round(value/5) * 5}"
-        elif value < 1_000_000:
-            return f"{value / 1_000:.1f}k"
-        elif value < 1_000_000_000:
-            return f"{value / 1_000_000:.1f}M"
-        else:
-            return f"{value / 1_000_000_000:.1f}G"
-        
+    """Durée de retour (années) avec 2 chiffres significatifs + suffixes k/M/G."""
     if np.isnan(value):
         return "NaN"
-    elif np.isinf(value) or value >= max_val:
+    if np.isinf(value) or value >= max_val:
         return inf_str
+
+    v = float(value)
+
+    # Choix de l'échelle pour k / M / G
+    if v < 1_000:
+        # valeurs < 1000 : nombre brut à 2 chiffres significatifs
+        s_val = _fmt_sig_plot(v, 2)
+        suffix = ""
+    elif v < 1_000_000:
+        s_val = _fmt_sig_plot(v / 1_000.0, 2)
+        suffix = "k"
+    elif v < 1_000_000_000:
+        s_val = _fmt_sig_plot(v / 1_000_000.0, 2)
+        suffix = "M"
     else:
-        return " ".join((_format_years(value), unit+"s" if round(value, 1)>1 else unit)) if unit else\
-            _format_years(value)
-    
+        s_val = _fmt_sig_plot(v / 1_000_000_000.0, 2)
+        suffix = "G"
+
+    s = f"{s_val}{suffix}"
+    plural = (unit + "s") if round(v, 1) > 1 else unit
+    return f"{s} {plural}" if unit else s
+
         
 def _safe_PR(value, max_val=1e5, min_val=1e-3):
+    """PR avec 2 chiffres significatifs + bornes min/max numériques."""
     if np.isnan(value):
         return "NaN"
-    elif value >= max_val:
+
+    v = float(value)
+
+    # borne haute : "> max_val"
+    if v >= max_val:
+        # on garde l'affichage avec espace comme avant
         return f"> {int(max_val):,}".replace(",", " ")
-    elif value > 1:
-        if value < 10:
-            return f"{value:.2f}"
-        elif value < 20:
-            return f"{value:.1f}"
-        elif value < 100:
-            return str(round(value))
-        elif value < 1000:
-            return str(round(value / 5) * 5)
-        elif value < 10_000:
-            return str(round(value / 50) * 50)
-        else:
-            return str(round(value / 500) * 500)
-    elif value >= 0.01:
-        return f"{value:.2f}"
-    elif value < min_val:
-        return f"< {min_val:.3f}"
-    else:
-        return f"{value:.3f}"
+
+    # borne basse : "< min_val"
+    if v < min_val:
+        min_str = _fmt_sig_plot(min_val, 2)
+        return f"< {min_str}"
+
+    # entre les bornes : 2 chiffres significatifs
+    rounded = _round_to_n_sigfigs(v, 2)
+
+    # pour des valeurs très grandes, on peut éventuellement regrouper,
+    # mais ici on reste simple (pas de k/M/G pour PR)
+    s = _fmt_sig_plot(rounded, 2)
+    return s
 
 
 def _safe_FAR(value):
-
+    """
+    FAR en %, style numérique :
+    - FAR < 0.01%     -> '< 0.01%'
+    - 0.01% <= FAR <= 99%  -> 2 sig figs
+    - 99% < FAR < 99.9%    -> 3 sig figs
+    - FAR >= 99.9%         -> '> 99.9%'
+    """
     if np.isnan(value):
         return "NaN"
-    elif value < 0:
+    if value < 0:
         return "--"
-    
-    p = value * 100
-    if round(p, 2) > 99.99:
-        return "> 99.99%"
+
+    p = float(value) * 100.0
+
+    # borne basse
+    if p < 0.01:
+        return "< 0.01%"
+
+    # borne haute
+    if p >= 99.9:
+        return "> 99.9%"
+
+    # entre 99 et 99.9 : 3 chiffres significatifs
+    if p > 99.0:
+        sig = 3
     else:
-        return f"{p:.2f}%"
-    
+        sig = 2
+
+    s = _fmt_sig_plot(p, sig)
+    return f"{s}%"
+
 
 def _safe_intensity(value):
 
