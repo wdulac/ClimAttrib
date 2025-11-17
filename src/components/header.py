@@ -56,7 +56,12 @@ _how_to_use = html.Div(children=[
                 )
             ],
             # Default tab
-            value="quickguide"),
+            value="quickguide",
+            styles={
+                'tabLabel': {
+                    'fontSize': 18
+                }
+            }),
         ],
         size='55%',
         styles={
