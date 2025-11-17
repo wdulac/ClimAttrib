@@ -20,9 +20,13 @@ _about_button = html.A(
     ]
 )
 
-HOW_TO_USE_FILE = RESOURCES / 'how_to_use.md'
-with open(HOW_TO_USE_FILE, 'r') as f:
-    HOW_TO_USE_CONTENT = f.read()
+QUICKGUIDE_FILE = RESOURCES / 'quickguide.md'
+with open(QUICKGUIDE_FILE, 'r') as f:
+    QUICKGUIDE_CONTENT = f.read()
+
+INTERPRETATION_HELP_FILE = RESOURCES / 'interpretation_help.md'
+with open(INTERPRETATION_HELP_FILE, 'r') as f:
+    INTERPRETATION_HELP_CONTENT = f.read()
 
 _how_to_use = html.Div(children=[
     dmc.Button(
@@ -34,7 +38,26 @@ _how_to_use = html.Div(children=[
     dmc.Modal(
         title="How to use",
         id='how-to-modal',
-        children=dcc.Markdown(HOW_TO_USE_CONTENT),
+        children=[
+            dmc.Tabs([
+                # Define the tabs themselves
+                dmc.TabsList([
+                        dmc.TabsTab("Quick guide", value="quickguide"),
+                        dmc.TabsTab("Results interpration", value="interpretation")
+                    ]),
+                # Then comes the conent of each tab
+                dmc.TabsPanel(
+                    dcc.Markdown(QUICKGUIDE_CONTENT),
+                    value="quickguide"
+                ),
+                dmc.TabsPanel(
+                    dcc.Markdown(INTERPRETATION_HELP_CONTENT),
+                    value="interpretation"
+                )
+            ],
+            # Default tab
+            value="quickguide"),
+        ],
         size='55%',
         styles={
             'title': {
