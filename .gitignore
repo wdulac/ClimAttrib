@@ -5,6 +5,8 @@ libraries/
 .vscode/
 __pycache__/
 *.pyc
+logs/*.log
+logs/*.pid
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL
 src/science/stan_files/STAN_GEVMODEL_PRIOR-NORMAL.stan
 src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL
