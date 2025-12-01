@@ -9,7 +9,8 @@ import datetime as dt
 
 import json
 from utils.url_token import encode_token
-from utils.paths import RESOURCES
+from utils.paths import RESOURCES, DATA
+from science.attribution import _datetime_to_doy
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
@@ -106,11 +107,25 @@ _continue_button = dcc.Link(
 )
     
 
-_temperature_readout = dmc.Stack(children=[
-    dmc.Text("Intensity of the selected event", **TOP_BAR_INPUTS_LABEL_PROPS),
-    dmc.Box(id='temp-readout-field', children=None,
-            fz=18, c='white', bd='solid white 1px')
-], gap=0)
+_temperature_readout = dmc.Group(children=[
+    dmc.Stack(children=[
+        dmc.Text("Intensity", **TOP_BAR_INPUTS_LABEL_PROPS),
+        dmc.Text(id='temp-readout-value', children=None, fz=24, c='white', w=800),
+    ], gap=4, style={'alignItems': 'left'}),
+
+    dmc.Stack(children=[
+        dmc.Text("Anomaly (1991-2020)", **TOP_BAR_INPUTS_LABEL_PROPS),
+        dmc.Group(children=[
+            dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon="mdi:minus", width=20), p=0),
+            dmc.Text(id='temp-readout-anomaly', children=None, fz=16, c='white')
+        ], gap=6, align='center')
+    ], gap=4),
+
+    dmc.Stack(children=[
+        dmc.Text("Climatology (10% / 50% / 90%)", **TOP_BAR_INPUTS_LABEL_PROPS),
+        dmc.Text(id='temp-readout-clim', children=None, fz=16, c='white')
+    ], gap=2)
+], gap=18, align='center', id='temperature-readout', justify='left')
 
 
 debug_style = {
@@ -120,6 +135,7 @@ debug_style = {
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
     dcc.Store(id='data:intensity', data=None),
+    dcc.Store(id='data:climatology', data=None),
     html.H3("Extreme event selection", id='settings-row-title'),
     dmc.Divider(variant='solid'),
     dmc.Grid(children=[
@@ -207,38 +223,97 @@ def calendar_error(dates: list):
 
 
 @callback(
-        Output('temp-readout-field', 'children'),
+        Output('temp-readout-value', 'children'),
+        Output('temp-readout-anomaly', 'children'),
+        Output('temp-readout-anomaly-icon', 'children'),
+        Output('temp-readout-clim', 'children'),
         Output('data:intensity', 'data'),
+        Output('data:climatology', 'data'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
         Input('input:date', 'value'),
         Input('input:date', 'error')
 )
 def update_temperature(grid_point: str, extreme_type: str, date: list,
-                        date_error) -> str:
-    if not None in date:
-        if not date_error:
-            if grid_point is not None:
-                lat, lon = json.loads(grid_point)
-                start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
-                                for _ in date]
-                cwd = os.path.basename(os.getcwd())
-                if cwd == 'src':
-                    path_fix = '../data/daily/'
-                elif cwd == 'app' or cwd == 'EET-app':
-                    path_fix = './data/daily/'
-                
-                To = xr.open_dataset(path_fix + f"era5_sfc_tas_1p5deg.nc")['tas'].\
-                    sel(
-                        time=slice(start, stop + dt.timedelta(days=1)),
-                        lat=lat, lon=lon % 360
-                    ).\
-                    mean('time').data
-                return f"{To-273.15:.1f}°C", f"{To:.2f}"
-            return "Select a grid point", None
-        return "Select a valid date range", None
+                        date_error):
+    """
+    Compute observed mean temperature over selected dates and compare to
+    the smoothed annual cycle climatology. Returns small UI pieces and stores.
+    """
+    if None in date:
+        # incomplete selection
+        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+
+    if date_error:
+        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+
+    if grid_point is None:
+        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+
+    # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
+    start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
+
+    lat, lon = json.loads(grid_point)
+
+    # Observed ERA5 daily file (intensity)
+    era5_path = DATA / 'daily' / 'era5_sfc_tas_1p5deg.nc'
+    ds_obs = xr.open_dataset(era5_path)
+    # select time slice: include stop day (xarray slice is inclusive for datetime)
+    To_da = ds_obs['tas'].sel(time=slice(start_dt, stop_dt + dt.timedelta(days=1)),
+                              lat=lat, lon=lon % 360)
+    # mean over time
+    To_val = float(To_da.mean('time').data)
+
+    # Annual cycle climatology file (smoothed daily quantiles)
+    cyc_path = DATA / 'annual_cycle' / 'ERA5_120x240_smoothed_daily_annual_cycle_1991-2020.nc'
+    ds_cyc = xr.open_dataset(cyc_path)
+
+    # Build list of day-of-year using the exact helper from attribution.py
+    n_days = (stop_dt.date() - start_dt.date()).days + 1
+    selected_dts = [start_dt + dt.timedelta(days=i) for i in range(n_days)]
+    doy_list = [_datetime_to_doy(d) for d in selected_dts]
+
+    # Select days and lat/lon from climatology and average over dayofyear
+    # ds_cyc['tas'] dims: (dayofyear, lat, lon, quantile)
+    cyc_sel = ds_cyc['tas'].sel(dayofyear=doy_list, lat=lat, lon=lon % 360)
+    cyc_mean = cyc_sel.mean('dayofyear')
+
+    # Extract quantiles (strings like '10%', '50%', '90%')
+    try:
+        q10 = float(cyc_mean.sel(quantile='10%').data)
+        median = float(cyc_mean.sel(quantile='50%').data)
+        q90 = float(cyc_mean.sel(quantile='90%').data)
+    except Exception:
+        # If selection failed, fallback to NaNs
+        q10 = median = q90 = float('nan')
+
+    # anomaly (K) -> same magnitude in °C
+    anomaly = To_val - median
+    anomaly_c = anomaly  # in °C-equivalent
+
+    # Decide icon and color qualitatively
+    if anomaly_c >= 0.5:
+        icon = DashIconify(icon="mdi:arrow-up-bold", width=20)
+        anom_text = f"+{anomaly_c:.1f}°C"
+    elif anomaly_c <= -0.5:
+        icon = DashIconify(icon="mdi:arrow-down-bold", width=20)
+        anom_text = f"{anomaly_c:.1f}°C"
     else:
-        return "Select a date range", None
+        icon = DashIconify(icon="mdi:minus", width=20)
+        anom_text = f"{anomaly_c:.1f}°C"
+
+    # prepare small climatology string
+    clim_text = f"{q10-273.15:.1f}°C / {median-273.15:.1f}°C / {q90-273.15:.1f}°C"
+
+    # display observed temp in °C
+    temp_text = f"{To_val-273.15:.1f}°C"
+
+    # store climatology dict (values in K)
+    clim_store = {'median': median, 'q10': q10, 'q90': q90}
+
+    return temp_text, anom_text, icon, clim_text, f"{To_val:.2f}", clim_store
+    # return temp_text, anom_text, icon, f"{To_val:.2f}", clim_store
+
 
 
 @callback(
