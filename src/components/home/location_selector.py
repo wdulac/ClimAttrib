@@ -1,3 +1,62 @@
+"""
+# Module overview
+
+This module provides the Leaflet-based location selector used on the home page.
+It exposes a small Dash fragment containing an interactive map that renders a
+vector grid (GeoJSON) of model grid cells, allows the user to zoom and select a
+cell, and stores the selected coordinates in a dcc.Store for other UI
+components to consume.
+
+Primary features
+- dl.Map configured with canvas renderer and custom max bounds / zoom limits.
+- A GeoJSON layer (`geojson`) that receives tiled vector data (via a clientside
+  fetch) and supports:
+    - dynamic styling to highlight the selected cell,
+    - client-side filtering to hide cells at low zoom levels,
+    - click handling to pick a grid cell.
+- A Store component (`input:selected-point`) that holds the JSON-serialized
+  [lat, lon] coordinates of the currently selected grid cell.
+- Small UI hint text (`zoom-to-select`) that is shown/hidden depending on zoom.
+
+Integration & assets
+- Client-side JS lives under assets/ and must provide the following functions:
+  - clientside.updateGridTiles(bounds, hideout) -> fetch and return GeoJSON tiles
+  - clientside.select_point(clickData, zoom, hideout) -> updated hideout + point
+  - clientside.update_zoom(zoom, hideout) -> updated hideout with zoom level
+  - A dashExtensions Namespace 'dashExtensions.geojson' must expose
+    `colorCell` and `zoomFilter` used by the GeoJSON component.
+- The helper JS `assets/js/leaflet_extras.js` is expected to contain the above
+  helpers and must be present for full UX.
+
+Callbacks (server-side)
+- zoom_to_select(zoom, is_hidden):
+    Toggle visibility of the "zoom to select" hint based on zoom level.
+- clear_point_data(zoom, clickData):
+    Clears previous clickData when zooming out to avoid reselecting cells.
+- Several clientside callbacks wire the map bounds/zoom/clicks to GeoJSON data
+  and to the stored selected point.
+
+Component ids (important)
+- 'map' (dl.Map)
+- 'geojson' (dl.GeoJSON)
+- 'marker' (dl.LayerGroup)
+- 'zoom-to-select' (html.Div)
+- 'input:selected-point' (dcc.Store)
+
+Notes & recommendations
+- The GeoJSON tiles fetched by the client are generally lightweight but the
+  tile service must be accessible from the browser. Keep heavy work off the
+  Dash server (use clientside JS).
+- Use the dcc.Store `input:selected-point` as canonical source of truth for
+  downstream callbacks; do not rely on GeoJSON.clickData directly.
+- Keep the JS helpers in assets/ under version control; changes to their API
+  must be reflected in this module and any other components that use them.
+
+Usage
+- Import and include `location_selector` in the app layout. Other components
+  (e.g. input_settings_top_bar) expect `input:selected-point` to exist.
+"""
+
 from dash import html, callback, Output, Input, State
 from dash import clientside_callback, ClientsideFunction
 from dash import dcc
