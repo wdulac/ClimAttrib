@@ -135,7 +135,6 @@ debug_style = {
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
     dcc.Store(id='data:intensity', data=None),
-    dcc.Store(id='data:climatology', data=None),
     html.H3("Extreme event selection", id='settings-row-title'),
     dmc.Divider(variant='solid'),
     dmc.Grid(children=[
@@ -228,7 +227,6 @@ def calendar_error(dates: list):
         Output('temp-readout-anomaly-icon', 'children'),
         Output('temp-readout-clim', 'children'),
         Output('data:intensity', 'data'),
-        Output('data:climatology', 'data'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
         Input('input:date', 'value'),
@@ -308,12 +306,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     # display observed temp in °C
     temp_text = f"{To_val-273.15:.1f}°C"
 
-    # store climatology dict (values in K)
-    clim_store = {'median': median, 'q10': q10, 'q90': q90}
-
-    return temp_text, anom_text, icon, clim_text, f"{To_val:.2f}", clim_store
-    # return temp_text, anom_text, icon, f"{To_val:.2f}", clim_store
-
+    return temp_text, anom_text, icon, clim_text, f"{To_val:.2f}"
 
 
 @callback(
