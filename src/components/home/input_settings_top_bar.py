@@ -26,6 +26,14 @@ COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
 with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
     COMPUTE_TOOLTIP_CONTENT = f.read()
 
+ANOMALY_HELP_MD_FILE = RESOURCES / 'anomaly_tooltip_content.md'
+with open(ANOMALY_HELP_MD_FILE, 'r') as f:
+    ANOMALY_TOOLTIP_CONTENT = f.read()
+
+CLIMATOLOGY_HELP_MD_FILE = RESOURCES / 'climatology_tooltip_content.md'
+with open(CLIMATOLOGY_HELP_MD_FILE, 'r') as f:
+    CLIMATOLOGY_TOOLTIP_CONTENT = f.read()
+
 
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Extreme type", **TOP_BAR_INPUTS_LABEL_PROPS),
@@ -109,24 +117,63 @@ _continue_button = dcc.Link(
 
 _temperature_readout = dmc.Group(
     children=[
+        # Main temperature intensity readout element
         dmc.Stack(children=[
             dmc.Text('Intensity', **TOP_BAR_INPUTS_LABEL_PROPS),
             dmc.Text(id='temp-readout-value', children=None, fz=18, c='white')
         ], gap='3px'),
+
         dmc.Divider(orientation='vertical', size='xs'),
+
+        # Anomaly element with dropdown hovercard
         dmc.Stack(children=[
-                    dmc.Stack(children=[
-                        dmc.Text('Climatology', **TOP_BAR_INPUTS_LABEL_PROPS),
-                        dmc.Text(id='temp-readout-clim', children=None, fz=16, c='white')
-                    ], gap='3px', style={'minHeight': 55.7}),
-                    dmc.Stack(children=[
-                        dmc.Text('Anomaly', **TOP_BAR_INPUTS_LABEL_PROPS),
-                        dmc.Group(children=[
-                            dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon='mdi:minus', width=20), p=0),
-                            dmc.Text(id='temp-readout-anomaly', children=None, fz=16, c='white')
-                        ], gap='xs', align='center', wrap="nowrap")
-                    ], gap='3px', style={'minHeight': 56.8})
-        ], gap='3px')
+            dmc.Group(children=[
+                dmc.Text('Anomaly', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz':16}),
+                dmc.HoverCard(
+                    withArrow=True,
+                    arrowSize=15,
+                    width=250,
+                    shadow='md',
+                    children=[
+                        dmc.HoverCardTarget(
+                            DashIconify(icon="material-symbols:help-outline", width=17,
+                            style={"position": "relative", "top": "4px"})
+                        ),
+                        dmc.HoverCardDropdown([
+                            dcc.Markdown(ANOMALY_TOOLTIP_CONTENT),
+                        ], className='tooltip-markdown')
+                    ]
+                )
+            ], gap='xs'),
+            dmc.Group(children=[
+                dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon='mdi:minus', width=20, style={"position": "relative", "top": "4px"}), p=0),
+                dmc.Text(id='temp-readout-anomaly', children=None, fz=14, c='white')
+            ], gap='xs', align='center', wrap="nowrap")
+        ], gap='3px', style={'minHeight': 56.8}),
+
+        # Climatology element with dropdown hovercard
+        dmc.Stack(children=[
+                    dmc.Group(children=[
+                        dmc.Text('Climatology', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz': 16}),
+                        dmc.HoverCard(
+                            withArrow=True,
+                            arrowSize=15,
+                            width=250,
+                            shadow='md',
+                            children=[
+                                dmc.HoverCardTarget(
+                                    DashIconify(icon="material-symbols:help-outline", width=17,
+                                    style={"position": "relative", "top": "4px"})
+                                ),
+                                dmc.HoverCardDropdown([
+                                    dcc.Markdown(CLIMATOLOGY_TOOLTIP_CONTENT)
+                                ], className='tooltip-markdown')
+                            ]
+                        )
+                    ],gap='xs'),
+                    dmc.Text(id='temp-readout-clim', children=None, fz=14, c='white')
+                ], gap='3px', style={'minHeight': 55.7}
+        )
     ],
     justify='left',
     align='center',
