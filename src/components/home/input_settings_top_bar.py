@@ -22,6 +22,7 @@ LINK_DEFAULT_HREF = '/'
 
 ALLOWED_DURATIONS = [1, 2, 3, 4] # In days
 
+## Reading textual resource files
 COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
 with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
     COMPUTE_TOOLTIP_CONTENT = f.read()
@@ -34,7 +35,37 @@ CLIMATOLOGY_HELP_MD_FILE = RESOURCES / 'climatology_tooltip_content.md'
 with open(CLIMATOLOGY_HELP_MD_FILE, 'r') as f:
     CLIMATOLOGY_TOOLTIP_CONTENT = f.read()
 
+## Icons
+MINUS_ICON = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
+ARROW_UP_ICON = DashIconify(icon="mdi:arrow-up-bold", width=20, style={"position": "relative", "top": "4px"})
+ARROW_DOWN_ICON = DashIconify(icon="mdi:arrow-down-bold", width=20, style={"position": "relative", "top": "4px"})
 
+## Helper functions
+
+def _help_tooltip_hovercard(CONTENT: str) -> dmc.HoverCard:
+    """
+    Return a preconfigured dmc.HoverCard help tooltip that renders CONTENT as Markdown.
+    """
+
+    return dmc.HoverCard(
+        withArrow=True,
+        arrowSize=15,
+        width=250,
+        shadow='md',
+        children=[
+            dmc.HoverCardTarget(
+                DashIconify(icon="material-symbols:help-outline", width=17,
+                style={"position": "relative", "top": "4px"})
+            ),
+            dmc.HoverCardDropdown([
+                dcc.Markdown(CONTENT),
+            ], className='tooltip-markdown')
+        ]
+    )
+
+## Building individual components
+
+# Hot / cold selector
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Extreme type", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
@@ -50,25 +81,11 @@ _extreme_type_segmented = dmc.Stack(children=[
     className='selector-with-label'
 )
 
-
+# Annual max / calendar selector
 _computation_method_segmented = dmc.Stack(children=[
     dmc.Group(children=[
         dmc.Text("Restrict to same dates", **TOP_BAR_INPUTS_LABEL_PROPS),
-        dmc.HoverCard(
-            withArrow=True,
-            arrowSize=15,
-            width=250,
-            shadow='md',
-            children=[
-                dmc.HoverCardTarget(
-                    DashIconify(icon="material-symbols:help-outline", width=17,
-                    style={"position": "relative", "top": "4px"})
-                ),
-                dmc.HoverCardDropdown([
-                    dcc.Markdown(COMPUTE_TOOLTIP_CONTENT),
-                ], className='tooltip-markdown')
-            ]
-        )
+        _help_tooltip_hovercard(COMPUTE_TOOLTIP_CONTENT)
     ], gap='sm'),
     dmc.SegmentedControl(
         id='input:computation-method',
@@ -83,7 +100,7 @@ _computation_method_segmented = dmc.Stack(children=[
     className='selector-with-label'
 )
 
-
+# Date picker
 _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
     label="Event date(s)",
@@ -102,7 +119,7 @@ _date_selector_calendar = dmc.DatePickerInput(
     className='datepicker-container'
 )
 
-
+# Continue button
 _continue_button = dcc.Link(
     children=dmc.Button(
         'Continue',
@@ -114,7 +131,7 @@ _continue_button = dcc.Link(
     id='dynamic-link'
 )
     
-
+# Temperature readout field
 _temperature_readout = dmc.Group(
     children=[
         # Main temperature intensity readout element
@@ -129,24 +146,10 @@ _temperature_readout = dmc.Group(
         dmc.Stack(children=[
             dmc.Group(children=[
                 dmc.Text('Anomaly', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz':16}),
-                dmc.HoverCard(
-                    withArrow=True,
-                    arrowSize=15,
-                    width=250,
-                    shadow='md',
-                    children=[
-                        dmc.HoverCardTarget(
-                            DashIconify(icon="material-symbols:help-outline", width=17,
-                            style={"position": "relative", "top": "4px"})
-                        ),
-                        dmc.HoverCardDropdown([
-                            dcc.Markdown(ANOMALY_TOOLTIP_CONTENT),
-                        ], className='tooltip-markdown')
-                    ]
-                )
+                _help_tooltip_hovercard(ANOMALY_TOOLTIP_CONTENT)
             ], gap='xs'),
             dmc.Group(children=[
-                dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon='mdi:minus', width=20, style={"position": "relative", "top": "4px"}), p=0),
+                dmc.Box(id='temp-readout-anomaly-icon', children=MINUS_ICON, p=0),
                 dmc.Text(id='temp-readout-anomaly', children=None, fz=14, c='white')
             ], gap='xs', align='center', wrap="nowrap")
         ], gap='0px', style={'minHeight': 56.8}),
@@ -155,21 +158,7 @@ _temperature_readout = dmc.Group(
         dmc.Stack(children=[
                     dmc.Group(children=[
                         dmc.Text('Climatology', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz': 16}),
-                        dmc.HoverCard(
-                            withArrow=True,
-                            arrowSize=15,
-                            width=250,
-                            shadow='md',
-                            children=[
-                                dmc.HoverCardTarget(
-                                    DashIconify(icon="material-symbols:help-outline", width=17,
-                                    style={"position": "relative", "top": "4px"})
-                                ),
-                                dmc.HoverCardDropdown([
-                                    dcc.Markdown(CLIMATOLOGY_TOOLTIP_CONTENT)
-                                ], className='tooltip-markdown')
-                            ]
-                        )
+                        _help_tooltip_hovercard(CLIMATOLOGY_TOOLTIP_CONTENT)
                     ],gap='xs'),
                     dmc.Text(id='temp-readout-clim', children=None, fz=14, c='white')
                 ], gap='3px', style={'minHeight': 55.7}
@@ -295,13 +284,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     """
     if None in date:
         # incomplete selection
-        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
+        return ("Select a date range", "", MINUS_ICON, "", None)
 
     if date_error:
-        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
+        return ("Select a valid date range", "", MINUS_ICON, "", None)
 
     if grid_point is None:
-        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
+        return ("Select a grid point", "", MINUS_ICON, "", None)
 
     # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
     start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
@@ -346,13 +335,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
 
     # Decide icon and color qualitatively
     if anomaly_c >= 0.5:
-        icon = DashIconify(icon="mdi:arrow-up-bold", width=20, style={"position": "relative", "top": "4px"})
+        icon = ARROW_UP_ICON
         anom_text = f"+{anomaly_c:.1f}°C"
     elif anomaly_c <= -0.5:
-        icon = DashIconify(icon="mdi:arrow-down-bold", width=20, style={"position": "relative", "top": "4px"})
+        icon = ARROW_DOWN_ICON
         anom_text = f"{anomaly_c:.1f}°C"
     else:
-        icon = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
+        icon = MINUS_ICON
         anom_text = f"{anomaly_c:.1f}°C"
 
     # prepare small climatology string
