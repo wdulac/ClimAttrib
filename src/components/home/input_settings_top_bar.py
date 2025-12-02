@@ -294,13 +294,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     """
     if None in date:
         # incomplete selection
-        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20), "", None)
+        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
 
     if date_error:
-        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20), "", None)
+        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
 
     if grid_point is None:
-        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20), "", None)
+        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"}), "", None)
 
     # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
     start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
@@ -345,13 +345,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
 
     # Decide icon and color qualitatively
     if anomaly_c >= 0.5:
-        icon = DashIconify(icon="mdi:arrow-up-bold", width=20)
+        icon = DashIconify(icon="mdi:arrow-up-bold", width=20, style={"position": "relative", "top": "4px"})
         anom_text = f"+{anomaly_c:.1f}°C"
     elif anomaly_c <= -0.5:
-        icon = DashIconify(icon="mdi:arrow-down-bold", width=20)
+        icon = DashIconify(icon="mdi:arrow-down-bold", width=20, style={"position": "relative", "top": "4px"})
         anom_text = f"{anomaly_c:.1f}°C"
     else:
-        icon = DashIconify(icon="mdi:minus", width=20)
+        icon = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
         anom_text = f"{anomaly_c:.1f}°C"
 
     # prepare small climatology string
