@@ -107,26 +107,34 @@ _continue_button = dcc.Link(
 )
     
 
-_temperature_readout = dmc.Group(children=[
-    dmc.Stack(children=[
-        dmc.Text("Intensity", **TOP_BAR_INPUTS_LABEL_PROPS),
-        dmc.Text(id='temp-readout-value', children=None, fz=24, c='white', w=800),
-    ], gap=4, style={'alignItems': 'left'}),
-
-    dmc.Stack(children=[
-        dmc.Text("Anomaly (1991-2020)", **TOP_BAR_INPUTS_LABEL_PROPS),
-        dmc.Group(children=[
-            dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon="mdi:minus", width=20), p=0),
-            dmc.Text(id='temp-readout-anomaly', children=None, fz=16, c='white')
-        ], gap=6, align='center')
-    ], gap=4),
-
-    dmc.Stack(children=[
-        dmc.Text("Climatology (10% / 50% / 90%)", **TOP_BAR_INPUTS_LABEL_PROPS),
-        dmc.Text(id='temp-readout-clim', children=None, fz=16, c='white')
-    ], gap=2)
-], gap=18, align='center', id='temperature-readout', justify='left')
-
+_temperature_readout = dmc.Group(
+    children=[
+        dmc.Stack(children=[
+            dmc.Text('Intensity', **TOP_BAR_INPUTS_LABEL_PROPS),
+            dmc.Text(id='temp-readout-value', children='Select a grid point', fz=18, c='white')
+        ], gap='3px'),
+        dmc.Divider(orientation='vertical', size='xs'),
+        dmc.Stack(children=[
+                    dmc.Stack(children=[
+                        dmc.Text('Climatology', **TOP_BAR_INPUTS_LABEL_PROPS),
+                        dmc.Text(id='temp-readout-clim', children=None, fz=16, c='white')
+                    ], gap='3px', style={'minHeight': 55.7}),
+                    dmc.Stack(children=[
+                        dmc.Text('Anomaly', **TOP_BAR_INPUTS_LABEL_PROPS),
+                        dmc.Group(children=[
+                            dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon='mdi:minus', width=20), p=0),
+                            dmc.Text(id='temp-readout-anomaly', children=None, fz=16, c='white')
+                        ], gap='xs', align='center', wrap="nowrap")
+                    ], gap='3px', style={'minHeight': 56.8})
+        ], gap='3px')
+    ],
+    justify='left',
+    align='center',
+    gap='md',
+    grow=False,
+    wrap="nowrap",
+    style={'display': 'inline-flex', 'width': 'auto', 'minWidth': 0, 'minHeight':115.5}
+)
 
 debug_style = {
     "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
