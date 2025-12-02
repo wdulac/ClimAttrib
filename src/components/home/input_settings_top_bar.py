@@ -1,3 +1,130 @@
+"""
+Module overview
+---------------
+This module implements the top settings bar used to select extreme-event inputs
+for the attribution application. It builds a small Dash/Dash-Mantine UI
+containing controls for event type, date selection, computation method, a
+temperature readout, and a primary "Continue" action. Several callbacks keep
+the UI consistent, validate user inputs, compute a brief temperature summary
+from on-disk NetCDF resources, and generate a signed navigation token.
+Primary features
+----------------
+- UI components:
+    - Segmented control to choose extreme type ("hot" / "cold").
+    - Segmented control to choose computation method ("Restrict to same dates":
+        calendar or yearmax).
+    - Date range picker (dmc.DatePickerInput) with validation/enforced allowed
+        durations and a JS hook to dynamically disable invalid ranges.
+    - Temperature readout group showing observed intensity, anomaly,
+        anomaly icon, and climatology quantiles.
+    - Continue button wrapped in a dcc.Link whose href is updated by inputs.
+    - dcc.Store component 'data:intensity' used to persist computed intensity.
+- Static resources loaded at module import:
+    - Several Markdown files (help/tooltips) read from RESOURCES.
+    - Icons configured via DashIconify and local constants for arrow/minus icons.
+- Constants:
+    - ALLOWED_DURATIONS: list of valid time-window lengths in days (default:
+        [1, 2, 3, 4]).
+    - LINK_DEFAULT_HREF: fallback URL used when inputs are incomplete.
+Callbacks (behavior summary)
+---------------------------
+1) update_disabled_dates(date_range)
+     - Output: 'input:date'.disabledDates
+     - Purpose: When the user selects a date range, returns a structure with a
+         "function" key ("disableInvalidRange") and options describing allowed
+         durations and the current start/end. This leverages DMC's feature to
+         disable invalid end/start dates on the client side.
+     - prevent_initial_call=True.
+2) calendar_error(dates: list) -> str
+     - Output: 'input:date'.error
+     - Purpose: Validate date selections and return human-friendly error
+         messages. Handles partial selections (e.g. [start, None]) and empty-range
+         edge cases. Enforces ALLOWED_DURATIONS and returns the appropriate error
+         message or empty string on success.
+3) update_temperature(grid_point, extreme_type, date, date_error)
+     - Outputs:
+         - 'temp-readout-value'.children (observed mean temperature string in °C)
+         - 'temp-readout-anomaly'.children (anomaly string in °C)
+         - 'temp-readout-anomaly-icon'.children (icon: up / down / minus)
+         - 'temp-readout-clim'.children (climatology quantiles string in °C)
+         - 'data:intensity'.data (numeric intensity stored as serialized string)
+     - Purpose: Given a selected grid point and validated date range, opens two
+         NetCDF datasets (observations and smoothed daily climatology) using
+         xarray, computes the mean observed temperature over the selected dates,
+         looks up the corresponding climatological quantiles by day-of-year,
+         computes the anomaly (observed - median), and returns formatted UI
+         strings and a stored intensity value.
+     - Units and thresholds:
+         - Input NetCDF values are in Kelvin; displayed values are converted to
+             °C by subtracting 273.15.
+         - Anomaly thresholds for icons: >= +0.5 (up arrow), <= -0.5 (down arrow),
+             otherwise neutral (minus icon).
+     - Notes:
+         - This callback opens NetCDF files on disk (DATA/daily/era5_sfc_tas_1p5deg.nc
+             and DATA/annual_cycle/..._smoothed_daily_annual_cycle_1991-2020.nc),
+             so it may be I/O and memory intensive. Proper caching or lazy-loading
+             strategies can be considered for production deployment.
+         - The helper function _datetime_to_doy is used to map dates to day-of-year
+             indices expected by the climatology dataset.
+4) notify_user(n_clicks, selected_point_data)
+     - Output: 'notification-container'.sendNotifications
+     - Purpose: When the Continue button is clicked without a selected grid
+         point, emit a notification instructing the user to choose a point.
+     - If a point is present, the callback raises PreventUpdate (no notification).
+5) update_link(grid_point, extreme_type, computation_method, date, date_error, intensity)
+     - Output: 'dynamic-link'.href
+     - Purpose: Compose a signed URL token (via utils.url_token.encode_token)
+         encoding the input settings (extreme type, computation method, date range,
+         lat/lon, intensity) and set the Continue button's href to navigate to the
+         analysis page (/analysis?p=<token>).
+     - Validation: Returns the default fallback href if the date is invalid, if
+         the grid point is missing, or other required inputs are not ready.
+Important component ids and stores
+---------------------------------
+- 'input:extreme-type' (SegmentedControl)
+- 'input:computation-method' (SegmentedControl)
+- 'input:date' (dmc.DatePickerInput)
+- 'input:selected-point' (expected elsewhere in the app; a JSON-serialized
+    [lat, lon] pair)
+- 'temp-readout-value', 'temp-readout-anomaly', 'temp-readout-anomaly-icon',
+    'temp-readout-clim' (UI elements in the temperature readout group)
+- 'data:intensity' (dcc.Store used to persist computed intensity)
+- 'trigger:continue-btn' (Button nested inside 'dynamic-link')
+- 'dynamic-link' (Link wrapping the Continue button)
+- 'notification-container' (component that accepts sendNotifications payloads)
+Dependencies and side effects
+----------------------------
+- Relies on dash, dash_mantine_components, dash_iconify, dcc, html, xarray,
+    and local utilities utils.url_token and utils.paths.
+- Reads textual tooltip Markdown files from RESOURCES at import time.
+- Reads NetCDF datasets from DATA within the update_temperature callback.
+- Uses a small JS-side DatePicker helper ("disableInvalidRange") through DMC's
+    disabledDates mechanism; that client-side function must be available for
+    full UX enforcement of allowed durations.
+Usage
+-----
+Import the module and include the exported layout fragment (input_settings_top_bar)
+into the Dash application layout. The callbacks assume certain other app-level
+components exist (in particular 'input:selected-point' and 'notification-container').
+Ensure the DATA and RESOURCES paths resolve to the expected NetCDF and
+Markdown files, and that encode_token is available to sign navigation tokens.
+Error handling
+--------------
+- Callbacks return user-visible validation strings where appropriate and use
+    PreventUpdate to avoid unnecessary updates.
+- update_temperature wraps climatology quantile extraction in a try/except
+    and falls back to NaNs if quantiles cannot be read for the selected
+    coordinates/days.
+Extensibility notes
+-------------------
+- ALLOWED_DURATIONS is a module-level constant and can be adjusted without
+    changing callback logic; ensure client-side "disableInvalidRange" logic is
+    kept in sync with this list.
+- For production, consider caching opened datasets or using lazy/delayed
+    loading to reduce per-callback I/O. Also validate and securely handle the
+    encode_token inputs if exposed externally.
+"""
+
 from dash import html, callback, Output, Input, State, dcc
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
@@ -9,7 +136,8 @@ import datetime as dt
 
 import json
 from utils.url_token import encode_token
-from utils.paths import RESOURCES
+from utils.paths import RESOURCES, DATA
+from science.attribution import _datetime_to_doy
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
@@ -21,11 +149,50 @@ LINK_DEFAULT_HREF = '/'
 
 ALLOWED_DURATIONS = [1, 2, 3, 4] # In days
 
+## Reading textual resource files
 COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
 with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
     COMPUTE_TOOLTIP_CONTENT = f.read()
 
+ANOMALY_HELP_MD_FILE = RESOURCES / 'anomaly_tooltip_content.md'
+with open(ANOMALY_HELP_MD_FILE, 'r') as f:
+    ANOMALY_TOOLTIP_CONTENT = f.read()
 
+CLIMATOLOGY_HELP_MD_FILE = RESOURCES / 'climatology_tooltip_content.md'
+with open(CLIMATOLOGY_HELP_MD_FILE, 'r') as f:
+    CLIMATOLOGY_TOOLTIP_CONTENT = f.read()
+
+## Icons
+MINUS_ICON = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
+ARROW_UP_ICON = DashIconify(icon="mdi:arrow-up-bold", width=20, style={"position": "relative", "top": "4px"})
+ARROW_DOWN_ICON = DashIconify(icon="mdi:arrow-down-bold", width=20, style={"position": "relative", "top": "4px"})
+
+## Helper functions
+
+def _help_tooltip_hovercard(CONTENT: str) -> dmc.HoverCard:
+    """
+    Return a preconfigured dmc.HoverCard help tooltip that renders CONTENT as Markdown.
+    """
+
+    return dmc.HoverCard(
+        withArrow=True,
+        arrowSize=15,
+        width=250,
+        shadow='md',
+        children=[
+            dmc.HoverCardTarget(
+                DashIconify(icon="material-symbols:help-outline", width=17,
+                style={"position": "relative", "top": "4px"})
+            ),
+            dmc.HoverCardDropdown([
+                dcc.Markdown(CONTENT),
+            ], className='tooltip-markdown')
+        ]
+    )
+
+## Building individual components
+
+# Hot / cold selector
 _extreme_type_segmented = dmc.Stack(children=[
     dmc.Text("Extreme type", **TOP_BAR_INPUTS_LABEL_PROPS),
     dmc.SegmentedControl(
@@ -41,25 +208,11 @@ _extreme_type_segmented = dmc.Stack(children=[
     className='selector-with-label'
 )
 
-
+# Annual max / calendar selector
 _computation_method_segmented = dmc.Stack(children=[
     dmc.Group(children=[
         dmc.Text("Restrict to same dates", **TOP_BAR_INPUTS_LABEL_PROPS),
-        dmc.HoverCard(
-            withArrow=True,
-            arrowSize=15,
-            width=250,
-            shadow='md',
-            children=[
-                dmc.HoverCardTarget(
-                    DashIconify(icon="material-symbols:help-outline", width=17,
-                    style={"position": "relative", "top": "4px"})
-                ),
-                dmc.HoverCardDropdown([
-                    dcc.Markdown(COMPUTE_TOOLTIP_CONTENT),
-                ], className='tooltip-markdown')
-            ]
-        )
+        _help_tooltip_hovercard(COMPUTE_TOOLTIP_CONTENT)
     ], gap='sm'),
     dmc.SegmentedControl(
         id='input:computation-method',
@@ -74,7 +227,7 @@ _computation_method_segmented = dmc.Stack(children=[
     className='selector-with-label'
 )
 
-
+# Date picker
 _date_selector_calendar = dmc.DatePickerInput(
     id='input:date',
     label="Event date(s)",
@@ -93,7 +246,7 @@ _date_selector_calendar = dmc.DatePickerInput(
     className='datepicker-container'
 )
 
-
+# Continue button
 _continue_button = dcc.Link(
     children=dmc.Button(
         'Continue',
@@ -105,13 +258,46 @@ _continue_button = dcc.Link(
     id='dynamic-link'
 )
     
+# Temperature readout field
+_temperature_readout = dmc.Group(
+    children=[
+        # Main temperature intensity readout element
+        dmc.Stack(children=[
+            dmc.Text('Intensity', **TOP_BAR_INPUTS_LABEL_PROPS),
+            dmc.Text(id='temp-readout-value', children=None, fz=18, c='white')
+        ], gap='3px'),
 
-_temperature_readout = dmc.Stack(children=[
-    dmc.Text("Intensity of the selected event", **TOP_BAR_INPUTS_LABEL_PROPS),
-    dmc.Box(id='temp-readout-field', children=None,
-            fz=18, c='white', bd='solid white 1px')
-], gap=0)
+        dmc.Divider(orientation='vertical', size='xs'),
 
+        # Anomaly element with dropdown hovercard
+        dmc.Stack(children=[
+            dmc.Group(children=[
+                dmc.Text('Anomaly', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz':16}),
+                _help_tooltip_hovercard(ANOMALY_TOOLTIP_CONTENT)
+            ], gap='xs'),
+            dmc.Group(children=[
+                dmc.Box(id='temp-readout-anomaly-icon', children=MINUS_ICON, p=0),
+                dmc.Text(id='temp-readout-anomaly', children=None, fz=14, c='white')
+            ], gap='xs', align='center', wrap="nowrap")
+        ], gap='0px', style={'minHeight': 56.8}),
+
+        # Climatology element with dropdown hovercard
+        dmc.Stack(children=[
+                    dmc.Group(children=[
+                        dmc.Text('Climatology', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz': 16}),
+                        _help_tooltip_hovercard(CLIMATOLOGY_TOOLTIP_CONTENT)
+                    ],gap='xs'),
+                    dmc.Text(id='temp-readout-clim', children=None, fz=14, c='white')
+                ], gap='3px', style={'minHeight': 55.7}
+        )
+    ],
+    justify='center',
+    align='center',
+    gap='md',
+    grow=False,
+    wrap="nowrap",
+    style={'minWidth': '407px'}
+)
 
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
@@ -203,7 +389,10 @@ def calendar_error(dates: list):
 
 
 @callback(
-        Output('temp-readout-field', 'children'),
+        Output('temp-readout-value', 'children'),
+        Output('temp-readout-anomaly', 'children'),
+        Output('temp-readout-anomaly-icon', 'children'),
+        Output('temp-readout-clim', 'children'),
         Output('data:intensity', 'data'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
@@ -211,30 +400,80 @@ def calendar_error(dates: list):
         Input('input:date', 'error')
 )
 def update_temperature(grid_point: str, extreme_type: str, date: list,
-                        date_error) -> str:
-    if not None in date:
-        if not date_error:
-            if grid_point is not None:
-                lat, lon = json.loads(grid_point)
-                start, stop = [dt.datetime.strptime(_, '%Y-%m-%d').date()
-                                for _ in date]
-                cwd = os.path.basename(os.getcwd())
-                if cwd == 'src':
-                    path_fix = '../data/daily/'
-                elif cwd == 'app' or cwd == 'EET-app':
-                    path_fix = './data/daily/'
-                
-                To = xr.open_dataset(path_fix + f"era5_sfc_tas_1p5deg.nc")['tas'].\
-                    sel(
-                        time=slice(start, stop + dt.timedelta(days=1)),
-                        lat=lat, lon=lon % 360
-                    ).\
-                    mean('time').data
-                return f"{To-273.15:.1f}°C", f"{To:.2f}"
-            return "Select a grid point", None
-        return "Select a valid date range", None
+                        date_error):
+    """
+    Compute observed mean temperature over selected dates and compare to
+    the smoothed annual cycle climatology. Returns small UI pieces and stores.
+    """
+    if None in date:
+        # incomplete selection
+        return ("Select a date range", "", MINUS_ICON, "", None)
+
+    if date_error:
+        return ("Select a valid date range", "", MINUS_ICON, "", None)
+
+    if grid_point is None:
+        return ("Select a grid point", "", MINUS_ICON, "", None)
+
+    # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
+    start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
+
+    lat, lon = json.loads(grid_point)
+
+    # Observed ERA5 daily file (intensity)
+    era5_path = DATA / 'daily' / 'era5_sfc_tas_1p5deg.nc'
+    ds_obs = xr.open_dataset(era5_path)
+    # select time slice: include stop day (xarray slice is inclusive for datetime)
+    To_da = ds_obs['tas'].sel(time=slice(start_dt, stop_dt + dt.timedelta(days=1)),
+                              lat=lat, lon=lon % 360)
+    # mean over time
+    To_val = float(To_da.mean('time').data)
+
+    # Annual cycle climatology file (smoothed daily quantiles)
+    cyc_path = DATA / 'annual_cycle' / 'ERA5_120x240_smoothed_daily_annual_cycle_1991-2020.nc'
+    ds_cyc = xr.open_dataset(cyc_path)
+
+    # Build list of day-of-year using the exact helper from attribution.py
+    n_days = (stop_dt.date() - start_dt.date()).days + 1
+    selected_dts = [start_dt + dt.timedelta(days=i) for i in range(n_days)]
+    doy_list = [_datetime_to_doy(d) for d in selected_dts]
+
+    # Select days and lat/lon from climatology and average over dayofyear
+    # ds_cyc['tas'] dims: (dayofyear, lat, lon, quantile)
+    cyc_sel = ds_cyc['tas'].sel(dayofyear=doy_list, lat=lat, lon=lon % 360)
+    cyc_mean = cyc_sel.mean('dayofyear')
+
+    # Extract quantiles (strings like '10%', '50%', '90%')
+    try:
+        q10 = float(cyc_mean.sel(quantile='10%').data)
+        median = float(cyc_mean.sel(quantile='50%').data)
+        q90 = float(cyc_mean.sel(quantile='90%').data)
+    except Exception:
+        # If selection failed, fallback to NaNs
+        q10 = median = q90 = float('nan')
+
+    # anomaly (K) -> same magnitude in °C
+    anomaly = To_val - median
+    anomaly_c = anomaly  # in °C-equivalent
+
+    # Decide icon and color qualitatively
+    if anomaly_c >= 0.5:
+        icon = ARROW_UP_ICON
+        anom_text = f"+{anomaly_c:.1f}°C"
+    elif anomaly_c <= -0.5:
+        icon = ARROW_DOWN_ICON
+        anom_text = f"{anomaly_c:.1f}°C"
     else:
-        return "Select a date range", None
+        icon = MINUS_ICON
+        anom_text = f"{anomaly_c:.1f}°C"
+
+    # prepare small climatology string
+    clim_text = f"{q10-273.15:.1f}°C / {median-273.15:.1f}°C / {q90-273.15:.1f}°C"
+
+    # display observed temp in °C
+    temp_text = f"{To_val-273.15:.1f}°C"
+
+    return temp_text, anom_text, icon, clim_text, f"{To_val:.2f}"
 
 
 @callback(

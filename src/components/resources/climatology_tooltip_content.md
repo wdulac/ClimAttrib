@@ -1,0 +1,1 @@
+10%, 50% (median) and 90% percentiles respectively of the 1991-2020 daily temperature timeseries. 

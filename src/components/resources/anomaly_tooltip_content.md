@@ -1,0 +1,1 @@
+Difference between the *Intensity* and the median of the reference climatology (1991-2020).
