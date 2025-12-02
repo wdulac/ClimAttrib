@@ -130,7 +130,6 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
-import os
 import xarray as xr
 import datetime as dt
 
