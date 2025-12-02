@@ -149,7 +149,7 @@ _temperature_readout = dmc.Group(
                 dmc.Box(id='temp-readout-anomaly-icon', children=DashIconify(icon='mdi:minus', width=20, style={"position": "relative", "top": "4px"}), p=0),
                 dmc.Text(id='temp-readout-anomaly', children=None, fz=14, c='white')
             ], gap='xs', align='center', wrap="nowrap")
-        ], gap='3px', style={'minHeight': 56.8}),
+        ], gap='0px', style={'minHeight': 56.8}),
 
         # Climatology element with dropdown hovercard
         dmc.Stack(children=[
@@ -175,11 +175,12 @@ _temperature_readout = dmc.Group(
                 ], gap='3px', style={'minHeight': 55.7}
         )
     ],
-    justify='left',
+    justify='center',
     align='center',
     gap='md',
     grow=False,
     wrap="nowrap",
+    style={'minWidth': '407px'}
 )
 
 debug_style = {
