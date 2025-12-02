@@ -111,7 +111,7 @@ _temperature_readout = dmc.Group(
     children=[
         dmc.Stack(children=[
             dmc.Text('Intensity', **TOP_BAR_INPUTS_LABEL_PROPS),
-            dmc.Text(id='temp-readout-value', children='Select a grid point', fz=18, c='white')
+            dmc.Text(id='temp-readout-value', children=None, fz=18, c='white')
         ], gap='3px'),
         dmc.Divider(orientation='vertical', size='xs'),
         dmc.Stack(children=[
@@ -133,7 +133,6 @@ _temperature_readout = dmc.Group(
     gap='md',
     grow=False,
     wrap="nowrap",
-    style={'display': 'inline-flex', 'width': 'auto', 'minWidth': 0, 'minHeight':115.5}
 )
 
 debug_style = {
@@ -248,13 +247,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     """
     if None in date:
         # incomplete selection
-        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+        return ("Select a date range", "", DashIconify(icon="mdi:minus", width=20), "", None)
 
     if date_error:
-        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+        return ("Select a valid date range", "", DashIconify(icon="mdi:minus", width=20), "", None)
 
     if grid_point is None:
-        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20), "", None, None)
+        return ("Select a grid point", "", DashIconify(icon="mdi:minus", width=20), "", None)
 
     # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
     start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
