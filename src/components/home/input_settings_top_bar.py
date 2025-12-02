@@ -113,10 +113,6 @@ _temperature_readout = dmc.Stack(children=[
 ], gap=0)
 
 
-debug_style = {
-    "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
-}
-
 # Laying out all elements
 input_settings_top_bar = html.Div(children=[
     dcc.Store(id='data:intensity', data=None),
