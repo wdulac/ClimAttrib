@@ -296,7 +296,7 @@ _temperature_readout = dmc.Group(
     gap='md',
     grow=False,
     wrap="nowrap",
-    style={'minWidth': '407px'}
+    style={'minWidth': '414px'}
 )
 
 # Laying out all elements
