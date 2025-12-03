@@ -279,31 +279,30 @@ _temperature_readout = dmc.Group(
         # Anomaly element with dropdown hovercard
         dmc.Stack(children=[
             dmc.Group(children=[
-                dmc.Text('Anomaly', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz':16}),
+                dmc.Text('Anomaly', **TOP_BAR_INPUTS_LABEL_PROPS),
                 _help_tooltip_hovercard(ANOMALY_TOOLTIP_CONTENT)
             ], gap='xs'),
             dmc.Group(children=[
                 dmc.Box(id='temp-readout-anomaly-icon', children=MINUS_ICON, p=0),
-                dmc.Text(id='temp-readout-anomaly', children=None, fz=14, c='white')
+                dmc.Text(id='temp-readout-anomaly', children=None, fz=18, c='white')
             ], gap='xs', align='center', wrap="nowrap")
-        ], gap='0px', style={'minHeight': 56.8}),
+        ], gap='3px', style={'minHeight': 56.8}),
 
         # Climatology element with dropdown hovercard
         dmc.Stack(children=[
-                    dmc.Group(children=[
-                        dmc.Text('Climatology', **{**TOP_BAR_INPUTS_LABEL_PROPS, 'fz': 16}),
-                        _help_tooltip_hovercard(CLIMATOLOGY_TOOLTIP_CONTENT)
-                    ],gap='xs'),
-                    dmc.Text(id='temp-readout-clim', children=None, fz=14, c='white')
-                ], gap='3px', style={'minHeight': 55.7}
-        )
+            dmc.Group(children=[
+                dmc.Text('Climatology', **TOP_BAR_INPUTS_LABEL_PROPS),
+                _help_tooltip_hovercard(CLIMATOLOGY_TOOLTIP_CONTENT)
+            ],gap='xs'),
+            dmc.Text(id='temp-readout-clim', children=None, fz=18, c='white')
+        ], gap='3px', style={'minHeight': 55.7})
     ],
     justify='center',
     align='center',
     gap='md',
     grow=False,
     wrap="nowrap",
-    style={'minWidth': '414px'}
+    style={'minWidth': '433px'}
 )
 
 # Laying out all elements
