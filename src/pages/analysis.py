@@ -63,13 +63,19 @@ def layout(p=None):
     if cache_exists(cache_key):
         # Retrieve cached attribution result and extend layout with the results
         cached_result = get_cache(cache_key)
-        
-        layout.children.extend([
-            dcc.Store(data=False, id='is-loading'),
-            html.Div(children=carousel(cached_result, cache_key),
-                     id='analysis-content',
-                     className='carousel-container')
-        ])
+
+        if cached_result['status'] == 'ok':
+            layout.children.extend([
+                dcc.Store(data=False, id='is-loading'),
+                html.Div(children=carousel(cached_result['result'], cache_key),
+                         id='analysis-content',
+                         className='carousel-container')
+            ])
+        elif cached_result['status'] == 'timeout':
+            layout.children.extend([
+                dcc.Store(data=False, id='is-loading'),
+                html.Div("An error occured. Please try reloading the page in a few seconds.")
+            ])
 
     else:
         ## Run async attribution calculation and set loading screen with 1s checks
