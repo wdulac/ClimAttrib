@@ -252,7 +252,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     samples = np.arange(N_SAMPLES_COV)
 
     # Matrice de projection pour les observations
-    P = prior['smoother'].obs_projection(mix_periods=METHOD_CONSTRAINT, time={'GMST':prior['time']})
+    P = prior['smoother'].obs_projection(mix_periods=METHOD_CONSTRAINT, time={'GMST':Yo.time.values})
     vP = np.zeros((P.shape[0], prior['vsize']))
     P = np.hstack((P, vP))
 
