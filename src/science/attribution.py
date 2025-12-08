@@ -238,6 +238,17 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
                    event['extreme_type'], event['method'],
                    event['start_date'], event['stop_date'],
                    event['duration'])
+    
+    # Append today's observation if it constitutes a new all-time extreme
+    is_new_extreme = (
+        (event['extreme_type'] == 'hot'  and event['intensity'] > Yo.max()) or
+        (event['extreme_type'] == 'cold' and event['intensity'] < Yo.min())
+    )
+    if is_new_extreme:
+        # Assumption: Yo timeseries stops at year n-1 from today
+        today_year = dt.date.today().year
+        new_value = xr.DataArray(event['intensity'], coords={'time': today_year})
+        Yo = xr.concat([Yo, new_value], dim='time')
 
     # Calcul du biais.
     bias = float(Yo.sel( time = slice(*[str(y) for y in prior['bper']]) ).mean('time'))
