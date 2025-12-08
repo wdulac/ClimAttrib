@@ -13,6 +13,9 @@ from utils.tasks import celery_app
 attribution = celery_app.tasks['attribution']
 
 
+TIME_TO_TASK_EXPIRY = 300 # In seconds (300 = 5 minutes)
+
+
 register_page(__name__, path='/analysis')
 
 
@@ -69,9 +72,10 @@ def layout(p=None):
         ])
 
     else:
-        # Run async attribution calculation and set loading screen with 1s checks
-        attribution.delay(event) # Result is cached into Redis
+        ## Run async attribution calculation and set loading screen with 1s checks
 
+        # Result is cached into Redis. Task is canceled if it doesn't start in under 5 minutes
+        attribution.apply_async(args=(event,), expires=TIME_TO_TASK_EXPIRY)
         layout.children.extend([
             dcc.Store(data=True, id='is-loading'),
             dcc.Store(data=cache_key, id='cache-key'),
@@ -99,8 +103,16 @@ def layout(p=None):
 )
 def update_results(n, key):
 
+    if n > TIME_TO_TASK_EXPIRY:
+        return html.Div("The server is currently saturated. Please try again later."), True, False
+
     if not cache_exists(key):
         raise PreventUpdate
     
     stats = get_cache(key)
-    return carousel(stats, key), True, False
+
+    if stats['status'] == 'timeout':
+        return html.Div("The analysis exceeded the maximum time allowed. Please try again.")
+
+    if stats['status'] == 'ok':
+        return carousel(stats['result'], key), True, False

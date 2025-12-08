@@ -1,4 +1,5 @@
 from celery import Celery
+from celery.exceptions import SoftTimeLimitExceeded
 from science import attribute_event
 from .redis_cache import set_cache, make_cache_key
 import os
@@ -14,15 +15,28 @@ celery_app = Celery(
     task_ignore_result=True
 )
 
-@celery_app.task(name="attribution")
+@celery_app.task(
+    name="attribution",
+    soft_time_limit=120, # 2 minutes. Expected run time for completion is ~20s
+    time_limit=150
+)
 def attribution(event, cache_key=None):
 
-    N_PROCESS = int(os.getenv('MCMC_N_WORKERS', 1))
-    result = attribute_event(event, n_process=N_PROCESS)
+    try:
 
-    if not cache_key:
-        cache_key = make_cache_key(event)
+        N_PROCESS = int(os.getenv('MCMC_N_WORKERS', 1))
+        result = attribute_event(event, n_process=N_PROCESS)
 
-    set_cache(cache_key, result)
+        if not cache_key:
+            cache_key = make_cache_key(event)
 
-    return result
+        set_cache(cache_key, {'status': 'ok', 'result': result})
+
+    except SoftTimeLimitExceeded:
+
+        if not cache_key:
+            cache_key = make_cache_key(event)
+        
+        # Shorten the TTL to 5 seconds so that the DOA result does not stay in cache for 48 hours
+        # But still long enough for the callback to see the timeout at least once
+        set_cache(cache_key, {'status': 'timeout'}, ttl=5)
