@@ -10,7 +10,6 @@ import calendar
 import ANKIALE as ank
 # Specific imports
 from ANKIALE.stats import MPeriodSmoother
-from ANKIALE.stats import build_projection_matrix
 from ANKIALE.stats.__constraint import constraint_var
 
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -23,6 +22,7 @@ from utils.paths import DATA, SRC
 # Pour la contrainte Y
 N_SAMPLES_COV = 100 # Tirages de covariables
 SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
+METHOD_CONSTRAINT = {'GMST': 'full'}
 USE_STAN = True
 
 # Pour l'attribution
@@ -32,14 +32,6 @@ CI = 0.05
 SCENARIO = 'ssp370'
 
 STAN_WORK_DIR =  SRC / 'science/stan_files/'
-
-def _projection_matrix(X: dict, vsize: int, smoother, constraint: dict | None = None) -> np.ndarray:
-
-    time_size = X[next(iter(X))].time0.values.size
-    return np.hstack((
-        build_projection_matrix(smoother, X, constraint),
-        np.zeros((time_size, vsize))
-    ))
 
 
 def _datetime_to_doy(date: dt.datetime) -> int:
@@ -144,9 +136,9 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
     # Lissage
     mps = MPeriodSmoother(
         XN = clim.XN,
-        cnames = clim.cnames,
-        dpers = clim.dpers,
-        spl_config = clim.cconfig.spl_config
+        total_dof=clim.cconfig.total_dof,
+        n_spl_basis = clim.cconfig.nknot,
+        degree = clim.cconfig.degree
     )
 
     return {
@@ -258,8 +250,12 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     # Paramètres d'entrée pour la contrainte Y
     iYo_anom = Yo_anom.values
     samples = np.arange(N_SAMPLES_COV)
-    fake_Xo = xr.DataArray(dims=['time0'], coords=[Yo.time])
-    P = _projection_matrix({'tas': fake_Xo}, prior['vsize'], prior['smoother'])
+
+    # Matrice de projection pour les observations
+    P = prior['smoother'].obs_projection(mix_periods=METHOD_CONSTRAINT, time={'GMST':prior['time']})
+    vP = np.zeros((P.shape[0], prior['vsize']))
+    P = np.hstack((P, vP))
+
     n_scenario = prior['n_scenario']
     
     ## Parallélisation de la contrainte Y en répartissant les samples sur n_process
