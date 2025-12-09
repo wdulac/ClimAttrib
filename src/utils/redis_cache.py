@@ -30,6 +30,14 @@ def set_cache(cache_key: str, value: dict, ttl: int = REDIS_TTL):
     redis_client.set(cache_key, pickle.dumps(value), ex=ttl)
 
 
+def delete_cache(cache_key: str):
+    """
+    Delete a cached entry
+    """
+
+    redis_client.delete(cache_key)
+
+
 def cache_exists(*args: list) -> bool:
     """
     Returns true if all keys received as parameters exist in the Redis database
