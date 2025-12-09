@@ -1,9 +1,11 @@
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from dash import MATCH
-from science import plot_probability
-from science import plot_PR_FAR
-from science import plot_intensity
-from science import plot_intensity_change
+from science.visualisation import (
+    plot_probability,
+    plot_PR_FAR,
+    plot_intensity,
+    plot_intensity_change
+)
 
 
 def intensity_change_plot(stats, cache_key):
