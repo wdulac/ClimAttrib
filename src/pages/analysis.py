@@ -6,7 +6,7 @@ from components.analysis.event_description import description
 from components.analysis.carousel import carousel
 
 from utils.url_token import decode_token
-from utils.redis_cache import make_cache_key, get_cache, cache_exists
+from utils.redis_cache import make_cache_key, get_cache, cache_exists, delete_cache
 
 # Make sure to import the Celery task named "attribution" task and not just the "attribution" function from utils.tasks
 from utils.tasks import celery_app
@@ -61,17 +61,23 @@ def layout(p=None):
     ], className='analysis-container', id='analysis-container')
 
     if cache_exists(cache_key):
-        # Retrieve cached attribution result and extend layout with the results
+        ## Retrieve cached attribution result and extend layout with the results
+        
         cached_result = get_cache(cache_key)
 
         if cached_result['status'] == 'ok':
+            # Extend the page layout with the valid attribution results
             layout.children.extend([
                 dcc.Store(data=False, id='is-loading'),
                 html.Div(children=carousel(cached_result['result'], cache_key),
                          id='analysis-content',
                          className='carousel-container')
             ])
+
         elif cached_result['status'] == 'timeout':
+            # If by any chance the app retrieves a cached result that failed because of timeout,
+            # delete the entry and invite the user to reload the page.
+            delete_cache(cache_key)
             layout.children.extend([
                 dcc.Store(data=False, id='is-loading'),
                 html.Div("An error occured. Please try reloading the page in a few seconds.")
@@ -118,6 +124,7 @@ def update_results(n, key):
     stats = get_cache(key)
 
     if stats['status'] == 'timeout':
+        delete_cache(key)
         return html.Div("The analysis exceeded the maximum time allowed. Please try again.")
 
     if stats['status'] == 'ok':
