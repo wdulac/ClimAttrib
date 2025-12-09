@@ -22,7 +22,7 @@ def make_cache_key(event: dict) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def set_cache(cache_key: str, value: xarray.Dataset, ttl: int = REDIS_TTL):
+def set_cache(cache_key: str, value: dict, ttl: int = REDIS_TTL):
     """
     Store attribution dataset to redis with expiration duration
     """
