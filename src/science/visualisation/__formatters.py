@@ -77,7 +77,6 @@ def _safe_prob(value, fp=2, min_val=EPSILON, zero_str="0", unit="%"):
     return f"{s}{unit if unit else ''}"
 
 
-
 def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
     """Durée de retour (années) avec 2 chiffres significatifs + suffixes k/M/G."""
     if np.isnan(value):
@@ -103,7 +102,8 @@ def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
         suffix = "G"
 
     s = f"{s_val}{suffix}"
-    plural = (unit + "s") if round(v, 1) > 1 else unit
+    if unit:
+        plural = (unit + "s") if round(v, 1) > 1 else unit
     return f"{s} {plural}" if unit else s
 
         
@@ -133,13 +133,17 @@ def _safe_PR(value, max_val=1e5, min_val=1e-3):
     return s
 
 
-def _safe_FAR(value):
+def _safe_FAR(value, unit="%"):
     """
     FAR en %, style numérique :
     - FAR < 0.01%     -> '< 0.01%'
     - 0.01% <= FAR <= 99%  -> 2 sig figs
     - 99% < FAR < 99.9%    -> 3 sig figs
     - FAR >= 99.9%         -> '> 99.9%'
+    
+    Args:
+        value: FAR value (0-1)
+        unit: Unit suffix (default '%'). Set to None to omit unit.
     """
     if np.isnan(value):
         return "NaN"
@@ -150,11 +154,11 @@ def _safe_FAR(value):
 
     # borne basse
     if p < 0.01:
-        return "< 0.01%"
+        return f"< 0.01{unit if unit else ''}"
 
     # borne haute
     if p >= 99.9:
-        return "> 99.9%"
+        return f"> 99.9{unit if unit else ''}"
 
     # entre 99 et 99.9 : 3 chiffres significatifs
     if p > 99.0:
@@ -163,20 +167,20 @@ def _safe_FAR(value):
         sig = 2
 
     s = _fmt_sig_plot(p, sig)
-    return f"{s}%"
+    return f"{s}{unit if unit else ''}"
 
 
-def _safe_intensity(value):
-
-    if np.isnan(value):
-        return "NaN"
-    
-    return f"{value:.1f}°C"
-
-
-def _safe_intensity_change(value):
+def _safe_intensity(value, unit='°C'):
 
     if np.isnan(value):
         return "NaN"
     
-    return f"{value:+.1f}°C"
+    return f"{value:.1f}{unit if unit else ''}"
+
+
+def _safe_intensity_change(value, unit='°C'):
+
+    if np.isnan(value):
+        return "NaN"
+    
+    return f"{value:+.1f}{unit if unit else ''}"
