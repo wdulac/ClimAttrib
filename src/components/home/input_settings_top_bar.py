@@ -154,7 +154,7 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
 
 LINK_DEFAULT_HREF = '/'
 
-ALLOWED_DURATIONS = [1, 2, 3, 4] # In days
+ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10, 14] # In days
 
 ## Reading textual resource files
 COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
