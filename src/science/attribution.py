@@ -198,7 +198,8 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
 
 
 def _worker_block(sample_chunk: Sequence[int],
-                  stan_seeds: np.ndarray,
+                  task_seeds: Sequence[int],
+                  stan_seeds: Sequence[int],
                   hpar_CX: np.ndarray,
                   hcov_CX: np.ndarray,
                   iYo_anom: np.ndarray,
@@ -227,8 +228,9 @@ def _worker_block(sample_chunk: Sequence[int],
     block = np.zeros((len(sample_chunk) * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
 
     for i, s in enumerate(sample_chunk):
+        local_rng = np.random.default_rng(task_seeds[s])
         # Application du MCMC
-        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, stan_seeds[s], STAN_WORK_DIR)
+        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, stan_seeds[s], STAN_WORK_DIR, rng=local_rng)
         # On réplique la sortie du MCMC pour tous les scénarios
         block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, n_scenario, 1))
 
@@ -289,6 +291,11 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
         dtype=np.uint32
     )
 
+    # Gestion des seeds pour initialiser d'autres np.random.Generator
+    tasks_seeds = rng.integers(
+        0, 2**32 - 1, size=N_SAMPLES_COV, dtype=np.uint32
+    )
+
     # Découpe la liste des samples en chunks approximativement égaux
     raw_chunks = np.array_split(np.array(samples), n_process)
     chunks = [c.tolist() for c in raw_chunks if len(c) > 0]
@@ -298,7 +305,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     # Lance un processus par chunk
     with ProcessPoolExecutor(max_workers=len(chunks)) as ex:
-        futures = [ex.submit(_worker_block, chunk, stan_seeds, hpar_CX, hcov_CX, iYo_anom, P,
+        futures = [ex.submit(_worker_block, chunk, tasks_seeds, stan_seeds, hpar_CX, hcov_CX, iYo_anom, P,
                              SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR,n_scenario)
                    for chunk in chunks]
 
