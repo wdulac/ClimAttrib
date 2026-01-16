@@ -24,7 +24,7 @@ N_SAMPLES_COV = 100 # Tirages de covariables
 SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
 METHOD_CONSTRAINT = {'GMST': 'full'}
 USE_STAN = True
-STAN_MASTER_SEED = 123456
+MASTER_SEED = int(os.getenv('MASTER_SEED', 123456))
 
 
 # Pour l'attribution
@@ -283,7 +283,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     ## Parallélisation de la contrainte Y en répartissant les samples sur n_process
 
     # Gestion des seed pour stan
-    rng = np.random.default_rng(STAN_MASTER_SEED)
+    rng = np.random.default_rng(MASTER_SEED)
     stan_seeds = rng.integers(
         low=0,
         high=2**32 - 1,
