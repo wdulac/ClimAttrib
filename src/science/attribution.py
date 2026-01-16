@@ -24,6 +24,8 @@ N_SAMPLES_COV = 100 # Tirages de covariables
 SIZE_CHAIN = 100 # Nombre de valeur extraites de chaque chaine (Une chaine par tirage de covariable)
 METHOD_CONSTRAINT = {'GMST': 'full'}
 USE_STAN = True
+MASTER_SEED = int(os.getenv('MASTER_SEED', 123456))
+
 
 # Pour l'attribution
 N_SAMPLES_ATTRIB = 1000 # Nombre de valeurs de hpars à tirer pour l'intervalle de confiance
@@ -196,6 +198,8 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
 
 
 def _worker_block(sample_chunk: Sequence[int],
+                  task_seeds: Sequence[int],
+                  stan_seeds: Sequence[int],
                   hpar_CX: np.ndarray,
                   hcov_CX: np.ndarray,
                   iYo_anom: np.ndarray,
@@ -210,16 +214,14 @@ def _worker_block(sample_chunk: Sequence[int],
     et renvoie (sample_chunk, block_hpars).
     block_hpars shape = (len(sample_chunk)*SIZE_CHAIN, n_scenario, hpar_dim)
     """
-    # limiter BLAS/OpenMP dans le worker (évite oversubscription si numpy/MKL multithread)
-    os.environ.setdefault("OMP_NUM_THREADS", "1")
-    os.environ.setdefault("MKL_NUM_THREADS", "1")
-
+    
     hpar_dim = hpar_CX.size
     block = np.zeros((len(sample_chunk) * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
 
     for i, s in enumerate(sample_chunk):
+        local_rng = np.random.default_rng(task_seeds[s])
         # Application du MCMC
-        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, STAN_WORK_DIR)
+        oh = constraint_var(hpar_CX, hcov_CX, iYo_anom, P, SIZE_CHAIN, cnslaw, USE_STAN, stan_seeds[s], STAN_WORK_DIR, rng=local_rng)
         # On réplique la sortie du MCMC pour tous les scénarios
         block[i*SIZE_CHAIN:(i+1)*SIZE_CHAIN, :, :] = np.tile(oh.T[:, np.newaxis, :], (1, n_scenario, 1))
 
@@ -271,6 +273,20 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     
     ## Parallélisation de la contrainte Y en répartissant les samples sur n_process
 
+    # Gestion des seed pour stan
+    rng = np.random.default_rng(MASTER_SEED)
+    stan_seeds = rng.integers(
+        low=0,
+        high=2**32 - 1,
+        size=N_SAMPLES_COV,
+        dtype=np.uint32
+    )
+
+    # Gestion des seeds pour initialiser d'autres np.random.Generator
+    tasks_seeds = rng.integers(
+        0, 2**32 - 1, size=N_SAMPLES_COV, dtype=np.uint32
+    )
+
     # Découpe la liste des samples en chunks approximativement égaux
     raw_chunks = np.array_split(np.array(samples), n_process)
     chunks = [c.tolist() for c in raw_chunks if len(c) > 0]
@@ -280,8 +296,8 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     # Lance un processus par chunk
     with ProcessPoolExecutor(max_workers=len(chunks)) as ex:
-        futures = [ex.submit(_worker_block, chunk, hpar_CX, hcov_CX, iYo_anom, P,
-                             SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR, n_scenario)
+        futures = [ex.submit(_worker_block, chunk, tasks_seeds, stan_seeds, hpar_CX, hcov_CX, iYo_anom, P,
+                             SIZE_CHAIN, prior['cnslaw'], USE_STAN, STAN_WORK_DIR,n_scenario)
                    for chunk in chunks]
 
         for future in as_completed(futures):
