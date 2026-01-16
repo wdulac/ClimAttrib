@@ -214,16 +214,7 @@ def _worker_block(sample_chunk: Sequence[int],
     et renvoie (sample_chunk, block_hpars).
     block_hpars shape = (len(sample_chunk)*SIZE_CHAIN, n_scenario, hpar_dim)
     """
-    # limiter BLAS/OpenMP dans le worker (évite oversubscription si numpy/MKL multithread)
-    # os.environ.setdefault("OMP_NUM_THREADS", "1")
-    # os.environ.setdefault("MKL_NUM_THREADS", "1")
-
-    os.environ["OMP_NUM_THREADS"] = "1"
-    os.environ["OPENBLAS_NUM_THREADS"] = "1"
-    os.environ["MKL_NUM_THREADS"] = "1"
-    os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
-    os.environ["NUMEXPR_NUM_THREADS"] = "1"
-
+    
     hpar_dim = hpar_CX.size
     block = np.zeros((len(sample_chunk) * SIZE_CHAIN, n_scenario, hpar_dim)) + np.nan
 
