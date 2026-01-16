@@ -144,7 +144,7 @@ import datetime as dt
 import json
 from utils.url_token import encode_token
 from utils.paths import RESOURCES, DATA
-from science.attribution import _datetime_to_doy
+from science.attribution.__calendar_utils import _datetime_to_doy
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
     'c': 'white',
