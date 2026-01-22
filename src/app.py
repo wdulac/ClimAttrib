@@ -8,11 +8,15 @@ from components.header import header
 from components.footer import footer
 
 import locale
+import logging
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Initialize
 server = Flask(__name__)
+
+server.logger.setLevel(logging.INFO)
+
 application = Dash(
     server=server,
     external_stylesheets=[
