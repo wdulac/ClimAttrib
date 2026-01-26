@@ -203,7 +203,11 @@ def _clim_plots_base_layout(
             x=0.5,
             xanchor="center",
         ),
-        meta=dict(key=cache_key),
+        meta=dict(
+            initial_width=width,
+            initial_height=height,
+            key=cache_key
+        ),
     )
     
     if xaxis_title:
