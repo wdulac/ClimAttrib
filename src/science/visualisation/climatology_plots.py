@@ -125,18 +125,28 @@ def plot_annual_max_series(
         )
     )
 
-    ymin = float(np.nanmin(Yo.values))
-    xmin = float(np.nanmin(time))
-
+    # Ligne verticale : du bas de l'axe jusqu'au point sélectionné
     fig.add_shape(
         type="line",
-        x0=Xo, x1=Xo, y0=ymin, y1=To,
-        line=dict(color="red", dash="dash")
+        x0=Xo,
+        x1=Xo,
+        y0=float(Yo.min()-1),
+        y1=To,
+        line=dict(color="red", dash="dash"),
+        xref="x",
+        yref="y"
     )
+    
+    # Ligne horizontale : du bord gauche de la figure jusqu'au point sélectionné
     fig.add_shape(
         type="line",
-        x0=xmin, x1=Xo, y0=To, y1=To,
-        line=dict(color="red", dash="dash")
+        x0=time[0] - 3,  # bord gauche de la figure
+        x1=Xo,
+        y0=To,
+        y1=To,
+        line=dict(color="red", dash="dash"),
+        xref="x",  # coordonnées relatives à la figure
+        yref="y"
     )
 
     # ------------------------------------------------------------------
@@ -178,7 +188,10 @@ def plot_annual_max_series(
     # ------------------------------------------------------------------
 
     fig.update_xaxes(
-        range=[time[0]-3, time[-1]+3]
+        range=[time[0] - 3, time[-1] + 3]
+    )
+    fig.update_yaxes(
+        range=[Yo.min() - 1, Yo.max() + 1]
     )
 
     _clim_plots_base_layout(
