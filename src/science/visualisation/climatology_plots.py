@@ -4,8 +4,15 @@ import calendar
 import plotly.graph_objects as go
 
 from .__plotly import _clim_plots_base_layout
+from .__formatters import (
+    _annual_series_hover,
+    _daily_temperature_hover
+)
 
-from science.attribution.__calendar_utils import _datetime_to_doy
+from science.attribution.__calendar_utils import (
+    _datetime_to_doy,
+    _doy_to_datetime
+)
 from science.attribution.__data_loading import _load_obs
 
 from utils.paths import DATA
@@ -70,7 +77,6 @@ def plot_annual_max_series(
     Annual maxima time series with optional non-stationary GEV return levels
     """
 
-    # ------------------------------------------------------------------
     # Event metadata
     # ------------------------------------------------------------------
     To = event["intensity"] - 273.15
@@ -100,7 +106,7 @@ def plot_annual_max_series(
             line=dict(color="black", width=1),
             marker=dict(size=6),
             opacity=0.4,
-            # hovertemplate=annual_series_hover(),
+            hovertemplate=_annual_series_hover(),
         )
     )
 
@@ -114,7 +120,7 @@ def plot_annual_max_series(
             mode="markers",
             marker=dict(size=10, color="red"),
             name="User selected event",
-            # hovertemplate=annual_series_hover(event=True),
+            hovertemplate=_annual_series_hover(event=True),
         )
     )
 
@@ -162,7 +168,7 @@ def plot_annual_max_series(
                     mode="lines",
                     line=dict(color="blue", dash=dash),
                     name=label,
-                    # hovertemplate=annual_series_hover(return_level=True),
+                    hovertemplate=_annual_series_hover(return_level=True),
                 )
             )
 
@@ -224,6 +230,13 @@ def plot_daily_climatology(
 
     X = daily_doy.dayofyear.values
 
+    dates = [
+    _doy_to_datetime(d, year).strftime("%b %d, %Y")
+    if not (d == 60 and not calendar.isleap(year))
+    else None
+    for d in X
+]
+
     fig = go.Figure()
 
     # ------------------------------------------------------------------
@@ -233,10 +246,11 @@ def plot_daily_climatology(
         go.Scatter(
             x=X,
             y=daily.values,
+            customdata=dates,
             mode="lines",
             line=dict(color="black", width=1),
             name=f"{year} daily temperature",
-            # hovertemplate=daily_temperature_hover(),
+            hovertemplate=_daily_temperature_hover(),
         )
     )
 
@@ -270,10 +284,11 @@ def plot_daily_climatology(
         go.Scatter(
             x=X,
             y=ref.sel(quantile="50%").values,
+            customdata=dates,
             mode="lines",
             line=dict(color="red", width=2),
             name="1991–2020 median",
-            # hovertemplate=daily_temperature_hover(ref=True),
+            hovertemplate=_daily_temperature_hover(ref=True),
         )
     )
 
@@ -301,7 +316,6 @@ def plot_daily_climatology(
         range=[1, 366],
         tickvals=tickvals,
         ticktext=ticktext,
-        title="Day of year",
     )
 
     _clim_plots_base_layout(

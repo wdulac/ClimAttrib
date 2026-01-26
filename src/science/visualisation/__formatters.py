@@ -184,3 +184,34 @@ def _safe_intensity_change(value, unit='°C'):
         return "NaN"
     
     return f"{value:+.1f}{unit if unit else ''}"
+
+
+def _annual_series_hover(event=False, return_level=False):
+    if event:
+        return (
+            "<b>Year</b>: %{x}<br>"
+            "<b>Intensity</b>: %{y:.2f} °C"
+            "<extra></extra>"
+        )
+
+    if return_level:
+        return (
+            "<b>Year</b>: %{x}<br>"
+            "<b>Return level</b>: %{y:.2f} °C"
+            "<extra></extra>"
+        )
+
+    return (
+        "<b>Year</b>: %{x}<br>"
+        "<b>Annual maximum</b>: %{y:.2f} °C"
+        "<extra></extra>"
+    )
+
+
+def _daily_temperature_hover(ref=False):
+    label = "Climatology" if ref else "Daily temperature"
+    return (
+        "<b>%{customdata}</b><br>"
+        f"<b>{label}</b>: %{{y:.1f}} °C"
+        "<extra></extra>"
+    )
