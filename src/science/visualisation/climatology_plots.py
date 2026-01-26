@@ -1,6 +1,7 @@
 import numpy as np
 import xarray as xr
 import calendar
+import datetime as dt
 import plotly.graph_objects as go
 
 from .__plotly import _clim_plots_base_layout
@@ -168,7 +169,7 @@ def plot_annual_max_series(
                     mode="lines",
                     line=dict(color="blue", dash=dash),
                     name=label,
-                    hovertemplate=_annual_series_hover(return_level=True),
+                    hovertemplate=_annual_series_hover(return_level=True, p=p),
                 )
             )
 
@@ -231,11 +232,20 @@ def plot_daily_climatology(
     X = daily_doy.dayofyear.values
 
     dates = [
-    _doy_to_datetime(d, year).strftime("%b %d, %Y")
+    _doy_to_datetime(d, year).strftime("%Y")
     if not (d == 60 and not calendar.isleap(year))
     else None
     for d in X
-]
+    ]
+
+    base_year = 2001  # non-bissextile
+    
+    dates_x = [
+        _doy_to_datetime(d, base_year)
+        if not (d == 60)
+        else None
+        for d in X
+    ]
 
     fig = go.Figure()
 
@@ -244,7 +254,7 @@ def plot_daily_climatology(
     # ------------------------------------------------------------------
     fig.add_trace(
         go.Scatter(
-            x=X,
+            x=dates_x,
             y=daily.values,
             customdata=dates,
             mode="lines",
@@ -257,21 +267,24 @@ def plot_daily_climatology(
     # ------------------------------------------------------------------
     # Reference climatology (10–90%)
     # ------------------------------------------------------------------
+    mask = np.array(X) != 60
+    
+    # avant le trou
     fig.add_trace(
         go.Scatter(
-            x=X,
-            y=ref.sel(quantile="10%").values,
+            x=np.array(dates_x)[mask],
+            y=ref.sel(quantile="10%").values[mask],
             mode="lines",
             line=dict(width=0),
             showlegend=False,
             hoverinfo="skip",
         )
     )
-
+    
     fig.add_trace(
         go.Scatter(
-            x=X,
-            y=ref.sel(quantile="90%").values,
+            x=np.array(dates_x)[mask],
+            y=ref.sel(quantile="90%").values[mask],
             fill="tonexty",
             fillcolor="rgba(255,0,0,0.25)",
             line=dict(width=0),
@@ -282,7 +295,7 @@ def plot_daily_climatology(
 
     fig.add_trace(
         go.Scatter(
-            x=X,
+            x=dates_x,
             y=ref.sel(quantile="50%").values,
             customdata=dates,
             mode="lines",
@@ -295,27 +308,34 @@ def plot_daily_climatology(
     # ------------------------------------------------------------------
     # User-selected period
     # ------------------------------------------------------------------
+    x0 = _doy_to_datetime(_datetime_to_doy(a), base_year)
+    x1 = _doy_to_datetime(_datetime_to_doy(b), base_year)
+    
     fig.add_vrect(
-        x0=_datetime_to_doy(a),
-        x1=_datetime_to_doy(b),
+        x0=x0,
+        x1=x1,
         fillcolor="gray",
         opacity=0.3,
         layer="below",
         line_width=0,
-        name="User selected time range",
     )
 
     # ------------------------------------------------------------------
     # Axes
     # ------------------------------------------------------------------
-    tickvals = [15, 45, 74, 105, 135, 166, 196, 227, 258, 288, 319, 349]
+    tickvals = [
+        dt.datetime(base_year, m, 15)
+        for m in range(1, 13)
+    ]
+    
     ticktext = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
+    
     fig.update_xaxes(
-        range=[1, 366],
+        type="date",
         tickvals=tickvals,
         ticktext=ticktext,
+        hoverformat="%B %d",
     )
 
     _clim_plots_base_layout(

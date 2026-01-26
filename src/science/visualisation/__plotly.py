@@ -225,13 +225,13 @@ def _clim_plots_base_layout(
             bgcolor='rgba(255,255,255,0)',
             font=dict(size=14),
             itemsizing='constant',
-            # traceorder='reversed',
         ),
         meta=dict(
             initial_width=width,
             initial_height=height,
             key=cache_key
         ),
+        hovermode='x unified',
         modebar_remove=['select', 'lasso2d'],
     )
     
