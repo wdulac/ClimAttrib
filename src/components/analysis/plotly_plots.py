@@ -4,7 +4,9 @@ from science.visualisation import (
     plot_probability,
     plot_PR_FAR,
     plot_intensity,
-    plot_intensity_change
+    plot_intensity_change,
+    plot_annual_max_series,
+    plot_daily_climatology
 )
 
 
@@ -48,6 +50,28 @@ def probability_plot(stats, cache_key):
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'probability'}),
         dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot-probability')
     ], id={'type': 'plot-container', 'name': 'probability'}, className='plot-container')
+
+    return component
+
+
+def observed_annual_series_plot(event, stats, cache_key):
+    fig = plot_annual_max_series(event, stats, cache_key)
+
+    component = html.Div([
+        html.Div(id={'type': 'plotly-notifier-hook', 'name': 'annual-series'}),
+        dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot_max_series')
+    ], id={'type': 'plot-container', 'name': 'annual-series'}, className='plot-container')
+
+    return component
+
+
+def event_climatology_plot(event, cache_key):
+    fig = plot_daily_climatology(event, cache_key)
+
+    component = html.Div([
+        html.Div(id={'type': 'plotly-notifier-hook', 'name': 'annual-series'}),
+        dcc.Graph(figure=fig, config=dict(displaylogo=False), id='plot_climatology')
+    ], id={'type': 'plot-container', 'name': 'year-climatology'}, className='plot-container')
 
     return component
 

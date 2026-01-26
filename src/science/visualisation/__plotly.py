@@ -176,3 +176,38 @@ def create_attribution_plotly_graph(
     )
 
     return fig
+
+
+def _clim_plots_base_layout(
+    fig,
+    xaxis_title: str | None = None,
+    yaxis_title: str | None = None,
+    cache_key: str | None = None,
+):
+
+    # Taille
+    mm = 1. / 25.4
+    ratio = 16 / 11
+    width = 180 * mm * 110
+    height = width / ratio
+
+    fig.update_layout(
+        width=width,
+        height=height,
+        plot_bgcolor="white",
+        paper_bgcolor="#f1f3f5",
+        margin=dict(l=60, r=40, t=40, b=40),
+        legend=dict(
+            orientation="h",
+            y=1.02,
+            x=0.5,
+            xanchor="center",
+        ),
+        meta=dict(key=cache_key),
+    )
+    
+    if xaxis_title:
+        fig.update_xaxes(title=xaxis_title)
+    
+    if yaxis_title:
+        fig.update_yaxes(title=yaxis_title)
