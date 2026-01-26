@@ -102,11 +102,10 @@ def plot_annual_max_series(
         go.Scatter(
             x=time,
             y=Yo.values,
-            mode="lines+markers",
-            name=f"Observed values",
-            line=dict(color="black", width=1),
-            marker=dict(size=6),
-            opacity=0.4,
+            mode="markers",
+            name=f"{event['duration']}-day maxima",
+            marker=dict(color='black', size=6),
+            opacity=1,
             hovertemplate=_annual_series_hover(),
         )
     )
