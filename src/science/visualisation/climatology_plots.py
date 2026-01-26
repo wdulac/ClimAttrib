@@ -96,7 +96,7 @@ def plot_annual_max_series(
             x=time,
             y=Yo.values,
             mode="lines+markers",
-            name="Annual maximum",
+            name=f"Observed values",
             line=dict(color="black", width=1),
             marker=dict(size=6),
             opacity=0.4,
@@ -113,7 +113,7 @@ def plot_annual_max_series(
             y=[To],
             mode="markers",
             marker=dict(size=10, color="red"),
-            name=f"{event['duration']}-day mean temperature",
+            name="User selected event",
             # hovertemplate=annual_series_hover(event=True),
         )
     )
@@ -169,6 +169,11 @@ def plot_annual_max_series(
     # ------------------------------------------------------------------
     # Layout
     # ------------------------------------------------------------------
+
+    fig.update_xaxes(
+        range=[time[0]-3, time[-1]+3]
+    )
+
     _clim_plots_base_layout(
         fig,
         xaxis_title="Time",
