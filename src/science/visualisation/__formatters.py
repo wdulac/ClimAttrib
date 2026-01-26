@@ -189,7 +189,7 @@ def _safe_intensity_change(value, unit='°C'):
 def _annual_series_hover(event=False, return_level=False, p=None):
     if event:
         return (
-            "<b>Observed temperature</b>: %{y:.1f} °C"
+            "<b>User event</b>: %{y:.1f} °C"
             "<extra></extra>"
         )
 
