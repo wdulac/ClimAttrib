@@ -204,7 +204,6 @@ def _clim_plots_base_layout(
             gridcolor='lightgrey',
             mirror=True,
             tickfont=dict(size=14, color='black'),
-            title_font=dict(size=16, color='black', family='Arial')
         ),
         yaxis=dict(
             showline=True,
@@ -216,7 +215,6 @@ def _clim_plots_base_layout(
             zerolinecolor='lightgrey',
             zerolinewidth=1,
             tickfont=dict(size=14, color='black'),
-            title_font=dict(size=16, color='black', family='Arial'),
         ),
         legend=dict(
             orientation="h",
@@ -238,7 +236,17 @@ def _clim_plots_base_layout(
     )
     
     if xaxis_title:
-        fig.update_xaxes(title=xaxis_title)
+        fig.update_xaxes(
+            title=dict(
+                text=xaxis_title,
+                font=dict(size=16, color='black', family='Arial')
+            )
+        )
     
     if yaxis_title:
-        fig.update_yaxes(title=yaxis_title)
+        fig.update_yaxes(
+            title=dict(
+                text=yaxis_title,
+                font=dict(size=16, color='black', family='Arial')
+            )
+        )

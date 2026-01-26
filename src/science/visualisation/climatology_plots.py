@@ -306,6 +306,7 @@ def plot_daily_climatology(
 
     _clim_plots_base_layout(
         fig,
+        xaxis_title="Time of year",
         yaxis_title="Temperature [°C]",
         cache_key=cache_key,
     )
