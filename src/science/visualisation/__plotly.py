@@ -208,6 +208,7 @@ def _clim_plots_base_layout(
             initial_height=height,
             key=cache_key
         ),
+        modebar_remove=['select', 'lasso2d'],
     )
     
     if xaxis_title:
