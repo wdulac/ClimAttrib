@@ -33,7 +33,7 @@ CAROUSEL_SETTINGS = {
     }
 }
 
-def carousel(event, stats, cache_key):
+def carousel(stats, event, cache_key):
 
     component = dmc.Carousel([
         dmc.CarouselSlide(
