@@ -261,20 +261,6 @@ def plot_daily_climatology(
 
     fig = go.Figure()
 
-    # ------------------------------------------------------------------
-    # Daily temperature (year)
-    # ------------------------------------------------------------------
-    fig.add_trace(
-        go.Scatter(
-            x=dates_x,
-            y=daily.values,
-            customdata=dates,
-            mode="lines",
-            line=dict(color="black", width=1),
-            name=f"{year} daily temperature",
-            hovertemplate=_daily_temperature_hover(),
-        )
-    )
 
     # ------------------------------------------------------------------
     # Reference climatology (10–90%)
@@ -298,7 +284,7 @@ def plot_daily_climatology(
             x=np.array(dates_x)[mask],
             y=ref.sel(quantile="90%").values[mask],
             fill="tonexty",
-            fillcolor="rgba(255,0,0,0.25)",
+            fillcolor="rgba(255,0,0,0.15)",
             line=dict(width=0),
             name="1991–2020 10–90%",
             hoverinfo="skip",
@@ -316,6 +302,22 @@ def plot_daily_climatology(
             hovertemplate=_daily_temperature_hover(ref=True),
         )
     )
+
+    # ------------------------------------------------------------------
+    # Daily temperature (year)
+    # ------------------------------------------------------------------
+    fig.add_trace(
+        go.Scatter(
+            x=dates_x,
+            y=daily.values,
+            customdata=dates,
+            mode="lines",
+            line=dict(color="black", width=1.5),
+            name=f"{year} daily temperature",
+            hovertemplate=_daily_temperature_hover(),
+        )
+    )
+
 
     # ------------------------------------------------------------------
     # User-selected period
