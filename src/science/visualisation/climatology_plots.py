@@ -98,12 +98,15 @@ def plot_annual_max_series(
     # ------------------------------------------------------------------
     # Annual maxima series
     # ------------------------------------------------------------------
+
+    extremum = {'hot': 'maxima', 'cold': 'minima'}[event['extreme_type']]
+
     fig.add_trace(
         go.Scatter(
             x=time,
             y=Yo.values,
             mode="markers",
-            name=f"{event['duration']}-day maxima",
+            name=f"{event['duration']}-day {extremum}",
             marker=dict(color='black', size=6),
             opacity=1,
             hovertemplate=_annual_series_hover(),
