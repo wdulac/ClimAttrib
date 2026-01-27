@@ -246,13 +246,6 @@ def plot_daily_climatology(
 
     X = daily_doy.dayofyear.values
 
-    dates = [
-    _doy_to_datetime(d, year).strftime("%Y")
-    if not (d == 60 and not calendar.isleap(year))
-    else None
-    for d in X
-    ]
-
     base_year = 2000  # Année de référence bissextile
     
     dates_x = [_doy_to_datetime(d, base_year) for d in X]
@@ -291,7 +284,6 @@ def plot_daily_climatology(
         go.Scatter(
             x=dates_x,
             y=ref.sel(quantile="50%").values,
-            customdata=dates,
             mode="lines",
             line=dict(color="red", width=2),
             name="1991–2020 median",
@@ -306,11 +298,10 @@ def plot_daily_climatology(
         go.Scatter(
             x=dates_x,
             y=daily_doy.values,
-            customdata=dates,
             mode="lines",
             line=dict(color="black", width=1.5),
             name=f"{year} daily temperature",
-            hovertemplate=_daily_temperature_hover(),
+            hovertemplate=_daily_temperature_hover(year=year),
         )
     )
 

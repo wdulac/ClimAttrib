@@ -185,6 +185,8 @@ def _safe_intensity_change(value, unit='°C'):
     
     return f"{value:+.1f}{unit if unit else ''}"
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Dynamic hover templates for both Yo timeseries + annual cycle plots
 
 def _annual_series_hover(event=False, return_level=False, p=None):
     if event:
@@ -213,7 +215,7 @@ def _annual_series_hover(event=False, return_level=False, p=None):
     )
 
 
-def _daily_temperature_hover(ref=False):
+def _daily_temperature_hover(ref=False, year=None):
 
     if ref:
         return (
@@ -222,6 +224,6 @@ def _daily_temperature_hover(ref=False):
         )
     else:
         return (
-            "<b>%{customdata} temperature</b>: %{y:.1f} °C"
+            f"<b>{year} temperature</b>: %{{y:.1f}} °C"
             "<extra></extra>"
         )
