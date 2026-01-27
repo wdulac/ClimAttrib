@@ -140,6 +140,7 @@ from dash_iconify import DashIconify
 
 import xarray as xr
 import datetime as dt
+import os
 
 import json
 from utils.url_token import encode_token
@@ -155,6 +156,9 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
 LINK_DEFAULT_HREF = '/'
 
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10, 14] # In days
+
+CALENDAR_MIN_DATE = dt.date(1940, 1, 1)
+CALENDAR_MAX_DATE = dt.date.fromisoformat(os.getenv("CALENDAR_MAX_DATE", "20221231"))
 
 ## Reading textual resource files
 COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
@@ -245,8 +249,8 @@ _date_selector_calendar = dmc.DatePickerInput(
     w=300,
     highlightToday=False,
     weekendDays=[],
-    minDate=dt.date(1940, 1, 1),
-    maxDate=dt.date(2024, 12, 31),
+    minDate=CALENDAR_MIN_DATE,
+    maxDate=CALENDAR_MAX_DATE,
     persistence=True,
     persistence_type='session',
     disabledDates={"function": "disableInvalidRange", "options": None},
