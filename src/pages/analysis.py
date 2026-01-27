@@ -57,6 +57,7 @@ def layout(p=None):
 
     # Initialise layout with the event's description
     layout = html.Div(children=[
+        dcc.Store(data=p, id='event-token'),
         description(event)
     ], className='analysis-container', id='analysis-container')
 
@@ -69,7 +70,7 @@ def layout(p=None):
             # Extend the page layout with the valid attribution results
             layout.children.extend([
                 dcc.Store(data=False, id='is-loading'),
-                html.Div(children=carousel(cached_result['result'], cache_key),
+                html.Div(children=carousel(cached_result['result'], event, cache_key),
                          id='analysis-content',
                          className='carousel-container')
             ])
@@ -111,9 +112,10 @@ def layout(p=None):
     Output('is-loading', 'data'),
     Input('update-interval', 'n_intervals'),
     State('cache-key', 'data'),
+    State('event-token', 'data'),
     prevent_initial_call=True
 )
-def update_results(n, key):
+def update_results(n, key, token):
 
     if n > TIME_TO_TASK_EXPIRY:
         return html.Div("The server is currently saturated. Please try again later."), True, False
@@ -122,10 +124,11 @@ def update_results(n, key):
         raise PreventUpdate
     
     stats = get_cache(key)
+    event = decode_token(token)
 
     if stats['status'] == 'timeout':
         delete_cache(key)
         return html.Div("The analysis exceeded the maximum time allowed. Please try again.")
 
     if stats['status'] == 'ok':
-        return carousel(stats['result'], key), True, False
+        return carousel(stats['result'], event, key), True, False

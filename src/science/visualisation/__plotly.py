@@ -176,3 +176,84 @@ def create_attribution_plotly_graph(
     )
 
     return fig
+
+
+def _clim_plots_base_layout(
+    fig,
+    xaxis_title: str | None = None,
+    yaxis_title: str | None = None,
+    cache_key: str | None = None,
+    extra_bottom_margin: int = 0,
+    standoff : int | None=None
+):
+
+    # Taille
+    mm = 1. / 25.4
+    ratio = 16 / 11
+    width = 180 * mm * 110
+    height = width / ratio
+
+    base_margin = dict(l=60, r=40, t=40, b=40)
+    
+    base_margin["b"] += extra_bottom_margin
+
+    fig.update_layout(
+        width=width,
+        height=height,
+        plot_bgcolor="white",
+        paper_bgcolor="#f1f3f5",
+        margin=base_margin,
+        xaxis=dict(
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey',
+            mirror=True,
+            tickfont=dict(size=14, color='black'),
+        ),
+        yaxis=dict(
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey',
+            mirror=True,
+            showgrid=True,
+            zeroline=True,
+            zerolinecolor='lightgrey',
+            zerolinewidth=1,
+            tickfont=dict(size=14, color='black'),
+        ),
+        legend=dict(
+            orientation="h",
+            y=1.02,
+            x=0.5,
+            xanchor="center",
+            yanchor="bottom",
+            bgcolor='rgba(255,255,255,0)',
+            font=dict(size=14),
+            itemsizing='constant',
+        ),
+        meta=dict(
+            initial_width=width,
+            initial_height=height,
+            key=cache_key
+        ),
+        hovermode='x unified',
+        modebar_remove=['select', 'lasso2d'],
+    )
+    
+    if xaxis_title:
+        fig.update_xaxes(
+            title=dict(
+                text=xaxis_title,
+                font=dict(size=16, color='black', family='Arial'),
+                standoff=standoff
+            )
+        )
+    
+    if yaxis_title:
+        fig.update_yaxes(
+            title=dict(
+                text=yaxis_title,
+                font=dict(size=16, color='black', family='Arial')
+            )
+        )

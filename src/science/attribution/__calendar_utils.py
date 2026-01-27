@@ -16,6 +16,39 @@ def _datetime_to_doy(date: dt.datetime) -> int:
     return doy
 
 
+def _doy_to_datetime(doy: int, year: int) -> dt.datetime:
+    """
+    Inverse de _datetime_to_doy.
+
+    Parameters
+    ----------
+    doy : int
+        Day of year in [1, 366], avec 60 réservé au 29/02
+        même pour les années non bissextiles.
+    year : int
+        Année de référence.
+
+    Returns
+    -------
+    dt.datetime
+        Date correspondante.
+    """
+
+    doy = int(doy)
+
+    if doy < 1 or doy > 366:
+        raise ValueError("doy must be between 1 and 366")
+
+    # En année non bissextile, on saute le 29 février
+    if not calendar.isleap(year):
+        if doy == 60:
+            raise ValueError("doy=60 (29 Feb) is invalid for a non-leap year")
+        if doy > 60:
+            doy -= 1
+
+    return dt.datetime(year, 1, 1) + dt.timedelta(days=doy - 1)
+
+
 def _best_window_from_range(day_start, day_end, n_days=365, win_len=15, step=5):
     """
     day_start, day_end : jours de l'année (1-based), inclusifs.

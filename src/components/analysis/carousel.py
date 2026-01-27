@@ -5,6 +5,7 @@ import dash_mantine_components as dmc
 from components.analysis.plotly_plots import probability_plot
 from components.analysis.plotly_plots import PR_FAR_plot
 from components.analysis.plotly_plots import intensity_plot, intensity_change_plot
+from components.analysis.plotly_plots import observed_Yo_with_return_levels_plot, annual_cycle_with_daily_obs_plot
 from components.analysis.sentence_generator import build_summary_component
 
 
@@ -32,7 +33,7 @@ CAROUSEL_SETTINGS = {
     }
 }
 
-def carousel(stats, cache_key):
+def carousel(stats, event, cache_key):
 
     component = dmc.Carousel([
         dmc.CarouselSlide(
@@ -97,6 +98,30 @@ def carousel(stats, cache_key):
                 )
             )
         ),
+        dmc.CarouselSlide(
+            dmc.Center(
+                style=DEFAULT_CENTERED_SLIDE_STYLE,
+                children=dmc.Stack(
+                    style={
+                        'maxHeight': '100%',
+                        'overflowY': 'auto',
+                        'width': '100%'
+                    },
+                    children=dmc.Group(
+                        style={
+                            'justify-content': 'space-around',
+                            'align-items': 'flex-end',
+                            'width': '100%',
+                            'userSelect': 'none'
+                        },
+                        children=[
+                            observed_Yo_with_return_levels_plot(event, stats, cache_key),
+                            annual_cycle_with_daily_obs_plot(event)
+                        ]
+                    )
+                )
+            )
+        )
     ],
     **CAROUSEL_SETTINGS, 
     id='my-carousel' )

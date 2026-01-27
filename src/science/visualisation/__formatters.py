@@ -184,3 +184,46 @@ def _safe_intensity_change(value, unit='°C'):
         return "NaN"
     
     return f"{value:+.1f}{unit if unit else ''}"
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+### Dynamic hover templates for both Yo timeseries + annual cycle plots
+
+def _annual_series_hover(event=False, return_level=False, p=None):
+    if event:
+        return (
+            "<b>User event</b>: %{y:.1f} °C"
+            "<extra></extra>"
+        )
+
+    if return_level:
+        if p:
+            pre = int(1/p)
+            return (
+                f"<b>{pre}-year return level</b>: %{{y:.1f}} °C"
+                "<extra></extra>"
+            )
+        else:
+            return (
+                "<b>Return level</b>: %{y:.1f} °C"
+                "<extra></extra>"
+            )
+
+
+    return (
+        "<b>Annual maximum</b>: %{y:.1f} °C"
+        "<extra></extra>"
+    )
+
+
+def _daily_temperature_hover(ref=False, year=None):
+
+    if ref:
+        return (
+            "<b>1991 — 2020 median</b>: %{y:.1f} °C"
+            "<extra></extra>"
+        )
+    else:
+        return (
+            f"<b>{year} temperature</b>: %{{y:.1f}} °C"
+            "<extra></extra>"
+        )
