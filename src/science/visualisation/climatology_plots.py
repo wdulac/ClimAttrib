@@ -253,14 +253,9 @@ def plot_daily_climatology(
     for d in X
     ]
 
-    base_year = 2001  # non-bissextile
+    base_year = 2000  # Année de référence bissextile
     
-    dates_x = [
-        _doy_to_datetime(d, base_year)
-        if not (d == 60)
-        else None
-        for d in X
-    ]
+    dates_x = [_doy_to_datetime(d, base_year) for d in X]
 
     fig = go.Figure()
 
@@ -268,13 +263,11 @@ def plot_daily_climatology(
     # ------------------------------------------------------------------
     # Reference climatology (10–90%)
     # ------------------------------------------------------------------
-    mask = np.array(X) != 60
     
-    # avant le trou
     fig.add_trace(
         go.Scatter(
-            x=np.array(dates_x)[mask],
-            y=ref.sel(quantile="10%").values[mask],
+            x=np.array(dates_x),
+            y=ref.sel(quantile="10%"),
             mode="lines",
             line=dict(width=0),
             showlegend=False,
@@ -284,8 +277,8 @@ def plot_daily_climatology(
     
     fig.add_trace(
         go.Scatter(
-            x=np.array(dates_x)[mask],
-            y=ref.sel(quantile="90%").values[mask],
+            x=np.array(dates_x),
+            y=ref.sel(quantile="90%"),
             fill="tonexty",
             fillcolor="rgba(255,0,0,0.15)",
             line=dict(width=0),
@@ -312,7 +305,7 @@ def plot_daily_climatology(
     fig.add_trace(
         go.Scatter(
             x=dates_x,
-            y=daily.values,
+            y=daily_doy.values,
             customdata=dates,
             mode="lines",
             line=dict(color="black", width=1.5),
