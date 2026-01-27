@@ -427,7 +427,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     lat, lon = json.loads(grid_point)
 
     # Observed ERA5 daily file (intensity)
-    era5_path = DATA / 'daily' / 'era5_sfc_tas_1p5deg.nc'
+    era5_path = DATA / 'daily' / 'era5_sfc_daily_tas.nc'
     ds_obs = xr.open_dataset(era5_path)
     # select time slice: include stop day (xarray slice is inclusive for datetime)
     To_da = ds_obs['tas'].sel(time=slice(start_dt, stop_dt + dt.timedelta(days=1)),

@@ -48,7 +48,7 @@ def _load_clim_data(event: dict):
     year = (a + (b-a) / 2).year
 
     ## Read daily timeseries for this year and grid point
-    daily = xr.open_dataset(DATA / 'daily/era5_sfc_tas_1p5deg.nc').\
+    daily = xr.open_dataset(DATA / 'daily/era5_sfc_daily_tas.nc').\
         sel(
             time=slice(f"{year}-01-01", f"{year}-12-31"),
             lat=event['lat'], lon=event['lon'] % 360
