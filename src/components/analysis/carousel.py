@@ -5,7 +5,7 @@ import dash_mantine_components as dmc
 from components.analysis.plotly_plots import probability_plot
 from components.analysis.plotly_plots import PR_FAR_plot
 from components.analysis.plotly_plots import intensity_plot, intensity_change_plot
-from components.analysis.plotly_plots import observed_annual_series_plot, event_climatology_plot
+from components.analysis.plotly_plots import observed_Yo_with_return_levels_plot, annual_cycle_with_daily_obs_plot
 from components.analysis.sentence_generator import build_summary_component
 
 
@@ -115,8 +115,8 @@ def carousel(stats, event, cache_key):
                             'userSelect': 'none'
                         },
                         children=[
-                            observed_annual_series_plot(event, stats, cache_key),
-                            event_climatology_plot(event, cache_key)
+                            observed_Yo_with_return_levels_plot(event, stats, cache_key),
+                            annual_cycle_with_daily_obs_plot(event)
                         ]
                     )
                 )

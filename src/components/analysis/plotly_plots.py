@@ -5,8 +5,8 @@ from science.visualisation import (
     plot_PR_FAR,
     plot_intensity,
     plot_intensity_change,
-    plot_annual_max_series,
-    plot_daily_climatology
+    plot_observed_Yo,
+    plot_annual_cycle
 )
 
 
@@ -54,8 +54,8 @@ def probability_plot(stats, cache_key):
     return component
 
 
-def observed_annual_series_plot(event, stats, cache_key):
-    fig = plot_annual_max_series(event, stats, cache_key)
+def observed_Yo_with_return_levels_plot(event, stats, cache_key):
+    fig = plot_observed_Yo(event, stats, cache_key)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'annual-series'}),
@@ -65,8 +65,8 @@ def observed_annual_series_plot(event, stats, cache_key):
     return component
 
 
-def event_climatology_plot(event, cache_key):
-    fig = plot_daily_climatology(event, cache_key)
+def annual_cycle_with_daily_obs_plot(event):
+    fig = plot_annual_cycle(event)
 
     component = html.Div([
         html.Div(id={'type': 'plotly-notifier-hook', 'name': 'annual-series'}),

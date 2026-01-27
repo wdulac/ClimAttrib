@@ -69,7 +69,7 @@ def _load_clim_data(event: dict):
 #  Annual maxima + non-stationary return levels
 # ==================================================================
 
-def plot_annual_max_series(
+def plot_observed_Yo(
     event: dict,
     stats: xr.Dataset | None = None,
     cache_key: str | None = None
@@ -211,9 +211,8 @@ def plot_annual_max_series(
 #  Daily climatology + reference cycle
 # ==================================================================
 
-def plot_daily_climatology(
+def plot_annual_cycle(
     event: dict,
-    cache_key: str | None = None
 ) -> go.Figure:
     """
     Daily temperature series for selected year against 1991–2020 climatology
@@ -343,7 +342,6 @@ def plot_daily_climatology(
         fig,
         xaxis_title="Time of year",
         yaxis_title="Temperature [°C]",
-        cache_key=cache_key,
     )
 
     return fig

@@ -6,6 +6,6 @@ from .attribution_plots import (
 )
 
 from .climatology_plots import (
-    plot_annual_max_series,
-    plot_daily_climatology
+    plot_observed_Yo,
+    plot_annual_cycle
 )
