@@ -293,6 +293,7 @@ def plot_annual_cycle(
     # ------------------------------------------------------------------
     # Daily temperature (year)
     # ------------------------------------------------------------------
+
     fig.add_trace(
         go.Scatter(
             x=dates_x,
@@ -308,6 +309,7 @@ def plot_annual_cycle(
     # ------------------------------------------------------------------
     # User-selected period
     # ------------------------------------------------------------------
+
     x0 = _doy_to_datetime(_datetime_to_doy(a), base_year)
     x1 = _doy_to_datetime(_datetime_to_doy(b), base_year)
     
@@ -323,25 +325,50 @@ def plot_annual_cycle(
     # ------------------------------------------------------------------
     # Axes
     # ------------------------------------------------------------------
-    tickvals = [
-        dt.datetime(base_year, m, 15)
-        for m in range(1, 13)
-    ]
-    
-    ticktext = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    month_starts = [
+    dt.datetime(base_year, m, 1)
+    for m in range(1, 13)
+    ] + [dt.datetime(base_year, 12, 31)]
     
     fig.update_xaxes(
         type="date",
-        tickvals=tickvals,
-        ticktext=ticktext,
+        tickvals=month_starts,
+        ticktext=[""] * len(month_starts),
+        showticklabels=True,
         hoverformat="%B %d",
     )
+
+    annotations = []
+    
+    for m in range(1, 13):
+        start = dt.datetime(base_year, m, 1)
+        end = dt.datetime(
+            base_year, m, calendar.monthrange(base_year, m)[1]
+        )
+        mid = start + (end - start) / 2
+    
+        annotations.append(
+            dict(
+                x=mid,
+                y=0,
+                xref="x",
+                yref="paper",
+                text=calendar.month_abbr[m],
+                showarrow=False,
+                yshift=-30,
+                font=dict(size=14),
+            )
+        )
+    
+    fig.update_layout(annotations=annotations)
 
     _clim_plots_base_layout(
         fig,
         xaxis_title="Time of year",
         yaxis_title="Temperature [°C]",
+        extra_bottom_margin=27,
+        standoff=30
     )
 
     return fig

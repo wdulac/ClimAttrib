@@ -183,6 +183,8 @@ def _clim_plots_base_layout(
     xaxis_title: str | None = None,
     yaxis_title: str | None = None,
     cache_key: str | None = None,
+    extra_bottom_margin: int = 0,
+    standoff : int | None=None
 ):
 
     # Taille
@@ -191,12 +193,16 @@ def _clim_plots_base_layout(
     width = 180 * mm * 110
     height = width / ratio
 
+    base_margin = dict(l=60, r=40, t=40, b=40)
+    
+    base_margin["b"] += extra_bottom_margin
+
     fig.update_layout(
         width=width,
         height=height,
         plot_bgcolor="white",
         paper_bgcolor="#f1f3f5",
-        margin=dict(l=60, r=40, t=40, b=40),
+        margin=base_margin,
         xaxis=dict(
             ticks='outside',
             showline=True,
@@ -239,7 +245,8 @@ def _clim_plots_base_layout(
         fig.update_xaxes(
             title=dict(
                 text=xaxis_title,
-                font=dict(size=16, color='black', family='Arial')
+                font=dict(size=16, color='black', family='Arial'),
+                standoff=standoff
             )
         )
     
