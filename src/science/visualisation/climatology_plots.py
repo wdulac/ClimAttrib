@@ -96,6 +96,34 @@ def plot_observed_Yo(
     fig = go.Figure()
 
     # ------------------------------------------------------------------
+    # D'abord les lignes horizontales qui repèrent le point sélectionné par l'utilisateur
+    # ------------------------------------------------------------------
+    
+    # Ligne verticale : du bas de l'axe jusqu'au point sélectionné
+    fig.add_shape(
+        type="line",
+        x0=Xo,
+        x1=Xo,
+        y0=0,
+        y1=1,
+        line=dict(color="red", dash="dash", width=1),
+        xref="x",
+        yref="paper"
+    )
+    
+    # Ligne horizontale : du bord gauche de la figure jusqu'au point sélectionné
+    fig.add_shape(
+        type="line",
+        x0=0,  # bord gauche de la figure
+        x1=1,
+        y0=To,
+        y1=To,
+        line=dict(color="red", dash="dash", width=1),
+        xref="paper",
+        yref="y"
+    )
+
+    # ------------------------------------------------------------------
     # Annual maxima series
     # ------------------------------------------------------------------
 
@@ -127,29 +155,6 @@ def plot_observed_Yo(
         )
     )
 
-    # Ligne verticale : du bas de l'axe jusqu'au point sélectionné
-    fig.add_shape(
-        type="line",
-        x0=Xo,
-        x1=Xo,
-        y0=float(Yo.min()-1),
-        y1=To,
-        line=dict(color="red", dash="dash"),
-        xref="x",
-        yref="y"
-    )
-    
-    # Ligne horizontale : du bord gauche de la figure jusqu'au point sélectionné
-    fig.add_shape(
-        type="line",
-        x0=time[0] - 3,  # bord gauche de la figure
-        x1=Xo,
-        y0=To,
-        y1=To,
-        line=dict(color="red", dash="dash"),
-        xref="x",  # coordonnées relatives à la figure
-        yref="y"
-    )
 
     # ------------------------------------------------------------------
     # Return levels (optional)
