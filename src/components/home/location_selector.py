@@ -57,7 +57,7 @@ Usage
   (e.g. input_settings_top_bar) expect `input:selected-point` to exist.
 """
 
-from dash import html, callback, Output, Input, State
+from dash import html, callback, Output, Input, State, ctx
 from dash import clientside_callback, ClientsideFunction
 from dash import dcc
 from dash.exceptions import PreventUpdate
@@ -216,17 +216,20 @@ clientside_callback(
 )
 def toggle_plots(point, date_error, selected_dates):
 
+    print("TOGGLE_PLOTS TRIGGERED BY : ", ctx.triggered_prop_ids)
+
     if point and not date_error:
         if None not in selected_dates:
             return "plots-visible", dmc.Box(
                 dmc.Center(
                     dmc.Text(
-                        "Content"
+                        "Contenu du panneau"
                     ),
                     style={"height": "100%"}
                 ),
                 style={"height": "100%"},
             )
         else:
+            print("Update prevented")
             raise PreventUpdate
     return "plots-hidden", None
