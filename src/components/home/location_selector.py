@@ -211,18 +211,22 @@ clientside_callback(
     Output("home-plots-panel", "children"),
     Input("input:selected-point", "data"),
     Input("input:date", "error"),
+    State("input:date", "value"),
     prevent_initial_call=True
 )
 def toggle_plots(point, date_error, selected_dates):
 
     if point and not date_error:
-        return "plots-visible", dmc.Box(
-            dmc.Center(
-                dmc.Text(
-                    "Content"
+        if None not in selected_dates:
+            return "plots-visible", dmc.Box(
+                dmc.Center(
+                    dmc.Text(
+                        "Content"
+                    ),
+                    style={"height": "100%"}
                 ),
-                style={"height": "100%"}
-            ),
-            style={"height": "100%"},
-        )
+                style={"height": "100%"},
+            )
+        else:
+            raise PreventUpdate
     return "plots-hidden", None
