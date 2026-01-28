@@ -210,12 +210,12 @@ clientside_callback(
     Output("home-plots-panel", "className"),
     Output("home-plots-panel", "children"),
     Input("input:selected-point", "data"),
-    Input("input:date", "value"),
+    Input("input:date", "error"),
     prevent_initial_call=True
 )
-def toggle_plots(point, dates):
+def toggle_plots(point, date_error, selected_dates):
 
-    if point and dates:
+    if point and not date_error:
         return "plots-visible", dmc.Box(
             dmc.Center(
                 dmc.Text(
