@@ -211,10 +211,20 @@ clientside_callback(
     Output("home-plots-panel", "children"),
     Input("input:selected-point", "data"),
     Input("input:date", "error"),
+    Input("data:intensity", "data"),
+    Input("input:extreme-type", "value"),
+    Input("input:computation-method", "value"),
     State("input:date", "value"),
     prevent_initial_call=True
 )
-def toggle_plots(point, date_error, selected_dates):
+def toggle_plots(
+    point: str, # JSON serialized
+    date_error:str,
+    intensity:str, # JSON serialized
+    extreme_type: str,
+    computation_method: str,
+    selected_dates: list[str, str]
+):
 
     print("TOGGLE_PLOTS TRIGGERED BY : ", ctx.triggered_prop_ids)
 
