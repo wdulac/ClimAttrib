@@ -4,3 +4,19 @@
     min-height: 0;
     flex-grow: 1;
 }
+
+.home-main {
+    display: flex;
+    flex-direction: row;
+    flex: 1 1 auto;
+}
+
+.plots-visible {
+    width: 420px;
+    border-left: 1px solid #ddd;
+    overflow-y: auto;
+}
+
+.plots-hidden {
+    display: none;
+}

@@ -62,6 +62,7 @@ from dash import clientside_callback, ClientsideFunction
 from dash import dcc
 from dash.exceptions import PreventUpdate
 from dash_extensions.javascript import Namespace
+import dash_mantine_components as dmc
 import dash_leaflet as dl
 import dash_leaflet.express as dlx
 import json
@@ -204,3 +205,24 @@ clientside_callback(
     State('geojson', 'hideout'),
     prevent_initial_call=True
 )
+
+@callback(
+    Output("home-plots-panel", "className"),
+    Output("home-plots-panel", "children"),
+    Input("input:selected-point", "data"),
+    Input("input:date", "value"),
+    prevent_initial_call=True
+)
+def toggle_plots(point, dates):
+
+    if point and dates:
+        return "plots-visible", dmc.Box(
+            dmc.Center(
+                dmc.Text(
+                    "Content"
+                ),
+                style={"height": "100%"}
+            ),
+            style={"height": "100%"},
+        )
+    return "plots-hidden", None
