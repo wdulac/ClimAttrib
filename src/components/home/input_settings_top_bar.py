@@ -361,13 +361,11 @@ def update_disabled_dates(date_range):
 @callback(
         Output('input:date', 'error'),
         Input('input:date', 'value'),
-        prevent_initial_call=True
+        prevent_initial_call=False
 )
 def calendar_error(dates: list):
     """
     Update the calendar's error property depending on selected date range.
-    For the time being (development ungoing), the only valid range length is
-    3 days
     """
 
     try:
@@ -390,6 +388,8 @@ def calendar_error(dates: list):
         else:
             # At this point we should have a list of two datetime objects.
             # We evaluate the duration in days between start and stop date
+            # Note : This is legacy code and should likely never be needed anymore
+            # since the calendar dynamically disables dates for unallowed durations
             duration = ((stop - start) + dt.timedelta(days=1)).days
             
             if duration not in ALLOWED_DURATIONS:
