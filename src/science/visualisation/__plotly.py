@@ -184,14 +184,18 @@ def _clim_plots_base_layout(
     yaxis_title: str | None = None,
     cache_key: str | None = None,
     extra_bottom_margin: int = 0,
-    standoff : int | None=None
+    standoff : int | None=None,
+    scale: float = 1.0
 ):
 
     # Taille
     mm = 1. / 25.4
     ratio = 16 / 11
-    width = 180 * mm * 110
-    height = width / ratio
+    width_ref = 180 * mm * 110
+    height_ref = width_ref / ratio
+
+    width = width_ref * scale
+    height = height_ref * scale
 
     base_margin = dict(l=60, r=40, t=40, b=40)
     

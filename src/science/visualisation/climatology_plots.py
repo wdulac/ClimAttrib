@@ -72,7 +72,8 @@ def _load_clim_data(event: dict):
 def plot_observed_Yo(
     event: dict,
     stats: xr.Dataset | None = None,
-    cache_key: str | None = None
+    cache_key: str | None = None,
+    **kwargs
 ) -> go.Figure:
     """
     Annual maxima time series with optional non-stationary GEV return levels
@@ -194,18 +195,12 @@ def plot_observed_Yo(
     # Layout
     # ------------------------------------------------------------------
 
-    fig.update_xaxes(
-        range=[time[0] - 3, time[-1] + 3]
-    )
-    fig.update_yaxes(
-        range=[Yo.min() - 1, Yo.max() + 1]
-    )
-
     _clim_plots_base_layout(
         fig,
         xaxis_title="Time",
         yaxis_title="Temperature [°C]",
         cache_key=cache_key,
+        **kwargs
     )
 
     return fig
@@ -218,6 +213,7 @@ def plot_observed_Yo(
 
 def plot_annual_cycle(
     event: dict,
+    **kwargs
 ) -> go.Figure:
     """
     Daily temperature series for selected year against 1991–2020 climatology
@@ -373,7 +369,8 @@ def plot_annual_cycle(
         xaxis_title="Time of year",
         yaxis_title="Temperature [°C]",
         extra_bottom_margin=27,
-        standoff=30
+        standoff=30,
+        **kwargs
     )
 
     return fig
