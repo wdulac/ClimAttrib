@@ -9,7 +9,7 @@ layout = html.Div([
         html.Div(
             [
                 location_selector,          # carte
-                html.Div(id="home-plots-panel", className="plots-hidden") # Graphiques
+                html.Div(id="home-plots-panel", className="home-plots-panel") # Graphiques
             ],
             className="home-main"
         )

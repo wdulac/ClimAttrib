@@ -67,6 +67,9 @@ import dash_leaflet as dl
 import dash_leaflet.express as dlx
 import json
 
+import datetime as dt
+from science.visualisation import plot_observed_Yo, plot_annual_cycle
+
 ZOOM_LEVEL_THRESHOLD = 4
 DEFAULT_ZOOM_LEVEL = 3
 MINIMUM_ZOOM_LEVEL = 3
@@ -230,7 +233,40 @@ def toggle_plots(
 
     if point and not date_error:
         if None not in selected_dates:
-            return "plots-visible", dmc.Box(
+
+            # Compose dict
+
+            # Convert dates to datetime objects
+            start_date_dt = dt.datetime.strptime(str(selected_dates[0]), '%Y-%m-%d')
+            stop_date_dt  = dt.datetime.strptime(str(selected_dates[1]), '%Y-%m-%d')
+            
+            # Compute duration and middle date
+            duration = (stop_date_dt - start_date_dt).days + 1
+
+            # Coordinates
+            coords = json.loads(point)
+            lat, lon = coords[0], coords[1]
+            
+            params = {
+                'extreme_type': extreme_type,
+                'method': computation_method,
+                'start_date': start_date_dt,
+                'stop_date': stop_date_dt,
+                'duration': duration,
+                'lat': lat,
+                'lon': lon,
+                'intensity': json.loads(intensity)
+            }
+
+            # panel_content = dmc.Stack(
+            #     [
+            #         dcc.Graph(figure=plot_annual_cycle(params, scale=0.8)),
+            #         dcc.Graph(figure=plot_observed_Yo(params, scale=0.8)),
+            #     ],
+            #     gap="md",
+            # )
+
+            panel_content = dmc.Box(
                 dmc.Center(
                     dmc.Text(
                         "Contenu du panneau"
@@ -239,7 +275,36 @@ def toggle_plots(
                 ),
                 style={"height": "100%"},
             )
+
+            return "home-plots-panel plots-visible", panel_content
         else:
             print("Update prevented")
             raise PreventUpdate
-    return "plots-hidden", None
+    return "home-plots-panel", None
+
+
+# @callback(
+#     Output("map", "viewport"),
+#     # Input("input:selected-point", "data"),
+#     Input("home-plots-panel", "className"),
+#     State("input:selected-point", "data"),
+#     prevent_initial_call=True
+# )
+# def recenter_map(panel_class, selected_point):
+
+#     print(ctx.triggered_id)
+
+#     # On recentre UNIQUEMENT quand le panneau s’ouvre
+#     if ctx.triggered_id != "home-plots-panel":
+#         raise PreventUpdate
+
+#     if panel_class != "plots-visible":
+#         raise PreventUpdate
+
+
+#     lat, lon = json.loads(selected_point)
+
+#     return dict(
+#         center=[lat, lon],
+#         transition="flyTo",
+#     )

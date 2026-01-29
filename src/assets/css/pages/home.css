@@ -11,12 +11,21 @@
     flex: 1 1 auto;
 }
 
-.plots-visible {
-    width: 420px;
-    border-left: 1px solid #ddd;
-    overflow-y: auto;
+.home-plots-panel {
+    width: 0;
+    opacity: 0;
+    overflow-y: auto; /* Active le scroll vertical uniquement si nécessaire */
+    min-height: 0;
+    pointer-events: none;
+    transition:
+        width 250ms ease,
+        opacity 150ms ease;
+    height: 100%;
 }
 
-.plots-hidden {
-    display: none;
+.plots-visible {
+    width: 33%;
+    opacity: 1;
+    pointer-events: auto;
+    border-left: 1px solid #ddd;
 }
