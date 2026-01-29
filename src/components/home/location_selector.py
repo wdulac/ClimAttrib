@@ -229,8 +229,6 @@ def toggle_plots(
     selected_dates: list[str, str]
 ):
 
-    print("TOGGLE_PLOTS TRIGGERED BY : ", ctx.triggered_prop_ids)
-
     if point and not date_error:
         if None not in selected_dates:
 
@@ -258,22 +256,13 @@ def toggle_plots(
                 'intensity': json.loads(intensity)
             }
 
-            # panel_content = dmc.Stack(
-            #     [
-            #         dcc.Graph(figure=plot_annual_cycle(params, scale=0.8)),
-            #         dcc.Graph(figure=plot_observed_Yo(params, scale=0.8)),
-            #     ],
-            #     gap="md",
-            # )
-
             panel_content = dmc.Box(
                 dmc.Center(
-                    dmc.Text(
-                        "Contenu du panneau"
-                    ),
-                    style={"height": "100%"}
-                ),
-                style={"height": "100%"},
+                    dmc.Stack([
+                        dcc.Graph(figure=plot_annual_cycle(params, scale=0.75)),
+                        dcc.Graph(figure=plot_observed_Yo(params, scale=0.75)),
+                    ], gap=0),
+                ), 
             )
 
             return "home-plots-panel plots-visible", panel_content

@@ -18,6 +18,7 @@
     min-height: 0;
     overflow-y: auto; /* Active le scroll vertical uniquement si nécessaire */
     pointer-events: none;
+    background-color: var(--mantine-color-gray-1);
     transition:
         width 250ms ease,
         opacity 150ms ease;
