@@ -195,13 +195,6 @@ def plot_observed_Yo(
     # Layout
     # ------------------------------------------------------------------
 
-    fig.update_xaxes(
-        range=[time[0] - 3, time[-1] + 3]
-    )
-    fig.update_yaxes(
-        range=[Yo.min() - 1, Yo.max() + 1]
-    )
-
     _clim_plots_base_layout(
         fig,
         xaxis_title="Time",
