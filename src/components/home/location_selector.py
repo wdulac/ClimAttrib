@@ -267,7 +267,6 @@ def toggle_plots(
 
             return "home-plots-panel plots-visible", panel_content
         else:
-            print("Update prevented")
             raise PreventUpdate
     return "home-plots-panel", None
 
