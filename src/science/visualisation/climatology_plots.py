@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+from scipy.stats import norm
 import calendar
 import datetime as dt
 import plotly.graph_objects as go
@@ -38,6 +39,47 @@ def _GEV_return_level(
 
     return mu + (sigma/ksi) * ((-np.log(1-p))**(-ksi) - 1)
 
+
+def _Gaussian_return_level(
+    mu: xr.DataArray,
+    sigma: xr.DataArray,
+    p: float,
+) -> xr.DataArray:
+    """
+    Computes (possibly non-stationary) Gaussian return level
+    for exceedance probability p.
+    
+    p = 0.5  -> 2-year
+    p = 0.1  -> 10-year
+    """
+
+    return mu + sigma * norm.ppf(1 - p)
+
+
+def _return_level(
+    stats: dict,
+    p: float,
+    method: str,
+) -> xr.DataArray:
+
+    if method == "yearmax":
+        return _GEV_return_level(
+            stats["locF"].sel(quantile="BE"),
+            stats["scaleF"].sel(quantile="BE"),
+            stats["shapeF"].sel(quantile="BE"),
+            p,
+        )
+
+    elif method == "calendar":
+        return _Gaussian_return_level(
+            stats["locF"].sel(quantile="BE"),
+            stats["scaleF"].sel(quantile="BE"),
+            p,
+        )
+
+    else:
+        raise ValueError(f"Unknown computation_method: {method}")
+    
 
 def _load_clim_data(event: dict):
 
@@ -170,11 +212,10 @@ def plot_observed_Yo(
         ]:
             rl = (
                 sign
-                * _GEV_return_level(
-                    stats["locF"].sel(quantile="BE"),
-                    stats["scaleF"].sel(quantile="BE"),
-                    stats["shapeF"].sel(quantile="BE"),
-                    p,
+                * _return_level(
+                    stats,
+                    p=p,
+                    method=event['method']
                 )
                 .sel(time=Yo.time)
                 + bias
