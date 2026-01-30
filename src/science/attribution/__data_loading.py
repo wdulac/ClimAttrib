@@ -76,21 +76,21 @@ def _load_obs(lat: float, lon: float, extreme_type: str, computation_method: str
     if computation_method == 'yearmax':
         if extreme_type == 'hot':
             var_name = f'tmx{duration}d'
-            file_prefix = var_name
+            file_suffix = var_name
         elif extreme_type == 'cold':
             var_name = f'tmn{duration}d'
-            file_prefix = var_name
+            file_suffix = var_name
     elif computation_method == 'calendar':
         if extreme_type == 'hot':
             var_name = 'tmx3d15w'
             window = _best_window_from_range(_datetime_to_doy(start_date),
                                              _datetime_to_doy(stop_date))
-            file_prefix = f"{var_name}_{window[0]:03d}-{window[1]:03d}"
+            file_suffix = f"{var_name}_{window[0]:03d}-{window[1]:03d}"
         elif extreme_type == 'cold':
             raise NotImplementedError
 
 
-    Yo_file = DATA / f'Yo/{var_name}/{file_prefix}_ERA5_1940-2024.nc'
+    Yo_file = DATA / f'Yo/{var_name}/Yo_{file_suffix}.nc'
 
     Yo = xr.open_dataset(Yo_file)[var_name].sel(lat=lat, lon=lon)
 
