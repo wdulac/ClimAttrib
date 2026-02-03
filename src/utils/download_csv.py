@@ -40,10 +40,13 @@ def download_csv():
     if not cache_key or not variables:
         return "Missing parameters", 400
     
-    stats = get_cache(cache_key)
-    if stats is None:
+    result = get_cache(cache_key)
+
+    if result['status'] == 'timeout':
         return "Data not available", 500
 
+    stats = result['result']
+    
     try:
         df = stats[variables.split('_')].to_dataframe().unstack("quantile")
         df.columns = [f"{var}_{q}" for var, q in df.columns]
