@@ -16,7 +16,6 @@ from components.layout import(
 
 # Utils imports
 from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
-from utils import redis_cache
 
 from utils.redirects import register_redirects
 from utils.geojson_tiles import register_geojson_routes
@@ -53,7 +52,7 @@ application = Dash(
 layout = html.Div([
     dcc.Location(id='url'),
     dmc.NotificationContainer(id='notification-container'),
-    *disclaimer_layout(),
+    *disclaimer_layout,
     header,
     page_container, # Page content loaded from `pages` folder
     footer

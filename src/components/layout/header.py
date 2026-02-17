@@ -5,19 +5,7 @@ import dash_mantine_components as dmc
 
 from utils.paths import RESOURCES
 
-
-# debug_style = {
-    # "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
-    # "textAlign": "center"
-# }
-
 ### Individual header items/buttons
-
-_about_button = dmc.Button(
-    "About",
-    id="about-button",
-    variant="subtle"
-)
 
 QUICKGUIDE_FILE = RESOURCES / 'quickguide.md'
 with open(QUICKGUIDE_FILE, 'r') as f:
@@ -72,27 +60,27 @@ _how_to_use = html.Div(children=[
     )
 ])
 
-# _language_menu = dmc.Menu(
-#     children=[
-#         dmc.MenuTarget(dmc.Button("EN / FR", variant='subtle')),
-#         dmc.MenuDropdown(
-#             children=[
-#                 dmc.MenuItem(
-#                     "English",
-#                     href=""
-#                 ),
-#                 dmc.MenuItem(
-#                     "Français",
-#                     href=""
-#                 )
-#             ]
-#         )
-#     ],
-#     trigger='hover',
-#     openDelay=100,
-#     closeDelay=400,
-#     id='language-menu'
-# )
+
+_about = html.Div(children=[
+    dmc.Button(
+    "About",
+    id="about-button",
+    variant="subtle"
+    ),
+    dmc.Modal(
+        id="about-modal",
+        title="About",
+        children="Placeholder",
+        size="55%",
+        styles={
+            "title": {
+                "fontSize": "32px",
+                "fontWeight": 700
+            },
+        },
+    )
+])
+
 
 _github_action_button = html.A(
     href='https://github.com/wdulac/ClimAttrib',
@@ -115,7 +103,7 @@ _header_right = dmc.Group(
     children=dmc.Group(
         children=[
             _how_to_use,
-            _about_button,
+            _about,
             # _language_menu,
             dmc.Space(w='10px'), # For even spacing of the buttons
             _github_action_button
@@ -162,4 +150,14 @@ header = html.Header(
     prevent_initial_call=True
 )
 def toggle_how_to_use(n_cliks, opened):
+    return not opened
+
+
+@callback(
+    Output("about-modal", "opened"),
+    Input("about-button", "n_clicks"),
+    State("about-modal", "opened"),
+    prevent_initial_call=True,
+)
+def toggle_about(n, opened):
     return not opened
