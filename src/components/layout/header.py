@@ -15,6 +15,10 @@ INTERPRETATION_HELP_FILE = RESOURCES / 'interpretation_help.md'
 with open(INTERPRETATION_HELP_FILE, 'r') as f:
     INTERPRETATION_HELP_CONTENT = f.read()
 
+ABOUT_FILE = RESOURCES / 'disclaimer.md'
+with open(ABOUT_FILE, 'r') as f:
+    ABOUT_CONTENT = f.read()
+
 _how_to_use = html.Div(children=[
     dmc.Button(
         "How to use",
@@ -70,7 +74,7 @@ _about = html.Div(children=[
     dmc.Modal(
         id="about-modal",
         title="About",
-        children="Placeholder",
+        children=dcc.Markdown(ABOUT_CONTENT),
         size="55%",
         styles={
             "title": {
