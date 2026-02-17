@@ -65,7 +65,7 @@ register_disclaimer_callbacks(application)
 
 application.layout = dmc.MantineProvider(layout)
 
-# Attach rules to server
+# Attach functionnalities (redirection rules and routes) to server
 register_redirects(server)
 register_geojson_routes(server)
 register_download_routes(server)
