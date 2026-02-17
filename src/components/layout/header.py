@@ -13,11 +13,10 @@ from utils.paths import RESOURCES
 
 ### Individual header items/buttons
 
-_about_button = html.A(
-    href="",
-    children=[
-        dmc.Button("About", variant='subtle')
-    ]
+_about_button = dmc.Button(
+    "About",
+    id="about-button",
+    variant="subtle"
 )
 
 QUICKGUIDE_FILE = RESOURCES / 'quickguide.md'

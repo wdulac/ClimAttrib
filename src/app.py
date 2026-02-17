@@ -4,8 +4,14 @@ from dash import Dash, dcc, html, page_container
 # Mantine
 import dash_mantine_components as dmc
 # Custom components for the layout
-from components.header import header
-from components.footer import footer
+from components.layout import (
+    disclaimer_layout,
+    register_disclaimer_callbacks
+)
+from components.layout import(
+    header,
+    footer
+)
 
 import locale
 import logging
@@ -38,11 +44,15 @@ application = Dash(
 layout = html.Div([
     dcc.Location(id='url'),
     dmc.NotificationContainer(id='notification-container'),
+    *disclaimer_layout(),
     header,
     page_container, # Page content loaded from `pages` folder
     footer
     ], className='site-container'
 )
+
+# Avoid circular import of application in src/components/layout/disclaimer.py
+register_disclaimer_callbacks(application)
 
 application.layout = dmc.MantineProvider(layout)
 
