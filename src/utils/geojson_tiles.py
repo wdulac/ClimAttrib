@@ -1,4 +1,3 @@
-from app import server
 import os
 import json
 
@@ -8,9 +7,6 @@ from functools import lru_cache
 
 from utils.paths import ASSETS
 
-server.config['COMPRESS_REGISTER'] = False # Disable default compression
-compress = Compress()
-compress.init_app(server)
 
 TILE_SIZE =10
 GRID_TILES_DIR = ASSETS / "static/grid_tiles/"
@@ -32,21 +28,26 @@ def tile_indices_in_bbox(south, west, north, east):
     y_max = int(north // TILE_SIZE)
     return [(x, y) for x in range(x_min, x_max + 1) for y in range(y_min, y_max + 1)]
 
+def register_geojson_routes(server):
 
-@server.route("/grid_tiles")
-@compress.compressed()
-def serve_grid_tiles():
-    bounds_str = request.args.get("bounds", None)
-    if bounds_str is None:
-        return jsonify({"type": "FeatureCollection", "features": []})
+    server.config['COMPRESS_REGISTER'] = False # Disable default compression
+    compress = Compress()
+    compress.init_app(server)
 
-    # bounds: [[south, west], [north, east]]
-    bounds = json.loads(bounds_str)
-    south, west = bounds[0]
-    north, east = bounds[1]
+    @server.route("/grid_tiles")
+    @compress.compressed()
+    def serve_grid_tiles():
+        bounds_str = request.args.get("bounds", None)
+        if bounds_str is None:
+            return jsonify({"type": "FeatureCollection", "features": []})
 
-    features = []
-    for x, y in tile_indices_in_bbox(south, west, north, east):
-        features.extend(load_tile(x, y))
+        # bounds: [[south, west], [north, east]]
+        bounds = json.loads(bounds_str)
+        south, west = bounds[0]
+        north, east = bounds[1]
 
-    return jsonify({"type": "FeatureCollection", "features": features})
+        features = []
+        for x, y in tile_indices_in_bbox(south, west, north, east):
+            features.extend(load_tile(x, y))
+
+        return jsonify({"type": "FeatureCollection", "features": features})

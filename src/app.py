@@ -3,6 +3,7 @@ from flask import Flask
 from dash import Dash, dcc, html, page_container
 # Mantine
 import dash_mantine_components as dmc
+
 # Custom components for the layout
 from components.layout import (
     disclaimer_layout,
@@ -12,6 +13,14 @@ from components.layout import(
     header,
     footer
 )
+
+# Utils imports
+from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
+from utils import redis_cache
+
+from utils.redirects import register_redirects
+from utils.geojson_tiles import register_geojson_routes
+from utils.download_csv import register_download_routes
 
 import locale
 import logging
@@ -56,12 +65,10 @@ register_disclaimer_callbacks(application)
 
 application.layout = dmc.MantineProvider(layout)
 
-# imports from utils need to take place after initialization of the app
-from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
-from utils import redis_cache
-from utils import redirects
-from utils import geojson_tiles
-from utils import download_csv
+# Attach rules to server
+register_redirects(server)
+register_geojson_routes(server)
+register_download_routes(server)
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.
