@@ -42,7 +42,7 @@ application = Dash(
         "https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.8/dayjs.min.js"
     ],
     update_title=None,
-    title="Clim@Attrib",
+    title="WeatherAttrib",
     suppress_callback_exceptions=True,
     use_pages=True
 )
