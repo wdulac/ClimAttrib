@@ -17,14 +17,20 @@ disclaimer_layout = [
         id="disclaimer-modal",
         title="Disclaimer",
         children=[
-            dcc.Markdown(DISCLAIMER_CONTENT),
-            dmc.Space(h=20),
-            dmc.Center(
-                dmc.Button(
-                    "I understand",
-                    id="disclaimer-accept"
-                )
-            ),
+            dmc.Stack(
+                [
+                    dcc.Markdown(DISCLAIMER_CONTENT),
+                    dmc.Space(h=20),
+                    dmc.Center(
+                        dmc.Button(
+                            "I understand",
+                            id="disclaimer-accept"
+                        )
+                    ),
+                ],
+                justify="space-between",
+                style={"minHeight": 689},
+            )
         ],
         centered=True,
         size="55%",
