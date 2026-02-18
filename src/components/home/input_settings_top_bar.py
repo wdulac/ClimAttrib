@@ -144,7 +144,13 @@ import os
 
 import json
 from utils.url_token import encode_token
-from utils.paths import RESOURCES, DATA
+from utils.paths import DATA
+from components.resources import (
+    COMPUTE_TOOLTIP_CONTENT,
+    ANOMALY_TOOLTIP_CONTENT,
+    CLIMATOLOGY_TOOLTIP_CONTENT
+)
+
 from science.attribution.__calendar_utils import _datetime_to_doy
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -159,19 +165,6 @@ ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10, 14] # In days
 
 CALENDAR_MIN_DATE = dt.date(1940, 1, 1)
 CALENDAR_MAX_DATE = dt.date.fromisoformat(os.getenv("CALENDAR_MAX_DATE", "20221231"))
-
-## Reading textual resource files
-COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
-with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
-    COMPUTE_TOOLTIP_CONTENT = f.read()
-
-ANOMALY_HELP_MD_FILE = RESOURCES / 'anomaly_tooltip_content.md'
-with open(ANOMALY_HELP_MD_FILE, 'r') as f:
-    ANOMALY_TOOLTIP_CONTENT = f.read()
-
-CLIMATOLOGY_HELP_MD_FILE = RESOURCES / 'climatology_tooltip_content.md'
-with open(CLIMATOLOGY_HELP_MD_FILE, 'r') as f:
-    CLIMATOLOGY_TOOLTIP_CONTENT = f.read()
 
 ## Icons
 MINUS_ICON = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
