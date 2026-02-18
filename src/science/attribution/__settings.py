@@ -1,5 +1,5 @@
 import os
-from platform.shared.paths import DATA, SRC
+from app_platform.shared.paths import DATA, SRC
 
 
 ## Paramètres généraux

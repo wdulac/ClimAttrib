@@ -15,9 +15,9 @@ from components.layout import(
 )
 
 # Utils imports
-from platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
+from app_platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
 
-from platform.web import (
+from app_platform.web import (
     register_redirects,
     register_geojson_routes,
     register_download_routes

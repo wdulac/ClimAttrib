@@ -17,7 +17,7 @@ from science.attribution.__calendar_utils import (
 )
 from science.attribution.__data_loading import _load_obs
 
-from platform.shared.paths import DATA
+from app_platform.shared.paths import DATA
 
 
 def _GEV_return_level(

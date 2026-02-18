@@ -5,7 +5,7 @@ from flask import request, jsonify
 from flask_compress import Compress
 from functools import lru_cache
 
-from platform.shared.paths import ASSETS
+from app_platform.shared.paths import ASSETS
 
 
 TILE_SIZE =10

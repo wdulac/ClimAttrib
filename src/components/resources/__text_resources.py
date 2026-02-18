@@ -1,4 +1,4 @@
-from platform.shared.paths import STATIC_TEXTS
+from app_platform.shared.paths import STATIC_TEXTS
 
 QUICKGUIDE_FILE = STATIC_TEXTS / 'quickguide.md'
 with open(QUICKGUIDE_FILE, 'r', encoding='utf-8') as f:

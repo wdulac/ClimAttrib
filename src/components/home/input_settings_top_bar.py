@@ -143,8 +143,8 @@ import datetime as dt
 import os
 
 import json
-from platform.shared.tokens import encode_token
-from platform.shared.paths import DATA
+from app_platform.shared.tokens import encode_token
+from app_platform.shared.paths import DATA
 from components.resources import (
     COMPUTE_TOOLTIP_CONTENT,
     ANOMALY_TOOLTIP_CONTENT,
