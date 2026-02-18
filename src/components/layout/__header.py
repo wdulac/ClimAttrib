@@ -3,21 +3,13 @@ from dash import Output, Input, State, callback
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
-from utils.paths import RESOURCES
+from components.resources import (
+    QUICKGUIDE_CONTENT,
+    INTERPRETATION_HELP_CONTENT,
+    DISCLAIMER_CONTENT as ABOUT_CONTENT
+)
 
 ### Individual header items/buttons
-
-QUICKGUIDE_FILE = RESOURCES / 'quickguide.md'
-with open(QUICKGUIDE_FILE, 'r') as f:
-    QUICKGUIDE_CONTENT = f.read()
-
-INTERPRETATION_HELP_FILE = RESOURCES / 'interpretation_help.md'
-with open(INTERPRETATION_HELP_FILE, 'r') as f:
-    INTERPRETATION_HELP_CONTENT = f.read()
-
-ABOUT_FILE = RESOURCES / 'disclaimer.md'
-with open(ABOUT_FILE, 'r') as f:
-    ABOUT_CONTENT = f.read()
 
 _how_to_use = html.Div(children=[
     dmc.Button(

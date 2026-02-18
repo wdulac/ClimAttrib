@@ -1,11 +1,7 @@
 from dash import dcc, html, Input, Output, State, no_update, ctx
 import dash_mantine_components as dmc
 
-from utils.paths import RESOURCES
-
-DISCLAIMER_FILE = RESOURCES / 'disclaimer.md'
-with open(DISCLAIMER_FILE, 'r') as f:
-    DISCLAIMER_CONTENT = f.read()
+from components.resources import DISCLAIMER_CONTENT
 
 disclaimer_layout = [
     dcc.Store(
