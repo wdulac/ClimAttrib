@@ -1,4 +1,4 @@
-from dash import dcc, html, Input, Output, State, no_update, ctx
+from dash import dcc, Input, Output, no_update, ctx
 import dash_mantine_components as dmc
 
 from components.resources import DISCLAIMER_CONTENT
