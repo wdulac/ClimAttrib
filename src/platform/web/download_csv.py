@@ -1,7 +1,7 @@
 from flask import request, Response
 import io
 
-from .redis_cache import get_cache
+from platform.compute.redis import get_cache
 
 CSV_HEADERS = {
     'All': """# This CSV contains the time series data for the selected graph resulting from the attribution analysis.

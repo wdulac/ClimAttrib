@@ -1,5 +1,5 @@
 import os
-from utils.paths import DATA, SRC
+from platform.shared.paths import DATA, SRC
 
 
 ## Paramètres généraux

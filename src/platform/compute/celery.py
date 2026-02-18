@@ -1,7 +1,7 @@
 from celery import Celery
 from celery.exceptions import SoftTimeLimitExceeded
 from science.attribution import attribute_event
-from .redis_cache import set_cache, make_cache_key
+from .redis import set_cache, make_cache_key
 import os
 
 # Setting up Celery
