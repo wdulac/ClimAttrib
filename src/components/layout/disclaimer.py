@@ -56,10 +56,9 @@ def register_disclaimer_callbacks(app):
         Output("disclaimer-store", "data"),
         Input("disclaimer-store", "data"),
         Input("disclaimer-accept", "n_clicks"),
-        State("disclaimer-modal", "opened"),
         prevent_initial_call=False,
     )
-    def handle_disclaimer(store_data, accept_clicks, opened):
+    def handle_disclaimer(store_data, accept_clicks):
         """
         Controls the blocking disclaimer modal.
 
@@ -77,4 +76,4 @@ def register_disclaimer_callbacks(app):
         if trigger == "disclaimer-accept":
             return False, {"disclaimer-accepted": True}
 
-        return opened, no_update
+        return no_update, no_update
