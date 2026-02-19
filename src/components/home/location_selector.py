@@ -95,7 +95,7 @@ _grid = dl.GeoJSON(
     id='geojson'
 )
 
-location_selector = html.Div(
+interactive_map_component = html.Div(
     children=[
         dl.Map(
             children=[

@@ -19,7 +19,7 @@ _back_button = dmc.Button(
 )
 
 
-def description(event: dict) -> html.Div:
+def event_description_component(event: dict) -> html.Div:
     """
     Compose complete bar above carousel, with event description + back button
     """

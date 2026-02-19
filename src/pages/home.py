@@ -1,14 +1,17 @@
 from dash import register_page, html
-from components.home.input_settings_top_bar import input_settings_top_bar
-from components.home.location_selector import location_selector
+
+from components.home import (
+    event_definition_component,
+    interactive_map_component
+)
 
 register_page(__name__, path='/')
 
 layout = html.Div([
-        input_settings_top_bar,
+        event_definition_component,
         html.Div(
             [
-                location_selector,          # carte
+                interactive_map_component,          # carte
                 html.Div(id="home-plots-panel", className="home-plots-panel") # Graphiques
             ],
             className="home-main"

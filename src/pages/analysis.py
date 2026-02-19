@@ -2,11 +2,18 @@ from dash import register_page, html, dcc, callback, Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
-from components.analysis.event_description import description
-from components.analysis.carousel import carousel
+from components.analysis import (
+    carousel,
+    event_description_component
+)
 
 from app_platform.shared.tokens import decode_token
-from app_platform.compute.redis import make_cache_key, get_cache, cache_exists, delete_cache
+from app_platform.compute.redis import (
+    make_cache_key,
+    get_cache,
+    cache_exists,
+    delete_cache
+)
 
 # Make sure to import the Celery task named "attribution" task and not just the "attribution" function from utils.tasks
 from app_platform.compute.celery import celery_app
@@ -58,7 +65,7 @@ def layout(p=None):
     # Initialise layout with the event's description
     layout = html.Div(children=[
         dcc.Store(data=p, id='event-token'),
-        description(event)
+        event_description_component(event)
     ], className='analysis-container', id='analysis-container')
 
     if cache_exists(cache_key):

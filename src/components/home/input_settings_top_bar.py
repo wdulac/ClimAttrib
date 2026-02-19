@@ -303,7 +303,7 @@ _temperature_readout = dmc.Group(
 )
 
 # Laying out all elements
-input_settings_top_bar = html.Div(children=[
+event_definition_component = html.Div(children=[
     dcc.Store(id='data:intensity', data=None),
     html.H3("Extreme event selection", id='settings-row-title'),
     dmc.Divider(variant='solid'),
