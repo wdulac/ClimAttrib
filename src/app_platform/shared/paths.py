@@ -19,4 +19,4 @@ SRC = ROOT / "src"
 DATA = ROOT / "data"
 COMPONENTS = SRC / "components"
 ASSETS = SRC / "assets"
-STATIC_TEXTS = ASSETS / "static/texts" # Holds text files used by components.resources sub-module
+MARKDOWN_RESOURCES = COMPONENTS / "resources/md" # Holds text files used by components.resources sub-module
