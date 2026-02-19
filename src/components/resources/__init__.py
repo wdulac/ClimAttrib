@@ -1,4 +1,4 @@
-from .__text_resources import (
+from .text_resources import (
     QUICKGUIDE_CONTENT,
     INTERPRETATION_HELP_CONTENT,
     COMPUTE_TOOLTIP_CONTENT,
