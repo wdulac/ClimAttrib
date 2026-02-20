@@ -16,7 +16,7 @@ disclaimer_layout = [
             dmc.Stack(
                 [
                     dcc.Markdown(DISCLAIMER_CONTENT),
-                    dmc.Space(h=20),
+                    dmc.Space(h=10),
                     dmc.Center(
                         dmc.Button(
                             "I understand",
@@ -25,7 +25,7 @@ disclaimer_layout = [
                     ),
                 ],
                 justify="space-between",
-                style={"minHeight": 689},
+                style={"minHeight": 234},
             )
         ],
         centered=True,

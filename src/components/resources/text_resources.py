@@ -12,6 +12,10 @@ DISCLAIMER_FILE = MARKDOWN_RESOURCES / 'disclaimer.md'
 with open(DISCLAIMER_FILE, 'r', encoding='utf-8') as f:
     DISCLAIMER_CONTENT = f.read()
 
+ABOUT_FILE = MARKDOWN_RESOURCES / 'about.md'
+with open(ABOUT_FILE, 'r', encoding='utf-8') as f:
+    ABOUT_CONTENT = f.read()
+
 COMPUTE_TOOLTIP_MD_FILE = MARKDOWN_RESOURCES / 'compute_tooltip_content_usecase.md'
 with open(COMPUTE_TOOLTIP_MD_FILE, 'r', encoding='utf-8') as f:
     COMPUTE_TOOLTIP_CONTENT = f.read()

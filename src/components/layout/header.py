@@ -6,7 +6,7 @@ import dash_mantine_components as dmc
 from components.resources import (
     QUICKGUIDE_CONTENT,
     INTERPRETATION_HELP_CONTENT,
-    DISCLAIMER_CONTENT as ABOUT_CONTENT
+    ABOUT_CONTENT
 )
 
 ### Individual header items/buttons
