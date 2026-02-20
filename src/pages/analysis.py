@@ -3,7 +3,7 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
 from components.analysis import (
-    carousel,
+    results_carousel,
     event_description_component
 )
 
@@ -77,7 +77,7 @@ def layout(p=None):
             # Extend the page layout with the valid attribution results
             layout.children.extend([
                 dcc.Store(data=False, id='is-loading'),
-                html.Div(children=carousel(cached_result['result'], event, cache_key),
+                html.Div(children=results_carousel(cached_result['result'], event, cache_key),
                          id='analysis-content',
                          className='carousel-container')
             ])
@@ -138,4 +138,4 @@ def update_results(n, key, token):
         return html.Div("The analysis exceeded the maximum time allowed. Please try again.")
 
     if stats['status'] == 'ok':
-        return carousel(stats['result'], event, key), True, False
+        return results_carousel(stats['result'], event, key), True, False

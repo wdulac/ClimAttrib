@@ -2,7 +2,7 @@ from dash import clientside_callback, ClientsideFunction, Input, Output
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
-from components.analysis.__plotly_plots import (
+from .__plotly_plots import (
     probability_plot,
     PR_FAR_plot,
     intensity_plot,
@@ -38,7 +38,7 @@ CAROUSEL_SETTINGS = {
     }
 }
 
-def carousel(stats, event, cache_key):
+def results_carousel(stats, event, cache_key):
 
     component = dmc.Carousel([
         dmc.CarouselSlide(
