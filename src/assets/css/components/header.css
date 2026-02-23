@@ -37,3 +37,29 @@
     right: 25px;
     gap: 10px;
 }
+
+
+.about-logos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;   /* centre chaque ligne */
+    gap: 24px;
+    margin-top: 10px;
+}
+
+
+.about-logo-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 80px;
+    width: 120px;
+    padding: 10px;
+}
+
+
+.about-logo-img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}

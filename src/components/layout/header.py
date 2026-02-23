@@ -56,6 +56,29 @@ _how_to_use = html.Div(children=[
     )
 ])
 
+_about_logo_files = [
+    "CNRM.png",
+    "CNRS.png",
+    "MeteoFrance.png",
+    "LSCE.png",
+    "CEA.png",
+    "IPSL.png",
+    "UVSQ.png",
+    "RepubliqueFrancaise.png",
+    "France2030.png",
+    "ANR.jpg"
+]
+
+_about_logos = [
+    html.Div(
+        html.Img(
+            src=f"/assets/logos/{filename}",
+            className="about-logo-img",
+        ),
+        className="about-logo-wrapper",
+    )
+    for filename in _about_logo_files
+]
 
 _about = html.Div(children=[
     dmc.Button(
@@ -66,7 +89,6 @@ _about = html.Div(children=[
     dmc.Modal(
         id="about-modal",
         title="About",
-        children=dcc.Markdown(ABOUT_CONTENT),
         size="55%",
         styles={
             "title": {
@@ -74,6 +96,18 @@ _about = html.Div(children=[
                 "fontWeight": 700
             },
         },
+        children=[
+            dmc.Stack(
+                [
+                    dcc.Markdown(ABOUT_CONTENT),
+                    html.Div(
+                        _about_logos,
+                        className='about-logos-grid'
+                    )
+                ],
+                gap='lg'
+            )
+        ]
     )
 ])
 
