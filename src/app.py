@@ -23,10 +23,7 @@ from app_platform.web import (
     register_download_routes
 )
 
-import locale
 import logging
-
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Initialize
 server = Flask(__name__)
