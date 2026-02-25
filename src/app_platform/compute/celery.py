@@ -1,9 +1,10 @@
+import app_platform.shared.config # So that celery workers load env variables from .env
+
 from celery import Celery
 from celery.exceptions import SoftTimeLimitExceeded
 from science.attribution import attribute_event
 from .redis import set_cache, make_cache_key
 
-import app_platform.shared.config # So that celery workers load env variables from .env
 
 import os
 

@@ -1,3 +1,5 @@
+# Utils imports
+from app_platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS 
 # Essentials
 from flask import Flask
 from dash import Dash, dcc, html, page_container
@@ -13,9 +15,6 @@ from components.layout import(
     header,
     footer
 )
-
-# Utils imports
-from app_platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
 
 from app_platform.web import (
     register_redirects,
