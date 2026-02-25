@@ -2,7 +2,7 @@ import os
 from .paths import ROOT
 from dotenv import load_dotenv
 
-load_dotenv(ROOT / '.env')
+load_dotenv(ROOT / '.env', override=True)
 
 APP_HOST=os.getenv('HOST', '127.0.0.1')
 APP_PORT=int(os.getenv('PORT', '8000'))
