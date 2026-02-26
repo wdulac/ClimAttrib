@@ -88,7 +88,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             }
             
             const roundBounds = bounds.map(pair => pair.map(value => parseFloat(value.toFixed(2))));
-            const url = `/grid_tiles?bounds=${JSON.stringify(roundBounds)}`;
+            const url = `/eventtest/grid_tiles?bounds=${JSON.stringify(roundBounds)}`;
 
             return fetch(url)
                 .then(r => r.json())
