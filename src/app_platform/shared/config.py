@@ -9,7 +9,7 @@ APP_PORT=int(os.getenv('PORT', '8000'))
 APP_DEBUG=os.getenv('DEBUG', 'False').upper() == 'TRUE'
 APP_SHOW_DASH_DEV_TOOLS=os.getenv('SHOW_DASH_DEV_TOOLS', 'False').upper() == 'TRUE'
 
-_url_raw = os.getenv("URL_BASE_PATHNAME", "").strip("/")
+_url_raw = os.getenv("URL_PREFIX", "").strip("/")
 
 # Cas racine
 if not _url_raw:
