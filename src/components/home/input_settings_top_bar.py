@@ -134,6 +134,7 @@ to sign navigation tokens.
 """
 
 from dash import html, callback, Output, Input, State, dcc
+from dash import get_relative_path
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
@@ -538,7 +539,7 @@ def update_link(
                 token = encode_token(extreme_type, computation_method, date, lat, lon, To)
 
                 # Create and return href
-                href = f"/analysis?p={token}"
+                href = get_relative_path(f"/analysis?p={token}")
                 
                 return href
             else:

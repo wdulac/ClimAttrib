@@ -9,6 +9,8 @@ from components.resources import (
     ABOUT_CONTENT
 )
 
+from app_platform.shared.urls import asset_url
+
 ### Individual header items/buttons
 
 _how_to_use = html.Div(children=[
@@ -72,7 +74,7 @@ _about_logo_files = [
 _about_logos = [
     html.Div(
         html.Img(
-            src=f"/assets/logos/{filename}",
+            src=asset_url(f"logos/{filename}"),
             className="about-logo-img",
         ),
         className="about-logo-wrapper",
@@ -120,7 +122,7 @@ _github_action_button = html.A(
         dmc.ActionIcon(
             variant='subtle',
             children=[
-                dmc.Image(src='/assets/logos/github.svg', w=30)
+                dmc.Image(src=asset_url('logos/github.svg'), w=30)
             ],
             size="lg"
         )

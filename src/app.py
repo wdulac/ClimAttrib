@@ -1,5 +1,12 @@
 # Utils imports
-from app_platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS 
+from app_platform.shared.config import (
+    APP_HOST,
+    APP_PORT,
+    APP_DEBUG,
+    APP_SHOW_DASH_DEV_TOOLS,
+    URL_PREFIX_DASH,
+    PRODUCTION
+)
 # Essentials
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -28,15 +35,16 @@ import logging
 # Initialize
 server = Flask(__name__)
 
-server.wsgi_app = ProxyFix(
-    server.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
-)
+if PRODUCTION:
+    server.wsgi_app = ProxyFix(
+        server.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+    )
 
 server.logger.setLevel(logging.INFO)
 
 application = Dash(
     server=server,
-    url_base_pathname="/eventtest/",
+    url_base_pathname=URL_PREFIX_DASH,
     external_stylesheets=[
         # custom Plotly fullscreen modebar button (Font-Awesome)
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"

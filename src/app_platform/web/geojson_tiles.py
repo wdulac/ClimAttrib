@@ -6,6 +6,7 @@ from flask_compress import Compress
 from functools import lru_cache
 
 from app_platform.shared.paths import ASSETS
+from app_platform.shared.config import URL_PREFIX
 
 
 TILE_SIZE =10
@@ -34,7 +35,7 @@ def register_geojson_routes(server):
     compress = Compress()
     compress.init_app(server)
 
-    @server.route("/grid_tiles")
+    @server.route(f"{URL_PREFIX}/grid_tiles")
     @compress.compressed()
     def serve_grid_tiles():
         bounds_str = request.args.get("bounds", None)

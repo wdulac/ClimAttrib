@@ -2,6 +2,7 @@ from flask import request, Response
 import io
 
 from app_platform.compute.redis import get_cache
+from app_platform.shared.config import URL_PREFIX
 
 CSV_HEADERS = {
     'All': """# This CSV contains the time series data for the selected graph resulting from the attribution analysis.
@@ -32,7 +33,7 @@ CSV_HEADERS = {
 
 def register_download_routes(server):
 
-    @server.route("/download_csv")
+    @server.route(f"{URL_PREFIX}/download_csv")
     def download_csv():
 
         cache_key = request.args.get("key")
