@@ -36,6 +36,7 @@ server.logger.setLevel(logging.INFO)
 
 application = Dash(
     server=server,
+    url_base_pathname="/eventtest/",
     external_stylesheets=[
         # custom Plotly fullscreen modebar button (Font-Awesome)
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
