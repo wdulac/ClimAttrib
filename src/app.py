@@ -2,6 +2,7 @@
 from app_platform.shared.config import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS 
 # Essentials
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dash import Dash, dcc, html, page_container
 # Mantine
 import dash_mantine_components as dmc
@@ -26,6 +27,10 @@ import logging
 
 # Initialize
 server = Flask(__name__)
+
+server.wsgi_app = ProxyFix(
+    server.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+)
 
 server.logger.setLevel(logging.INFO)
 
