@@ -66,9 +66,7 @@ _about_logo_files = [
     "CEA.png",
     "IPSL.png",
     "UVSQ.png",
-    "RepubliqueFrancaise.png",
     "France2030.png",
-    "ANR.jpg"
 ]
 
 _about_logos = [
