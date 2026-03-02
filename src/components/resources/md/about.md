@@ -20,6 +20,10 @@ Qasmi, S. et al. (2026) « An Automatic Procedure for the Attribution of Extreme
 
 Robin, Y. et al. (2025) « A Bayesian statistical method to estimate the climatology of extreme temperature under multiple scenarios: the ANKIALE package », *EGUsphere* \[preprint\], p. 1‑41. Available at: <https://doi.org/10.5194/egusphere-2025-1121>.
 
+Cattiaux, J. and Ribes, A. (2018) “Defining Single Extreme Weather Events in a Climate Perspective,” *Bulletin of the American Meteorological Society*, 99(8), pp. 1557–1568. Available at: <https://doi.org/10.1175/BAMS-D-17-0281.1>.
+
+Cattiaux, J., Ribes, A. and Thompson, V. (2024) “Searching for the Most Extreme Temperature Events in Recent History,” *Bulletin of the American Meteorological Society*, 105(1), pp. E239–E256. Available at: <https://doi.org/10.1175/BAMS-D-23-0095.1>.
+
 Hersbach, H. et al. (2020) « The ERA5 global reanalysis », *Quarterly Journal of the Royal Meteorological Society*, 146(730), p. 1999‑2049. Available at: <https://doi.org/10.1002/qj.3803>.
 
 Eyring, V. et al. (2016) « Overview of the Coupled Model Intercomparison Project Phase 6 (CMIP6) experimental design and organization », *Geoscientific Model Development*, 9(5), p. 1937‑1958. Available at: <https://doi.org/10.5194/gmd-9-1937-2016>.
