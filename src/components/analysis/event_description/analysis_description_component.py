@@ -2,6 +2,8 @@ from dash import html, callback, Input, Output
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
+from app_platform.shared.urls import URL_PREFIX_DASH
+
 from .__event_key_figures import key_figures
 
 
@@ -57,7 +59,7 @@ def event_description_component(event: dict) -> html.Div:
 def go_home(_):
 
     if _:
-        return "/"
+        return URL_PREFIX_DASH
     else:
         raise PreventUpdate
     

@@ -9,7 +9,7 @@ from components.resources import (
     ABOUT_CONTENT
 )
 
-from app_platform.shared.urls import asset_url
+from app_platform.shared.urls import asset_url, URL_PREFIX_DASH
 
 ### Individual header items/buttons
 
@@ -153,7 +153,7 @@ header = html.Header(
                     children=[
                         html.A(
                             # TODO Restrict clickable zone to the actual title
-                            href="/",
+                            href=URL_PREFIX_DASH,
                             children=html.H1(
                                 "WeatherAttrib",
                                 id='page-title'

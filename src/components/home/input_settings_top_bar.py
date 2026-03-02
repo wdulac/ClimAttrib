@@ -146,6 +146,7 @@ import os
 import json
 from app_platform.shared.tokens import encode_token
 from app_platform.shared.paths import DATA
+from app_platform.shared.urls import URL_PREFIX_DASH
 from components.resources import (
     COMPUTE_TOOLTIP_CONTENT,
     ANOMALY_TOOLTIP_CONTENT,
@@ -160,7 +161,7 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
     'fz': 18,
 }
 
-LINK_DEFAULT_HREF = '/'
+LINK_DEFAULT_HREF = URL_PREFIX_DASH
 
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10, 14] # In days
 
