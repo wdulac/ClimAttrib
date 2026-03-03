@@ -4,7 +4,7 @@ WeatherAttrib is a research web application, the result of a collaboration betwe
 
 **Contributors**  
 William Dulac (CNRM, Météo-France),  
-Yoann Robin (LSCE, IPSL, CEA, UVSQ),  
+Yoann Robin (LSCE/IPSL, CEA, UVSQ),  
 Octave Tessiot (Météo-France),  
 Julien Cattiaux (CNRM, CNRS),  
 Thibault Guinaldo (CNRM, Météo-France),  
