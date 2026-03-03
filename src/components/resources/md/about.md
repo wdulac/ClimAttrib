@@ -1,6 +1,6 @@
 WeatherAttrib is a web application that allows users to attribute any hot or cold event that occurred between 1940 and 2025, selected by the user. This application is based on ERA5 data (considered here as observations, Hersbach et al., 2020), global climate simulations from the CMIP6 database (Eyring et al., 2016), and a statistical attribution method described in a series of scientific publications (see below). The events studied are local (i.e., at a grid point resolution of 1.5°), and cover a period of 1 to 15 days.
 
-WeatherAttrib is a research web application, the result of a collaboration between CNRM and LSCE, Météo-France, CNRS, CEA, and UVSQ, notably via the PEPR TRACCS program, involving several laboratories (CNRM, LSCE, IPSL). The figures and results provided do not imply any responsibility on the part of the project's partner laboratories and institutes (CEA, CNRS, IPSL, Météo-France, UVSQ).
+WeatherAttrib is a research web application, the result of a collaboration between Météo-France, CNRS, CEA, and UVSQ, notably via the PEPR TRACCS program, involving two laboratories (CNRM and LSCE/IPSL). The figures and results provided do not imply any responsibility on the part of the project's partner laboratories and institutes (CEA, CNRS, Météo-France, UVSQ).
 
 **Contributors**  
 William Dulac (CNRM, Météo-France),  
