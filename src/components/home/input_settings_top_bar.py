@@ -140,6 +140,7 @@ import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 import xarray as xr
+import numpy as np
 import datetime as dt
 import os
 
@@ -234,23 +235,30 @@ _computation_method_segmented = dmc.Stack(children=[
 )
 
 # Date picker
-_date_selector_calendar = dmc.DatePickerInput(
-    id='input:date',
-    label="Event date(s)",
-    labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
-    type='range',
-    value=[dt.date(2019, 7, 23), dt.date(2019, 7, 25)],
-    allowSingleDateInRange=True,
-    w=300,
-    highlightToday=False,
-    weekendDays=[],
-    minDate=CALENDAR_MIN_DATE,
-    maxDate=CALENDAR_MAX_DATE,
-    persistence=True,
-    persistence_type='session',
-    disabledDates={"function": "disableInvalidRange", "options": None},
-    className='datepicker-container'
-)
+
+def _date_selector_calendar():
+
+    data_daily = xr.open_dataset(DATA / 'daily' / 'era5_sfc_daily_tas.nc')
+    maxDate = np.datetime_as_string(data_daily.time.isel(time=-1).data, unit='D')
+
+    component = dmc.DatePickerInput(
+        id='input:date',
+        label="Event date(s)",
+        labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
+        type='range',
+        value=[dt.date(2019, 7, 23), dt.date(2019, 7, 25)],
+        allowSingleDateInRange=True,
+        w=300,
+        highlightToday=False,
+        weekendDays=[],
+        minDate=CALENDAR_MIN_DATE,
+        maxDate=maxDate,
+        persistence=True,
+        persistence_type='session',
+        disabledDates={"function": "disableInvalidRange", "options": None},
+        className='datepicker-container'
+    )
+    return component
 
 # Continue button
 _continue_button = dcc.Link(
@@ -304,26 +312,28 @@ _temperature_readout = dmc.Group(
     style={'minWidth': '433px'}
 )
 
-# Laying out all elements
-event_definition_component = html.Div(children=[
-    dcc.Store(id='data:intensity', data=None),
-    html.H3("Extreme event selection", id='settings-row-title'),
-    dmc.Divider(variant='solid'),
-    dmc.Grid(children=[
-        dmc.GridCol(children=[
-            dmc.Group(children=[
-                _extreme_type_segmented,
-                _date_selector_calendar,
-                _computation_method_segmented,
-                _temperature_readout
-                ], id='left-column')
-            ], span=9.5),
-        dmc.GridCol(children=[
-            _continue_button
-        ], span='auto', id='right-column'),
-    ], id='inputs-row')
-], className='settings-top-bar')
+def event_definition_component():
+    # Laying out all elements
+    component = html.Div(children=[
+        dcc.Store(id='data:intensity', data=None),
+        html.H3("Extreme event selection", id='settings-row-title'),
+        dmc.Divider(variant='solid'),
+        dmc.Grid(children=[
+            dmc.GridCol(children=[
+                dmc.Group(children=[
+                    _extreme_type_segmented,
+                    _date_selector_calendar(),
+                    _computation_method_segmented,
+                    _temperature_readout
+                    ], id='left-column')
+                ], span=9.5),
+            dmc.GridCol(children=[
+                _continue_button
+            ], span='auto', id='right-column'),
+        ], id='inputs-row')
+    ], className='settings-top-bar')
 
+    return component
 
 #~~~~~~~ Callbacks
 

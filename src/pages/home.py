@@ -7,15 +7,19 @@ from components.home import (
 
 register_page(__name__, path='/')
 
-layout = html.Div([
-        event_definition_component,
-        html.Div(
-            [
-                interactive_map_component,          # carte
-                html.Div(id="home-plots-panel", className="home-plots-panel") # Graphiques
-            ],
-            className="home-main"
-        )
-    ],
-    className="home-container"
-)
+def layout():
+
+    layout = html.Div([
+            event_definition_component(),
+            html.Div(
+                [
+                    interactive_map_component,          # carte
+                    html.Div(id="home-plots-panel", className="home-plots-panel") # Graphiques
+                ],
+                className="home-main"
+            )
+        ],
+        className="home-container"
+    )
+
+    return layout
