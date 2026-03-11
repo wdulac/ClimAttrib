@@ -224,6 +224,7 @@ def _daily_temperature_hover(ref=False, year=None):
         )
     else:
         return (
+            "%{customdata}<br>"
             f"<b>{year} temperature</b>: %{{y:.1f}} °C"
             "<extra></extra>"
         )
