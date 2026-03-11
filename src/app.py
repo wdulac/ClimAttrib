@@ -72,8 +72,8 @@ layout = html.Div([
         dmc.Center(
             dmc.Stack(
                 [
-                    dmc.Loader(size="xl", variant="dots"),
-                    dmc.Text("The application is loading...", ta="center")
+                    dmc.Loader(size="xl", type="dots"),
+                    dmc.Text("The application is loading...", ta="center", size="lg")
                 ],
                 align="center"
             ),
