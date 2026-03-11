@@ -23,7 +23,7 @@ def _fmt_sig(x: float, sig: int = 2, thousands_sep: bool = True) -> str:
     """
     Format a number rounded to `sig` significant figures into a human-readable string:
     - Avoid scientific notation for common ranges.
-    - Use grouping for large integers (via :n).
+    - Use grouping for large integers (via :,).
     - Trim trailing zeros and trailing dot.
     """
     if _is_nan(x):
@@ -42,7 +42,7 @@ def _fmt_sig(x: float, sig: int = 2, thousands_sep: bool = True) -> str:
 
     # If mag >= 1 and rounded is nearly integer, show integer with grouping
     if mag >= 1 and abs(rounded - round(rounded)) < 1e-12:
-        return f"{int(round(rounded)):n}"
+        return f"{int(round(rounded)):,}"
 
     # For moderate values use decimal without scientific notation:
     # Compute number of decimal places needed to represent rounded with no exponents:
@@ -60,10 +60,10 @@ def _fmt_sig(x: float, sig: int = 2, thousands_sep: bool = True) -> str:
     # For thousands grouping on the integer part if requested
     if thousands_sep and "." in s:
         int_part, frac_part = s.split(".", 1)
-        int_part = f"{int(int_part):n}"
+        int_part = f"{int(int_part):,}"
         s = int_part + "." + frac_part
     elif thousands_sep and "." not in s and mag >= 1000:
-        s = f"{int(round(rounded)):n}"
+        s = f"{int(round(rounded)):,}"
 
     return s
 
@@ -122,7 +122,7 @@ def format_return_period_adaptive(
     """
     Format a return period (years) using `sig` significant figures.
     If rp is infinite or >= max_val -> return inf_str.
-    For very large values, show 'over {max_val:n}' if rp >= max_val.
+    For very large values, show 'over {max_val:,}' if rp >= max_val.
     """
     if _is_nan(rp):
         return "NaN"
@@ -133,7 +133,7 @@ def format_return_period_adaptive(
 
     # If rounded is >= 1000, show integer grouping
     if rounded >= 1000:
-        s = f"{int(round(rounded)):n}"
+        s = f"{int(round(rounded)):,}"
     else:
         s = _fmt_sig(rounded, sig, thousands_sep=False)
 
@@ -158,7 +158,7 @@ def format_ratio_adaptive(
 
     # beyond upper bound
     if value >= max_val:
-        s = f"over {int(max_val):n}"
+        s = f"over {int(max_val):,}"
     # below lower bound
     elif value < min_val:
         # show 'less than {min_val}' formatted with sig figs
@@ -169,7 +169,7 @@ def format_ratio_adaptive(
         rounded = _round_to_n_sigfigs(value, sig)
         # if >= 1000, show grouped integer
         if rounded >= 1000:
-            s = f"{int(round(rounded)):n}"
+            s = f"{int(round(rounded)):,}"
         else:
             s = _fmt_sig(rounded, sig, thousands_sep=False)
 

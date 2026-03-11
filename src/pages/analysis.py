@@ -2,14 +2,21 @@ from dash import register_page, html, dcc, callback, Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 
-from components.analysis.event_description import description
-from components.analysis.carousel import carousel
+from components.analysis import (
+    results_carousel,
+    event_description_component
+)
 
-from utils.url_token import decode_token
-from utils.redis_cache import make_cache_key, get_cache, cache_exists, delete_cache
+from app_platform.shared.tokens import decode_token
+from app_platform.compute.redis import (
+    make_cache_key,
+    get_cache,
+    cache_exists,
+    delete_cache
+)
 
 # Make sure to import the Celery task named "attribution" task and not just the "attribution" function from utils.tasks
-from utils.tasks import celery_app
+from app_platform.compute.celery import celery_app
 attribution = celery_app.tasks['attribution']
 
 
@@ -58,7 +65,7 @@ def layout(p=None):
     # Initialise layout with the event's description
     layout = html.Div(children=[
         dcc.Store(data=p, id='event-token'),
-        description(event)
+        event_description_component(event)
     ], className='analysis-container', id='analysis-container')
 
     if cache_exists(cache_key):
@@ -70,7 +77,7 @@ def layout(p=None):
             # Extend the page layout with the valid attribution results
             layout.children.extend([
                 dcc.Store(data=False, id='is-loading'),
-                html.Div(children=carousel(cached_result['result'], event, cache_key),
+                html.Div(children=results_carousel(cached_result['result'], event, cache_key),
                          id='analysis-content',
                          className='carousel-container')
             ])
@@ -131,4 +138,4 @@ def update_results(n, key, token):
         return html.Div("The analysis exceeded the maximum time allowed. Please try again.")
 
     if stats['status'] == 'ok':
-        return carousel(stats['result'], event, key), True, False
+        return results_carousel(stats['result'], event, key), True, False

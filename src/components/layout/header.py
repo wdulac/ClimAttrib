@@ -3,30 +3,15 @@ from dash import Output, Input, State, callback
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
-from utils.paths import RESOURCES
-
-
-# debug_style = {
-    # "border": f"1px solid {dmc.DEFAULT_THEME['colors']['indigo'][4]}",
-    # "textAlign": "center"
-# }
-
-### Individual header items/buttons
-
-_about_button = html.A(
-    href="",
-    children=[
-        dmc.Button("About", variant='subtle')
-    ]
+from components.resources import (
+    QUICKGUIDE_CONTENT,
+    INTERPRETATION_HELP_CONTENT,
+    ABOUT_CONTENT
 )
 
-QUICKGUIDE_FILE = RESOURCES / 'quickguide.md'
-with open(QUICKGUIDE_FILE, 'r') as f:
-    QUICKGUIDE_CONTENT = f.read()
+from app_platform.shared.urls import asset_url, URL_PREFIX_DASH
 
-INTERPRETATION_HELP_FILE = RESOURCES / 'interpretation_help.md'
-with open(INTERPRETATION_HELP_FILE, 'r') as f:
-    INTERPRETATION_HELP_CONTENT = f.read()
+### Individual header items/buttons
 
 _how_to_use = html.Div(children=[
     dmc.Button(
@@ -73,27 +58,59 @@ _how_to_use = html.Div(children=[
     )
 ])
 
-# _language_menu = dmc.Menu(
-#     children=[
-#         dmc.MenuTarget(dmc.Button("EN / FR", variant='subtle')),
-#         dmc.MenuDropdown(
-#             children=[
-#                 dmc.MenuItem(
-#                     "English",
-#                     href=""
-#                 ),
-#                 dmc.MenuItem(
-#                     "Français",
-#                     href=""
-#                 )
-#             ]
-#         )
-#     ],
-#     trigger='hover',
-#     openDelay=100,
-#     closeDelay=400,
-#     id='language-menu'
-# )
+_about_logo_files = [
+    "CNRM.png",
+    "CNRS.png",
+    "MeteoFrance.png",
+    "LSCE.png",
+    "CEA.png",
+    "IPSL.png",
+    "UVSQ.png",
+    "France2030.png",
+]
+
+_about_logos = [
+    html.Div(
+        html.Img(
+            src=asset_url(f"logos/{filename}"),
+            className="about-logo-img",
+        ),
+        className="about-logo-wrapper",
+    )
+    for filename in _about_logo_files
+]
+
+_about = html.Div(children=[
+    dmc.Button(
+    "About",
+    id="about-button",
+    variant="subtle"
+    ),
+    dmc.Modal(
+        id="about-modal",
+        title="About",
+        size="55%",
+        styles={
+            "title": {
+                "fontSize": "32px",
+                "fontWeight": 700
+            },
+        },
+        children=[
+            dmc.Stack(
+                [
+                    dcc.Markdown(ABOUT_CONTENT),
+                    html.Div(
+                        _about_logos,
+                        className='about-logos-grid'
+                    )
+                ],
+                gap='lg'
+            )
+        ]
+    )
+])
+
 
 _github_action_button = html.A(
     href='https://github.com/wdulac/ClimAttrib',
@@ -103,7 +120,7 @@ _github_action_button = html.A(
         dmc.ActionIcon(
             variant='subtle',
             children=[
-                dmc.Image(src='/assets/logos/github.svg', w=30)
+                dmc.Image(src=asset_url('logos/github.svg'), w=30)
             ],
             size="lg"
         )
@@ -116,7 +133,7 @@ _header_right = dmc.Group(
     children=dmc.Group(
         children=[
             _how_to_use,
-            _about_button,
+            _about,
             # _language_menu,
             dmc.Space(w='10px'), # For even spacing of the buttons
             _github_action_button
@@ -134,9 +151,9 @@ header = html.Header(
                     children=[
                         html.A(
                             # TODO Restrict clickable zone to the actual title
-                            href="/",
+                            href=URL_PREFIX_DASH,
                             children=html.H1(
-                                "Clim@Attrib",
+                                "WeatherAttrib",
                                 id='page-title'
                             ),
                             id='title-anchor'
@@ -163,4 +180,14 @@ header = html.Header(
     prevent_initial_call=True
 )
 def toggle_how_to_use(n_cliks, opened):
+    return not opened
+
+
+@callback(
+    Output("about-modal", "opened"),
+    Input("about-button", "n_clicks"),
+    State("about-modal", "opened"),
+    prevent_initial_call=True,
+)
+def toggle_about(n, opened):
     return not opened

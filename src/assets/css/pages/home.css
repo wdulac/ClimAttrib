@@ -4,3 +4,29 @@
     min-height: 0;
     flex-grow: 1;
 }
+
+.home-main {
+    display: flex;
+    flex: 1 1 auto;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.home-plots-panel {
+    width: 0;
+    opacity: 0;
+    min-height: 0;
+    overflow-y: auto; /* Active le scroll vertical uniquement si nécessaire */
+    pointer-events: none;
+    background-color: var(--mantine-color-gray-1);
+    transition:
+        width 250ms ease,
+        opacity 150ms ease;
+}
+
+.plots-visible {
+    width: 33%;
+    opacity: 1;
+    pointer-events: auto;
+    border-left: 1px solid #ddd;
+}

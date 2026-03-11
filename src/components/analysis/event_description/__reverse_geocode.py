@@ -1,6 +1,6 @@
 import geopandas as gpd
 from shapely.geometry import box
-from utils.paths import DATA
+from app_platform.shared.paths import DATA
 
 # Charger shapefile
 gdf = gpd.read_file(DATA / "ne_10_admin/ne_10m_admin_1_states_provinces.shp")

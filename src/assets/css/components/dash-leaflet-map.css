@@ -1,6 +1,6 @@
 .map-parent-container {
     flex-grow: 1;
-    height: 0px; /* Hack needed for the container to be able to extend */
+    height: auto; /* Hack needed for the container to be able to extend */
 }
 
 

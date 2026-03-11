@@ -1,24 +1,50 @@
+# Utils imports
+from app_platform.shared.config import (
+    APP_HOST,
+    APP_PORT,
+    APP_DEBUG,
+    APP_SHOW_DASH_DEV_TOOLS,
+    URL_PREFIX_DASH,
+    PRODUCTION
+)
 # Essentials
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 from dash import Dash, dcc, html, page_container
 # Mantine
 import dash_mantine_components as dmc
+
 # Custom components for the layout
-from components.header import header
-from components.footer import footer
+from components.layout import (
+    disclaimer_layout,
+    register_disclaimer_callbacks
+)
+from components.layout import(
+    header,
+    footer
+)
 
-import locale
+from app_platform.web import (
+    register_redirects,
+    register_geojson_routes,
+    register_download_routes
+)
+
 import logging
-
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 # Initialize
 server = Flask(__name__)
+
+if PRODUCTION:
+    server.wsgi_app = ProxyFix(
+        server.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
+    )
 
 server.logger.setLevel(logging.INFO)
 
 application = Dash(
     server=server,
+    url_base_pathname=URL_PREFIX_DASH,
     external_stylesheets=[
         # custom Plotly fullscreen modebar button (Font-Awesome)
         "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -28,7 +54,7 @@ application = Dash(
         "https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.10.8/dayjs.min.js"
     ],
     update_title=None,
-    title="Clim@Attrib",
+    title="WeatherAttrib",
     suppress_callback_exceptions=True,
     use_pages=True
 )
@@ -38,20 +64,38 @@ application = Dash(
 layout = html.Div([
     dcc.Location(id='url'),
     dmc.NotificationContainer(id='notification-container'),
+    *disclaimer_layout,
     header,
-    page_container, # Page content loaded from `pages` folder
+
+    html.Div(children=[
+        page_container,
+        dmc.Center(
+            dmc.Stack(
+                [
+                    dmc.Loader(size="xl", type="dots"),
+                    dmc.Text("The application is loading...", ta="center", size="lg")
+                ],
+                align="center"
+            ),
+            id="page-loader"
+        )
+        ],
+        id="page-wrapper"
+    ),
+
     footer
     ], className='site-container'
 )
 
+# Avoid circular import of application in src/components/layout/disclaimer.py
+register_disclaimer_callbacks(application)
+
 application.layout = dmc.MantineProvider(layout)
 
-# imports from utils need to take place after initialization of the app
-from utils import APP_HOST, APP_PORT, APP_DEBUG, APP_SHOW_DASH_DEV_TOOLS
-from utils import redis_cache
-from utils import redirects
-from utils import geojson_tiles
-from utils import download_csv
+# Attach functionnalities (redirection rules and routes) to server
+register_redirects(server)
+register_geojson_routes(server)
+register_download_routes(server)
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.

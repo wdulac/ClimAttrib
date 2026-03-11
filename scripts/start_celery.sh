@@ -1,7 +1,7 @@
 #!/bin/bash
 
 WORKDIR="../src/"
-APPLICATION="utils.tasks"
+APPLICATION="app_platform.compute.celery"
 LOGLEVEL="INFO"
 
 # Not sure how to stop gracefully... `pkill -f "celery"` ?

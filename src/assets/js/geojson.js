@@ -33,26 +33,41 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
         // Handles clearing out both elements when zooming-out.   
         select_point: function(clickData, zoom, hideout) {
 
-            if (zoom < hideout.zoom_threshold) {
+            const ctx = window.dash_clientside.callback_context;
+            const triggered = ctx.triggered[0].prop_id;
+        
+            // --- Cas 1 : déclenché par le zoom ---
+            if (triggered === "map.zoom") {
+        
+                // On invalide la sélection uniquement si seuil franchi
+                if (hideout.selected !== null && zoom < hideout.zoom_threshold) {
+                    return [
+                        { ...hideout, selected: null },
+                        null
+                    ];
+                }
+        
+                // Sinon : aucune mise à jour
                 return [
-                    { ...hideout, selected: null},
-                    null
+                    window.dash_clientside.no_update,
+                    window.dash_clientside.no_update
                 ];
             }
-
+        
+            // --- Cas 2 : déclenché par un clic ---
             if (!clickData) {
                 return [
                     window.dash_clientside.no_update,
                     window.dash_clientside.no_update
                 ];
             }
-            
+        
             const lat = clickData.properties.lat;
             const lon = clickData.properties.lon;
-            const id = clickData.properties.cell_id;
-
+            const id  = clickData.properties.cell_id;
+        
             return [
-                {...hideout, selected: id},
+                { ...hideout, selected: id },
                 JSON.stringify([lat, lon])
             ];
         },
@@ -73,7 +88,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
             }
             
             const roundBounds = bounds.map(pair => pair.map(value => parseFloat(value.toFixed(2))));
-            const url = `/grid_tiles?bounds=${JSON.stringify(roundBounds)}`;
+            const url = `/eventtest/grid_tiles?bounds=${JSON.stringify(roundBounds)}`;
 
             return fetch(url)
                 .then(r => r.json())

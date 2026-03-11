@@ -1,5 +1,6 @@
 import numpy as np
 import xarray as xr
+from scipy.stats import norm
 import calendar
 import datetime as dt
 import plotly.graph_objects as go
@@ -16,7 +17,7 @@ from science.attribution.__calendar_utils import (
 )
 from science.attribution.__data_loading import _load_obs
 
-from utils.paths import DATA
+from app_platform.shared.paths import DATA
 
 
 def _GEV_return_level(
@@ -39,6 +40,47 @@ def _GEV_return_level(
     return mu + (sigma/ksi) * ((-np.log(1-p))**(-ksi) - 1)
 
 
+def _Gaussian_return_level(
+    mu: xr.DataArray,
+    sigma: xr.DataArray,
+    p: float,
+) -> xr.DataArray:
+    """
+    Computes (possibly non-stationary) Gaussian return level
+    for exceedance probability p.
+    
+    p = 0.5  -> 2-year
+    p = 0.1  -> 10-year
+    """
+
+    return mu + sigma * norm.ppf(1 - p)
+
+
+def _return_level(
+    stats: dict,
+    p: float,
+    method: str,
+) -> xr.DataArray:
+
+    if method == "yearmax":
+        return _GEV_return_level(
+            stats["locF"].sel(quantile="BE"),
+            stats["scaleF"].sel(quantile="BE"),
+            stats["shapeF"].sel(quantile="BE"),
+            p,
+        )
+
+    elif method == "calendar":
+        return _Gaussian_return_level(
+            stats["locF"].sel(quantile="BE"),
+            stats["scaleF"].sel(quantile="BE"),
+            p,
+        )
+
+    else:
+        raise ValueError(f"Unknown computation_method: {method}")
+    
+
 def _load_clim_data(event: dict):
 
     ## Evaluate event's year
@@ -48,7 +90,7 @@ def _load_clim_data(event: dict):
     year = (a + (b-a) / 2).year
 
     ## Read daily timeseries for this year and grid point
-    daily = xr.open_dataset(DATA / 'daily/era5_sfc_tas_1p5deg.nc').\
+    daily = xr.open_dataset(DATA / 'daily/era5_sfc_daily_tas.nc').\
         sel(
             time=slice(f"{year}-01-01", f"{year}-12-31"),
             lat=event['lat'], lon=event['lon'] % 360
@@ -72,7 +114,8 @@ def _load_clim_data(event: dict):
 def plot_observed_Yo(
     event: dict,
     stats: xr.Dataset | None = None,
-    cache_key: str | None = None
+    cache_key: str | None = None,
+    **kwargs
 ) -> go.Figure:
     """
     Annual maxima time series with optional non-stationary GEV return levels
@@ -94,6 +137,34 @@ def plot_observed_Yo(
     time = Yo.time.values
 
     fig = go.Figure()
+
+    # ------------------------------------------------------------------
+    # D'abord les lignes horizontales qui repèrent le point sélectionné par l'utilisateur
+    # ------------------------------------------------------------------
+    
+    # Ligne verticale : du bas de l'axe jusqu'au point sélectionné
+    fig.add_shape(
+        type="line",
+        x0=Xo,
+        x1=Xo,
+        y0=0,
+        y1=1,
+        line=dict(color="red", dash="dash", width=1),
+        xref="x",
+        yref="paper"
+    )
+    
+    # Ligne horizontale : du bord gauche de la figure jusqu'au point sélectionné
+    fig.add_shape(
+        type="line",
+        x0=0,  # bord gauche de la figure
+        x1=1,
+        y0=To,
+        y1=To,
+        line=dict(color="red", dash="dash", width=1),
+        xref="paper",
+        yref="y"
+    )
 
     # ------------------------------------------------------------------
     # Annual maxima series
@@ -127,29 +198,6 @@ def plot_observed_Yo(
         )
     )
 
-    # Ligne verticale : du bas de l'axe jusqu'au point sélectionné
-    fig.add_shape(
-        type="line",
-        x0=Xo,
-        x1=Xo,
-        y0=float(Yo.min()-1),
-        y1=To,
-        line=dict(color="red", dash="dash"),
-        xref="x",
-        yref="y"
-    )
-    
-    # Ligne horizontale : du bord gauche de la figure jusqu'au point sélectionné
-    fig.add_shape(
-        type="line",
-        x0=time[0] - 3,  # bord gauche de la figure
-        x1=Xo,
-        y0=To,
-        y1=To,
-        line=dict(color="red", dash="dash"),
-        xref="x",  # coordonnées relatives à la figure
-        yref="y"
-    )
 
     # ------------------------------------------------------------------
     # Return levels (optional)
@@ -164,11 +212,10 @@ def plot_observed_Yo(
         ]:
             rl = (
                 sign
-                * _GEV_return_level(
-                    stats["locF"].sel(quantile="BE"),
-                    stats["scaleF"].sel(quantile="BE"),
-                    stats["shapeF"].sel(quantile="BE"),
-                    p,
+                * _return_level(
+                    stats,
+                    p=p,
+                    method=event['method']
                 )
                 .sel(time=Yo.time)
                 + bias
@@ -189,18 +236,12 @@ def plot_observed_Yo(
     # Layout
     # ------------------------------------------------------------------
 
-    fig.update_xaxes(
-        range=[time[0] - 3, time[-1] + 3]
-    )
-    fig.update_yaxes(
-        range=[Yo.min() - 1, Yo.max() + 1]
-    )
-
     _clim_plots_base_layout(
         fig,
         xaxis_title="Time",
         yaxis_title="Temperature [°C]",
         cache_key=cache_key,
+        **kwargs
     )
 
     return fig
@@ -213,6 +254,7 @@ def plot_observed_Yo(
 
 def plot_annual_cycle(
     event: dict,
+    **kwargs
 ) -> go.Figure:
     """
     Daily temperature series for selected year against 1991–2020 climatology
@@ -368,7 +410,8 @@ def plot_annual_cycle(
         xaxis_title="Time of year",
         yaxis_title="Temperature [°C]",
         extra_bottom_margin=27,
-        standoff=30
+        standoff=30,
+        **kwargs
     )
 
     return fig

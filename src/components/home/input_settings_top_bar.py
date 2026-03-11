@@ -134,16 +134,26 @@ to sign navigation tokens.
 """
 
 from dash import html, callback, Output, Input, State, dcc
+from dash import get_relative_path
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify
 
 import xarray as xr
+import numpy as np
 import datetime as dt
+import os
 
 import json
-from utils.url_token import encode_token
-from utils.paths import RESOURCES, DATA
+from app_platform.shared.tokens import encode_token
+from app_platform.shared.paths import DATA
+from app_platform.shared.urls import URL_PREFIX_DASH
+from components.resources import (
+    COMPUTE_TOOLTIP_CONTENT,
+    ANOMALY_TOOLTIP_CONTENT,
+    CLIMATOLOGY_TOOLTIP_CONTENT
+)
+
 from science.attribution.__calendar_utils import _datetime_to_doy
 
 TOP_BAR_INPUTS_LABEL_PROPS = {
@@ -152,22 +162,12 @@ TOP_BAR_INPUTS_LABEL_PROPS = {
     'fz': 18,
 }
 
-LINK_DEFAULT_HREF = '/'
+LINK_DEFAULT_HREF = URL_PREFIX_DASH
 
 ALLOWED_DURATIONS = [1, 2, 3, 4, 5, 7, 10, 14] # In days
 
-## Reading textual resource files
-COMPUTE_TOOLTIP_MD_FILE = RESOURCES / 'compute_tooltip_content_usecase.md'
-with open(COMPUTE_TOOLTIP_MD_FILE, 'r',encoding='utf-8') as f:
-    COMPUTE_TOOLTIP_CONTENT = f.read()
-
-ANOMALY_HELP_MD_FILE = RESOURCES / 'anomaly_tooltip_content.md'
-with open(ANOMALY_HELP_MD_FILE, 'r') as f:
-    ANOMALY_TOOLTIP_CONTENT = f.read()
-
-CLIMATOLOGY_HELP_MD_FILE = RESOURCES / 'climatology_tooltip_content.md'
-with open(CLIMATOLOGY_HELP_MD_FILE, 'r') as f:
-    CLIMATOLOGY_TOOLTIP_CONTENT = f.read()
+CALENDAR_MIN_DATE = dt.date(1940, 1, 1)
+CALENDAR_MAX_DATE = dt.date.fromisoformat(os.getenv("CALENDAR_MAX_DATE", "20221231"))
 
 ## Icons
 MINUS_ICON = DashIconify(icon="mdi:minus", width=20, style={"position": "relative", "top": "4px"})
@@ -235,23 +235,30 @@ _computation_method_segmented = dmc.Stack(children=[
 )
 
 # Date picker
-_date_selector_calendar = dmc.DatePickerInput(
-    id='input:date',
-    label="Event date(s)",
-    labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
-    type='range',
-    value=[dt.date(2019, 7, 23), dt.date(2019, 7, 25)],
-    allowSingleDateInRange=True,
-    w=300,
-    highlightToday=False,
-    weekendDays=[],
-    minDate=dt.date(1940, 1, 1),
-    maxDate=dt.date(2024, 12, 31),
-    persistence=True,
-    persistence_type='session',
-    disabledDates={"function": "disableInvalidRange", "options": None},
-    className='datepicker-container'
-)
+
+def _date_selector_calendar():
+
+    data_daily = xr.open_dataset(DATA / 'daily' / 'era5_sfc_daily_tas.nc')
+    maxDate = np.datetime_as_string(data_daily.time.isel(time=-1).data, unit='D')
+
+    component = dmc.DatePickerInput(
+        id='input:date',
+        label="Event date(s)",
+        labelProps=TOP_BAR_INPUTS_LABEL_PROPS,
+        type='range',
+        value=[dt.date(2019, 7, 23), dt.date(2019, 7, 25)],
+        allowSingleDateInRange=True,
+        w=300,
+        highlightToday=False,
+        weekendDays=[],
+        minDate=CALENDAR_MIN_DATE,
+        maxDate=maxDate,
+        persistence=True,
+        persistence_type='session',
+        disabledDates={"function": "disableInvalidRange", "options": None},
+        className='datepicker-container'
+    )
+    return component
 
 # Continue button
 _continue_button = dcc.Link(
@@ -305,26 +312,28 @@ _temperature_readout = dmc.Group(
     style={'minWidth': '433px'}
 )
 
-# Laying out all elements
-input_settings_top_bar = html.Div(children=[
-    dcc.Store(id='data:intensity', data=None),
-    html.H3("Extreme event selection", id='settings-row-title'),
-    dmc.Divider(variant='solid'),
-    dmc.Grid(children=[
-        dmc.GridCol(children=[
-            dmc.Group(children=[
-                _extreme_type_segmented,
-                _date_selector_calendar,
-                _computation_method_segmented,
-                _temperature_readout
-                ], id='left-column')
-            ], span=9.5),
-        dmc.GridCol(children=[
-            _continue_button
-        ], span='auto', id='right-column'),
-    ], id='inputs-row')
-], className='settings-top-bar')
+def event_definition_component():
+    # Laying out all elements
+    component = html.Div(children=[
+        dcc.Store(id='data:intensity', data=None),
+        html.H3("Extreme event selection", id='settings-row-title'),
+        dmc.Divider(variant='solid'),
+        dmc.Grid(children=[
+            dmc.GridCol(children=[
+                dmc.Group(children=[
+                    _extreme_type_segmented,
+                    _date_selector_calendar(),
+                    _computation_method_segmented,
+                    _temperature_readout
+                    ], id='left-column')
+                ], span=9.5),
+            dmc.GridCol(children=[
+                _continue_button
+            ], span='auto', id='right-column'),
+        ], id='inputs-row')
+    ], className='settings-top-bar')
 
+    return component
 
 #~~~~~~~ Callbacks
 
@@ -357,13 +366,11 @@ def update_disabled_dates(date_range):
 @callback(
         Output('input:date', 'error'),
         Input('input:date', 'value'),
-        prevent_initial_call=True
+        prevent_initial_call=False
 )
 def calendar_error(dates: list):
     """
     Update the calendar's error property depending on selected date range.
-    For the time being (development ungoing), the only valid range length is
-    3 days
     """
 
     try:
@@ -386,6 +393,8 @@ def calendar_error(dates: list):
         else:
             # At this point we should have a list of two datetime objects.
             # We evaluate the duration in days between start and stop date
+            # Note : This is legacy code and should likely never be needed anymore
+            # since the calendar dynamically disables dates for unallowed durations
             duration = ((stop - start) + dt.timedelta(days=1)).days
             
             if duration not in ALLOWED_DURATIONS:
@@ -427,7 +436,7 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     lat, lon = json.loads(grid_point)
 
     # Observed ERA5 daily file (intensity)
-    era5_path = DATA / 'daily' / 'era5_sfc_tas_1p5deg.nc'
+    era5_path = DATA / 'daily' / 'era5_sfc_daily_tas.nc'
     ds_obs = xr.open_dataset(era5_path)
     # select time slice: include stop day (xarray slice is inclusive for datetime)
     To_da = ds_obs['tas'].sel(time=slice(start_dt, stop_dt + dt.timedelta(days=1)),
@@ -541,7 +550,7 @@ def update_link(
                 token = encode_token(extreme_type, computation_method, date, lat, lon, To)
 
                 # Create and return href
-                href = f"/analysis?p={token}"
+                href = get_relative_path(f"/analysis?p={token}")
                 
                 return href
             else:

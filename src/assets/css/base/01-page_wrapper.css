@@ -1,0 +1,50 @@
+/* 
+   Wrapper du contenu de page.
+   - position:relative crée le contexte pour l'overlay absolute.
+   - flex:1 lui fait occuper toute la hauteur disponible.
+   - min-height:0 est nécessaire dans une chaîne flex (sinon certains
+     enfants comme Leaflet peuvent se retrouver avec height:0).
+*/
+#page-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/*
+   Dash insère un <div> intermédiaire entre page-wrapper et
+   #_pages_content. On lui applique aussi le layout flex pour que
+   la hauteur se propage correctement dans l'application.
+*/
+#page-wrapper > div {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/*
+   Overlay de chargement.
+   - position:absolute + inset:0 couvrent tout le page-wrapper.
+   - display:none par défaut ; flex quand il est visible pour
+     centrer le spinner et le texte.
+*/
+#page-loader {
+    position: absolute;
+    inset: 0;
+    display: none !important;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255,255,255,0.7);
+    z-index: 1000;
+}
+
+/*
+   Dash ajoute data-dash-is-loading="true" sur #_pages_content
+   pendant le chargement. Si présent, on affiche l'overlay.
+*/
+#page-wrapper:has(#_pages_content[data-dash-is-loading="true"]) #page-loader {
+    display: flex !important;
+}

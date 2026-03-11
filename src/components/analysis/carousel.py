@@ -2,10 +2,15 @@ from dash import clientside_callback, ClientsideFunction, Input, Output
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
-from components.analysis.plotly_plots import probability_plot
-from components.analysis.plotly_plots import PR_FAR_plot
-from components.analysis.plotly_plots import intensity_plot, intensity_change_plot
-from components.analysis.plotly_plots import observed_Yo_with_return_levels_plot, annual_cycle_with_daily_obs_plot
+from .__plotly_plots import (
+    probability_plot,
+    PR_FAR_plot,
+    intensity_plot,
+    intensity_change_plot,
+    observed_Yo_with_return_levels_plot,
+    annual_cycle_with_daily_obs_plot
+)
+
 from components.analysis.sentence_generator import build_summary_component
 
 
@@ -33,7 +38,7 @@ CAROUSEL_SETTINGS = {
     }
 }
 
-def carousel(stats, event, cache_key):
+def results_carousel(stats, event, cache_key):
 
     component = dmc.Carousel([
         dmc.CarouselSlide(

@@ -1,1 +1,1 @@
-from .analysis_description_component import description
+from .analysis_description_component import event_description_component
