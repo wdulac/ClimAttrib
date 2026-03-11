@@ -352,8 +352,8 @@ def plot_annual_cycle(
     # User-selected period
     # ------------------------------------------------------------------
 
-    x0 = _doy_to_datetime(_datetime_to_doy(a), base_year)
-    x1 = _doy_to_datetime(_datetime_to_doy(b), base_year)
+    x0 = _doy_to_datetime(_datetime_to_doy(a), base_year) - dt.timedelta(hours=12)
+    x1 = _doy_to_datetime(_datetime_to_doy(b), base_year) + dt.timedelta(hours=12)
     
     fig.add_vrect(
         x0=x0,
