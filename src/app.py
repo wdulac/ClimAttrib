@@ -66,7 +66,23 @@ layout = html.Div([
     dmc.NotificationContainer(id='notification-container'),
     *disclaimer_layout,
     header,
-    page_container, # Page content loaded from `pages` folder
+
+    html.Div(children=[
+        page_container,
+        dmc.Center(
+            dmc.Stack(
+                [
+                    dmc.Loader(size="xl", variant="dots"),
+                    dmc.Text("The application is loading...", ta="center")
+                ],
+                align="center"
+            ),
+            id="page-loader"
+        )
+        ],
+        id="page-wrapper"
+    ),
+
     footer
     ], className='site-container'
 )
