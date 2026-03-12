@@ -432,7 +432,7 @@ def plot_annual_cycle(
         tickvals=month_starts,
         ticktext=[""] * len(month_starts),
         showticklabels=True,
-        hoverformat="%B %d",
+        unifiedhovertitle=dict(text=" ")
     )
 
     annotations = []
