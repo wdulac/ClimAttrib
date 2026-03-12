@@ -98,14 +98,16 @@ def _load_clim_data(event: dict):
 
     ## Evaluate event's year
     a = event['start_date']
+    b = event["stop_date"]
+    t = (a + (b - a) / 2)
     shift_days = _eval_shift(event)
 
     if shift_days == 180:
-        year = a.year if a.month >= 7 else a.year - 1
+        year = t.year if t.month >= 7 else t.year - 1
         t0 = dt.datetime(year, 7, 1)
         t1 = dt.datetime(year + 1, 6, 30)
     else:
-        year = a.year
+        year = t.year
         t0 = dt.datetime(year, 1, 1)
         t1 = dt.datetime(year, 12, 31)
 
@@ -148,7 +150,19 @@ def plot_observed_Yo(
     # Event metadata
     # ------------------------------------------------------------------
     To = event["intensity"] - 273.15
-    Xo = (event["start_date"] + (event["stop_date"] - event["start_date"]) / 2).year
+
+    a = event['start_date']
+    b = event["stop_date"]
+    t = (a + (b - a) / 2)
+
+    shift_days = _eval_shift(event) # 0 or 180 days
+    
+    if shift_days == 180:
+        year = t.year if t.month >= 7 else t.year - 1
+    else:
+        year = t.year
+
+    Xo = year
 
     obs = _load_obs(
         event['lat'], event['lon'],
@@ -286,13 +300,16 @@ def plot_annual_cycle(
 
     a = event["start_date"]
     b = event["stop_date"]
-    # year = (a + (b - a) / 2).year
+    t = (a + (b - a) / 2)
 
     shift_days = _eval_shift(event) # 0 or 180 days
 
+    if shift_days == 180:
+        year = t.year if t.month >= 7 else t.year - 1
+    else:
+        year = t.year
+
     daily, ref = _load_clim_data(event)
-    year = int(daily.time.dt.year.values[0])
-    
     doy = daily.time.dt.dayofyear
     if shift_days == 180:
         doy = ((doy + 182 - 1) % 366) + 1
