@@ -42,8 +42,7 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
                     return false;
                 }
                 // Call your existing global functions scoped to this container
-                addFullscreenButton(parent);
-                addDownloadButton(parent);
+                addCustomModebarGroup(parent);
                 return true;
             }
         
@@ -68,48 +67,55 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
 
 // ---------- Plotly Buttons Management ----------
 
-// Add fullscreen button
-function addFullscreenButton(container = document) {
-    const modeBars = container.querySelectorAll(".modebar-container");
-    for (let i = 0; i < modeBars.length; i++) {
-        const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
-        if (modeBarGroups.length === 0) continue;
-        const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
+// Generic function to create a new modebar button
+function createModebarButton(title, iconClass, onClickHandler) {
+    const btn = document.createElement("button");
+    btn.classList.add("modebar-btn", "custom-modebar-btn");
+    btn.setAttribute("type", "button");
+    btn.setAttribute("rel", "tooltip");
+    btn.setAttribute("data-title", title);
 
-        if (modeBarBtns.length === 0 || modeBarBtns[modeBarBtns.length - 1].getAttribute('data-title') !== 'Fullscreen') {
-            const aTag = document.createElement('a');
-            aTag.classList.add("modebar-btn", "custom-modebar-btn");
-            aTag.setAttribute("rel", "tooltip");
-            aTag.setAttribute("data-title", "Fullscreen");
-            aTag.setAttribute("onClick", "fullscreen(this);");
-            const iTag = document.createElement('i');
-            iTag.className = 'fa-solid fa-maximize';
-            aTag.appendChild(iTag);
-            modeBarGroups[modeBarGroups.length - 1].appendChild(aTag);
-        }
-    }
+    btn.addEventListener("click", function () {
+        onClickHandler(btn);
+    });
+
+    const icon = document.createElement("i");
+    icon.className = iconClass;
+    btn.appendChild(icon);
+
+    return btn;
 }
 
-// Add download CSV button
-function addDownloadButton(container = document) {
-    const modeBars = container.querySelectorAll(".modebar-container");
-    for (let i = 0; i < modeBars.length; i++) {
-        const modeBarGroups = modeBars[i].querySelectorAll(".modebar-group");
-        if (modeBarGroups.length === 0) continue;
-        const modeBarBtns = modeBarGroups[modeBarGroups.length - 1].querySelectorAll(".modebar-btn");
+// Create a new modebar button group for our custom buttons
+function addCustomModebarGroup(container = document) {
 
-        const alreadyAdded = Array.from(modeBarBtns).some(btn => btn.getAttribute('data-title') === 'Download CSV');
-        if (!alreadyAdded) {
-            const aTag = document.createElement('a');
-            aTag.classList.add("modebar-btn", "custom-modebar-btn");
-            aTag.setAttribute("rel", "tooltip");
-            aTag.setAttribute("data-title", "Download CSV");
-            aTag.setAttribute("onClick", "downloadCSV(this);");
-            const iTag = document.createElement('i');
-            iTag.className = 'fa-solid fa-file-arrow-down';
-            aTag.appendChild(iTag);
-            modeBarGroups[modeBarGroups.length - 1].appendChild(aTag);
+    const modebars = container.querySelectorAll(".modebar");
+
+    for (const modebar of modebars) {
+
+        if (modebar.querySelector(".modebar-group.custom-modebar-group")) {
+            continue;
         }
+
+        const group = document.createElement("div");
+        group.classList.add("modebar-group", "custom-modebar-group");
+
+        const fullscreenBtn = createModebarButton(
+            "Fullscreen",
+            "fa-solid fa-maximize",
+            fullscreen
+        );
+
+        const downloadBtn = createModebarButton(
+            "Download CSV",
+            "fa-solid fa-file-arrow-down",
+            downloadCSV
+        );
+
+        group.appendChild(fullscreenBtn);
+        group.appendChild(downloadBtn);
+
+        modebar.appendChild(group);
     }
 }
 

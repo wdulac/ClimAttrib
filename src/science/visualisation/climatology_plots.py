@@ -81,18 +81,41 @@ def _return_level(
         raise ValueError(f"Unknown computation_method: {method}")
     
 
+def _eval_shift(event: dict) -> int:
+
+    shift = 0
+
+    if event['extreme_type'] == 'hot' and event['lat'] < 0 : # Max annuel + hémis sud
+        shift = 180
+    
+    elif event['extreme_type'] == 'cold' and event['lat'] > 0 : # Min annuel et hémis nord
+        shift = 180
+
+    return shift
+
+
 def _load_clim_data(event: dict):
 
     ## Evaluate event's year
     a = event['start_date']
-    b = event['stop_date']
-    # Take year from the mid-point date
-    year = (a + (b-a) / 2).year
+    b = event["stop_date"]
+    t = (a + (b - a) / 2)
+    shift_days = _eval_shift(event)
+
+    if shift_days != 0:
+        year = t.year if t.month >= 7 else t.year - 1
+        t0 = dt.datetime(year, 7, 1)
+        t1 = dt.datetime(year + 1, 6, 30)
+    else:
+        year = t.year
+        t0 = dt.datetime(year, 1, 1)
+        t1 = dt.datetime(year, 12, 31)
 
     ## Read daily timeseries for this year and grid point
+
     daily = xr.open_dataset(DATA / 'daily/era5_sfc_daily_tas.nc').\
         sel(
-            time=slice(f"{year}-01-01", f"{year}-12-31"),
+            time=slice(t0.isoformat(), t1.isoformat()),
             lat=event['lat'], lon=event['lon'] % 360
         )['tas']
     daily -= 273.15
@@ -103,6 +126,9 @@ def _load_clim_data(event: dict):
             lat=event['lat'], lon=event['lon'] % 360
         )['tas']
     ref -= 273.15
+
+    if shift_days != 0:
+        ref = ref.roll(dayofyear=shift_days)
 
     return daily, ref
 
@@ -124,7 +150,19 @@ def plot_observed_Yo(
     # Event metadata
     # ------------------------------------------------------------------
     To = event["intensity"] - 273.15
-    Xo = (event["start_date"] + (event["stop_date"] - event["start_date"]) / 2).year
+
+    a = event['start_date']
+    b = event["stop_date"]
+    t = (a + (b - a) / 2)
+
+    shift_days = _eval_shift(event) # 0 or 180 days
+    
+    if shift_days != 0:
+        year = t.year if t.month >= 7 else t.year - 1
+    else:
+        year = t.year
+
+    Xo = year
 
     obs = _load_obs(
         event['lat'], event['lon'],
@@ -262,11 +300,19 @@ def plot_annual_cycle(
 
     a = event["start_date"]
     b = event["stop_date"]
-    year = (a + (b - a) / 2).year
+    t = (a + (b - a) / 2)
+
+    shift_days = _eval_shift(event) # 0 or 180 days
+
+    if shift_days != 0:
+        year = t.year if t.month >= 7 else t.year - 1
+    else:
+        year = t.year
 
     daily, ref = _load_clim_data(event)
-
     doy = daily.time.dt.dayofyear
+    if shift_days != 0:
+        doy = ((doy + 183 - 1) % 366) + 1
 
     if not calendar.isleap(year):
         # En année non bissextile : on décale tous les jours à partir du 1er mars de +1
@@ -340,6 +386,7 @@ def plot_annual_cycle(
         go.Scatter(
             x=dates_x,
             y=daily_doy.values,
+            customdata=daily_doy.time.dt.strftime("%B %d"),
             mode="lines",
             line=dict(color="black", width=1.5),
             name=f"{year} daily temperature",
@@ -352,8 +399,15 @@ def plot_annual_cycle(
     # User-selected period
     # ------------------------------------------------------------------
 
-    x0 = _doy_to_datetime(_datetime_to_doy(a), base_year)
-    x1 = _doy_to_datetime(_datetime_to_doy(b), base_year)
+    doy_a = _datetime_to_doy(a)
+    doy_b = _datetime_to_doy(b)
+    
+    if shift_days != 0:
+        doy_a = ((doy_a + 183 - 1) % 366) + 1
+        doy_b = ((doy_b + 183 - 1) % 366) + 1
+    
+    x0 = _doy_to_datetime(doy_a, base_year) - dt.timedelta(hours=12)
+    x1 = _doy_to_datetime(doy_b, base_year) + dt.timedelta(hours=12)
     
     fig.add_vrect(
         x0=x0,
@@ -378,10 +432,14 @@ def plot_annual_cycle(
         tickvals=month_starts,
         ticktext=[""] * len(month_starts),
         showticklabels=True,
-        hoverformat="%B %d",
+        unifiedhovertitle=dict(text=" ")
     )
 
     annotations = []
+    
+    months = list(calendar.month_abbr)[1:]
+    if shift_days != 0:
+        months = months[6:] + months[:6]
     
     for m in range(1, 13):
         start = dt.datetime(base_year, m, 1)
@@ -396,7 +454,7 @@ def plot_annual_cycle(
                 y=0,
                 xref="x",
                 yref="paper",
-                text=calendar.month_abbr[m],
+                text=months[m-1],
                 showarrow=False,
                 yshift=-30,
                 font=dict(size=14),
