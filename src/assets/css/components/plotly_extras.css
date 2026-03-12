@@ -1,13 +1,11 @@
 .modebar-btn.custom-modebar-btn {
-    display: inline;
-    position: relative;
-    font-size: 15px;
+    font-size: 16px;
     padding: 3px 4px;
     height: 22px;
-    line-height: normal;
     cursor: pointer;
-    box-sizing: border-box;
-    color: rgba(68, 68, 68, 0.3) !important;
+    background: none;
+    border: none;
+    color: rgba(68, 68, 68, 0.3);
 }
 
 .modebar-btn.custom-modebar-btn:hover {
@@ -16,8 +14,7 @@
 
 /* Icônes des boutons custom : centrage vertical et héritage couleur */
 .modebar-btn.custom-modebar-btn i {
-    position: relative;
-    top: 2px;
-    overflow: hidden;
+    display: flex;
+    align-items: center;
     color: inherit;
 }
