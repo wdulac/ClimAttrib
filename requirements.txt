@@ -2,7 +2,7 @@ dash
 dash_mantine_components
 dash-leaflet
 dash-iconify
-plotly==6.1.2
+plotly==6.6.0
 python-dotenv
 flask_compress
 jinja2
