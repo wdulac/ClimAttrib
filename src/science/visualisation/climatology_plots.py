@@ -312,7 +312,7 @@ def plot_annual_cycle(
     daily, ref = _load_clim_data(event)
     doy = daily.time.dt.dayofyear
     if shift_days != 0:
-        doy = ((doy + 182 - 1) % 366) + 1
+        doy = ((doy + 183 - 1) % 366) + 1
 
     if not calendar.isleap(year):
         # En année non bissextile : on décale tous les jours à partir du 1er mars de +1
@@ -386,7 +386,7 @@ def plot_annual_cycle(
         go.Scatter(
             x=dates_x,
             y=daily_doy.values,
-            customdata=daily.time.dt.strftime("%B %d, %Y"),
+            customdata=daily_doy.time.dt.strftime("%B %d"),
             mode="lines",
             line=dict(color="black", width=1.5),
             name=f"{year} daily temperature",
@@ -403,8 +403,8 @@ def plot_annual_cycle(
     doy_b = _datetime_to_doy(b)
     
     if shift_days != 0:
-        doy_a = ((doy_a + 182 - 1) % 366) + 1
-        doy_b = ((doy_b + 182 - 1) % 366) + 1
+        doy_a = ((doy_a + 183 - 1) % 366) + 1
+        doy_b = ((doy_b + 183 - 1) % 366) + 1
     
     x0 = _doy_to_datetime(doy_a, base_year) - dt.timedelta(hours=12)
     x1 = _doy_to_datetime(doy_b, base_year) + dt.timedelta(hours=12)
