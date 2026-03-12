@@ -102,7 +102,7 @@ def _load_clim_data(event: dict):
     t = (a + (b - a) / 2)
     shift_days = _eval_shift(event)
 
-    if shift_days == 180:
+    if shift_days != 0:
         year = t.year if t.month >= 7 else t.year - 1
         t0 = dt.datetime(year, 7, 1)
         t1 = dt.datetime(year + 1, 6, 30)
@@ -157,7 +157,7 @@ def plot_observed_Yo(
 
     shift_days = _eval_shift(event) # 0 or 180 days
     
-    if shift_days == 180:
+    if shift_days != 0:
         year = t.year if t.month >= 7 else t.year - 1
     else:
         year = t.year
@@ -304,14 +304,14 @@ def plot_annual_cycle(
 
     shift_days = _eval_shift(event) # 0 or 180 days
 
-    if shift_days == 180:
+    if shift_days != 0:
         year = t.year if t.month >= 7 else t.year - 1
     else:
         year = t.year
 
     daily, ref = _load_clim_data(event)
     doy = daily.time.dt.dayofyear
-    if shift_days == 180:
+    if shift_days != 0:
         doy = ((doy + 182 - 1) % 366) + 1
 
     if not calendar.isleap(year):
@@ -402,7 +402,7 @@ def plot_annual_cycle(
     doy_a = _datetime_to_doy(a)
     doy_b = _datetime_to_doy(b)
     
-    if shift_days == 180:
+    if shift_days != 0:
         doy_a = ((doy_a + 182 - 1) % 366) + 1
         doy_b = ((doy_b + 182 - 1) % 366) + 1
     
@@ -438,7 +438,7 @@ def plot_annual_cycle(
     annotations = []
     
     months = list(calendar.month_abbr)[1:]
-    if shift_days == 180:
+    if shift_days != 0:
         months = months[6:] + months[:6]
     
     for m in range(1, 13):
