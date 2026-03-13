@@ -379,7 +379,7 @@ def plot_annual_cycle(
         go.Scatter(
             x=dates_x,
             y=daily_doy.values,
-            customdata=daily_doy.time.dt.strftime("%B %d"),
+            customdata=daily_doy.time.dt.strftime("%B %d, %Y"),
             mode="lines",
             line=dict(color="black", width=1.5),
             name=f"{year} daily temperature",
