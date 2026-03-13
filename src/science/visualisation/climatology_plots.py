@@ -81,15 +81,15 @@ def _return_level(
         raise ValueError(f"Unknown computation_method: {method}")
     
 
-def _eval_shift(event: dict) -> int:
+def isShifted(event: dict) -> bool:
 
-    shift = 0
+    shift = False
 
     if event['extreme_type'] == 'hot' and event['lat'] < 0 : # Max annuel + hémis sud
-        shift = 180
+        shift = True
     
     elif event['extreme_type'] == 'cold' and event['lat'] > 0 : # Min annuel et hémis nord
-        shift = 180
+        shift = True
 
     return shift
 
@@ -100,9 +100,8 @@ def _load_clim_data(event: dict):
     a = event['start_date']
     b = event["stop_date"]
     t = (a + (b - a) / 2)
-    shift_days = _eval_shift(event)
 
-    if shift_days != 0:
+    if isShifted(event):
         year = t.year if t.month >= 7 else t.year - 1
         t0 = dt.datetime(year, 7, 1)
         t1 = dt.datetime(year + 1, 6, 30)
@@ -127,8 +126,8 @@ def _load_clim_data(event: dict):
         )['tas']
     ref -= 273.15
 
-    if shift_days != 0:
-        ref = ref.roll(dayofyear=shift_days)
+    if isShifted(event):
+        ref = ref.roll(dayofyear=180)
 
     return daily, ref
 
@@ -155,12 +154,8 @@ def plot_observed_Yo(
     b = event["stop_date"]
     t = (a + (b - a) / 2)
 
-    shift_days = _eval_shift(event) # 0 or 180 days
-    
-    if shift_days != 0:
-        year = t.year if t.month >= 7 else t.year - 1
-    else:
-        year = t.year
+    shift_days = 180 if isShifted(event) else 0
+    year = (t + dt.timedelta(days=shift_days)).year
 
     Xo = year
 
@@ -302,16 +297,14 @@ def plot_annual_cycle(
     b = event["stop_date"]
     t = (a + (b - a) / 2)
 
-    shift_days = _eval_shift(event) # 0 or 180 days
-
-    if shift_days != 0:
+    if isShifted(event):
         year = t.year if t.month >= 7 else t.year - 1
     else:
         year = t.year
 
     daily, ref = _load_clim_data(event)
     doy = daily.time.dt.dayofyear
-    if shift_days != 0:
+    if isShifted(event):
         doy = ((doy + 183 - 1) % 366) + 1
 
     if not calendar.isleap(year):
@@ -402,7 +395,7 @@ def plot_annual_cycle(
     doy_a = _datetime_to_doy(a)
     doy_b = _datetime_to_doy(b)
     
-    if shift_days != 0:
+    if isShifted(event):
         doy_a = ((doy_a + 183 - 1) % 366) + 1
         doy_b = ((doy_b + 183 - 1) % 366) + 1
     
@@ -438,7 +431,7 @@ def plot_annual_cycle(
     annotations = []
     
     months = list(calendar.month_abbr)[1:]
-    if shift_days != 0:
+    if isShifted(event):
         months = months[6:] + months[:6]
     
     for m in range(1, 13):
