@@ -124,46 +124,6 @@ def plot_PR_FAR(stats: xr.Dataset, cache_key: str) -> go.Figure:
         transform_func=PRlink
     )
 
-    # Hachure de la région PR < 1
-    y0 = PRlink(EPSILON)
-    y1 = PRlink(1)
-
-    x_start = stats.time.values[0]
-    x_end = stats.time.values[-1]
-    x_center = (x_start + x_end) / 2
-    
-    hachure_trace = go.Bar(
-        x=[x_center],
-        y=[y1 - y0],
-        base=y0,
-        width=[x_end - x_start],
-        marker=dict(
-            color="rgba(0,0,0,0)",
-            pattern=dict(
-                shape="/",
-                fillmode="overlay",
-                size=15,
-                fgcolor="lightgrey",
-            ),
-            line=dict(width=0)
-        ),
-        hoverinfo="skip",
-        showlegend=False,
-        xaxis='x',
-        yaxis='y'
-    )
-    
-    # On l’ajoute en premier ou dernier selon ton besoin
-    fig.add_trace(hachure_trace)
-
-    fig.add_annotation(
-        text="Fraction of attributable risk not interpretable for proba. ratio < 1",
-        xref="paper", yref="y",
-        x=0.9, y=PRlink(0.045),
-        showarrow=False,
-        font=dict(size=14, color="dimgrey")
-    )
-
     return fig
 
 
