@@ -2,7 +2,8 @@ from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Outp
 from datetime import datetime
 from .__loader import render_template, register_filters
 from .__formatter import (
-    ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR
+    # ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR,
+    prob_with_CI, return_period_with_CI, PR_with_CI, FAR_with_CI
 )
 from .__text_with_tooltip import render_text_with_tooltips
 from .__logic import should_include_today_update
@@ -16,11 +17,11 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
     # Register formatting functions as filters usable in the .md templates
     register_filters(
         lang,
-        format_prob=ci_token_prob,
-        format_return_period=ci_token_ret,
+        format_prob=prob_with_CI,
+        format_return_period=return_period_with_CI,
         format_year=lambda y: f"{int(y)}",
-        format_PR=ci_token_PR,
-        format_FAR=ci_token_FAR,
+        format_PR=PR_with_CI,
+        format_FAR=FAR_with_CI,
     )
 
     def q(ds, var, t, qlabel='BE'):
@@ -152,7 +153,7 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
 
     # Markdown → HTML
     return html.Div(children=[
-        render_text_with_tooltips(paragraph) for paragraph in paragraphs
+        dcc.Markdown(paragraph) for paragraph in paragraphs
     ], style={'userSelect': 'text', 'width': '70%'}, id='generated-sentences')
 
 

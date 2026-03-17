@@ -118,6 +118,7 @@ def format_return_period_adaptive(
     max_val: float = 1 / EPSILON,
     inf_str: str = "infinity",
     unit: str = "year",
+    include_unit: bool = True
 ) -> str:
     """
     Format a return period (years) using `sig` significant figures.
@@ -137,8 +138,11 @@ def format_return_period_adaptive(
     else:
         s = _fmt_sig(rounded, sig, thousands_sep=False)
 
-    plural = "s" if rounded > 1 else ""
-    return f"{s}\u00A0{unit}{plural}".strip()
+    if include_unit:
+        plural = "s" if rounded > 1 else ""
+        return f"{s}\u00A0{unit}{plural}".strip()
+    
+    return s
 
 
 def format_ratio_adaptive(
@@ -181,12 +185,12 @@ def format_ratio_adaptive(
     return s
 
 
-def format_far_adaptive(far: float) -> str:
+def format_far_adaptive(far: float, unit: str = "%") -> str:
     """
     Format FAR = 1 - 1/PR with adaptive significant figures:
     - FAR <= 99%: 2 sig figs
     - 99% < FAR < 99.9%: 3 sig figs
-    - FAR >= 99.9%: 'over 99.9%'
+    - FAR >= 99.9%: 'over 99.9{unit}'
     Negative FAR returns '--'.
     """
     if _is_nan(far):
@@ -198,20 +202,21 @@ def format_far_adaptive(far: float) -> str:
 
     # Lower bound
     if p < 0.01:
-        return "less than 0.01\u00A0%"
+        return f"less than 0.01{('\u00A0' + unit) if unit else ''}"
 
-    # Upper bound: over 99.9%
+    # Upper bound
     if p >= 99.9:
-        return "over 99.9\u00A0%"
+        return f"over 99.9{('\u00A0' + unit) if unit else ''}"
 
     # Adaptive sig figs
     if p > 99.0:
-        sig = 3  # 99.0 - 99.9%
+        sig = 3
     else:
-        sig = 2  # <= 99%
+        sig = 2
 
     s = _fmt_sig(p, sig)
-    return f"{s}\u00A0%"
+    return f"{s}{('\u00A0' + unit) if unit else ''}"
+
 
 # -------- Insertions de jetons parsables dans le rendu jinja2
 
@@ -219,28 +224,59 @@ def format_far_adaptive(far: float) -> str:
 ## LABEL : La partie à afficher en tooltip
 ## DISPLAY : La partie à afficher in-line
  
-token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
+# token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
 
-def ci_token_prob(value, lo, hi, **kwargs) -> str:
-    disp = format_prob_adaptive(value, **kwargs)
-    lo_s = format_prob_adaptive(lo, **kwargs)
-    hi_s = format_prob_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+IPCC_format = lambda value,low,high,unit: f"**{value} *\[{low} to {high}\]* {unit}**"
 
-def ci_token_ret(value, lo, hi, **kwargs) -> str:
-    disp = format_return_period_adaptive(value, **kwargs)
-    lo_s = format_return_period_adaptive(lo, **kwargs)
-    hi_s = format_return_period_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+# def ci_token_prob(value, lo, hi, **kwargs) -> str:
+#     disp = format_prob_adaptive(value, **kwargs)
+#     lo_s = format_prob_adaptive(lo, **kwargs)
+#     hi_s = format_prob_adaptive(hi, **kwargs)
+#     return token(disp, lo_s, hi_s)
 
-def ci_token_PR(value, lo, hi, **kwargs) -> str:
-    disp = format_ratio_adaptive(value, **kwargs)
-    lo_s = format_ratio_adaptive(lo, **kwargs)
-    hi_s = format_ratio_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+# def ci_token_ret(value, lo, hi, **kwargs) -> str:
+#     disp = format_return_period_adaptive(value, **kwargs)
+#     lo_s = format_return_period_adaptive(lo, **kwargs)
+#     hi_s = format_return_period_adaptive(hi, **kwargs)
+#     return token(disp, lo_s, hi_s)
 
-def ci_token_FAR(value, lo, hi, **kwargs) -> str:
-    disp = format_far_adaptive(value, **kwargs)
-    lo_s = format_far_adaptive(lo, **kwargs)
-    hi_s = format_far_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+# def ci_token_PR(value, lo, hi, **kwargs) -> str:
+#     disp = format_ratio_adaptive(value, **kwargs)
+#     lo_s = format_ratio_adaptive(lo, **kwargs)
+#     hi_s = format_ratio_adaptive(hi, **kwargs)
+#     return token(disp, lo_s, hi_s)
+
+# def ci_token_FAR(value, lo, hi, **kwargs) -> str:
+#     disp = format_far_adaptive(value, **kwargs)
+#     lo_s = format_far_adaptive(lo, **kwargs)
+#     hi_s = format_far_adaptive(hi, **kwargs)
+#     return token(disp, lo_s, hi_s)
+
+
+def prob_with_CI(value, lo, hi, **kwargs):
+    prob = format_prob_adaptive(value, unit=None, **kwargs)
+    low = format_prob_adaptive(lo, unit=None, **kwargs)
+    high = format_prob_adaptive(hi, unit=None, **kwargs)
+
+    return IPCC_format(prob, low, high, "%")
+
+def return_period_with_CI(value, lo, hi, **kwargs):
+    ret = format_return_period_adaptive(value, include_unit=False, **kwargs)
+    low = format_return_period_adaptive(lo, include_unit=False, **kwargs)
+    high = format_return_period_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(ret, low, high, "years")
+
+def PR_with_CI(value, lo, hi, **kwargs):
+    ratio = format_ratio_adaptive(value, include_unit=False, **kwargs)
+    low = format_ratio_adaptive(lo, include_unit=False, **kwargs)
+    high = format_ratio_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(ratio, low, high, 'times')
+
+def FAR_with_CI(value, lo, hi, **kwargs):
+    far = format_far_adaptive(value, unit=None, **kwargs)
+    low = format_far_adaptive(lo, unit=None, **kwargs)
+    high = format_far_adaptive(hi, unit=None, **kwargs)
+
+    return IPCC_format(far, low, high, "%")
