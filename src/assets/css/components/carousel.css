@@ -125,10 +125,36 @@
     box-shadow: none;
 }
 
-.bounce-down {
+.bounce-down svg {
     animation: double-bounce-down 10s ease-in-out infinite;
 }
 
-.bounce-up {
+.bounce-up svg {
   animation: double-bounce-up 10s ease-in-out infinite;
+}
+
+
+.carousel-hint {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 18px;
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 0.4s ease;
+}
+
+/* rend le texte visuellement fixe malgré le bounce */
+.mantine-Carousel-control.bounce-up .carousel-hint,
+.mantine-Carousel-control.bounce-down .carousel-hint {
+  transform: translate(-50%, 0) !important;
+}
+
+.carousel-hint.visible {
+  opacity: 0.85;
 }

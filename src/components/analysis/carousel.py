@@ -1,4 +1,4 @@
-from dash import clientside_callback, ClientsideFunction, Input, Output
+from dash import clientside_callback, callback, ClientsideFunction, Input, Output
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
@@ -143,6 +143,14 @@ clientside_callback(
     Input("my-carousel", "active")
 )
 
+clientside_callback(
+    ClientsideFunction(
+        namespace='carousel',
+        function_name='showHint'
+    ),
+    Output("my-carousel", "dummy-show-hint"),
+    Input("my-carousel", "active")
+)
 
 clientside_callback(
     ClientsideFunction(

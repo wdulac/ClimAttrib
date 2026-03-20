@@ -20,21 +20,68 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
 
     toggleBounce: function(slideIndex) {
       const controls = document.querySelectorAll(".mantine-Carousel-control");
-      controls.forEach((btn, idx) => {
+    
+      controls.forEach((btn) => {
         if (slideIndex === 0) {
-          // Slide 0 → on ajoute les classes d’animation
-          if (idx === 0) {
-            btn.classList.add("bounce-down");
-          } else if (idx === 1) {
+          if (btn.dataset.type === "next") {
             btn.classList.add("bounce-up");
           }
         } else {
-          // Sur les autres slides → on retire
-          btn.classList.remove("bounce-down");
           btn.classList.remove("bounce-up");
         }
       });
-      return null;  // dcc.Store n’a pas besoin de vraie valeur ici
+    
+      return null;
+    },
+
+    showHint: function(slideIndex) {
+      const nextBtn = document.querySelector(
+        '.mantine-Carousel-control[data-type="next"]'
+      );
+    
+      if (!nextBtn) return null;
+    
+      nextBtn.style.position = "relative";
+    
+      let hint = nextBtn.querySelector(".carousel-hint");
+    
+      // nettoyer tout timer précédent
+      if (nextBtn._hintTimeout) {
+        clearTimeout(nextBtn._hintTimeout);
+        nextBtn._hintTimeout = null;
+      }
+    
+      if (slideIndex === 0) {
+    
+        // créer si absent (mais invisible)
+        if (!hint) {
+          hint = document.createElement("div");
+          hint.className = "carousel-hint";
+          hint.textContent = "Click below to see more";
+          nextBtn.appendChild(hint);
+        }
+    
+        // apparition synchronisée avec le bounce (~9s)
+        nextBtn._hintTimeout = setTimeout(() => {
+          if (hint) {
+            hint.classList.add("visible");
+          }
+        }, 9000); // à ajuster si besoin
+    
+      } else {
+        // fade-out + cleanup
+        if (hint) {
+          hint.classList.remove("visible");
+    
+          setTimeout(() => {
+            if (hint && hint.parentNode) {
+              hint.parentNode.removeChild(hint);
+            }
+          }, 400);
+        }
+      }
+    
+      return null;
     },
 
     addTooltips: function(containerId) {

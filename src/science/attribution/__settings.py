@@ -14,5 +14,5 @@ STAN_WORK_DIR =  SRC / 'science/stan_files/'
 # Pour l'attribution
 N_SAMPLES_ATTRIB = 1000 # Nombre de valeurs de hpars à tirer pour l'intervalle de confiance
 MODE = 'quantile'
-CI = 0.05
+CI = 0.1
 SCENARIO = 'ssp370'
