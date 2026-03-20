@@ -5,16 +5,7 @@ footer = html.Footer(
     children=[
         dmc.Group(
             children=[
-                html.A(
-                    href="",
-                    children="Contact us",
-                    className="footer-bottom-link"
-                ),
-                html.A(
-                    href="",
-                    children="Privacy policy",
-                    className="footer-bottom-link"
-                )
+                html.Span("© 2026", style=dict(color='white'))
             ], className="footer-row-container"
         ),
     ],
