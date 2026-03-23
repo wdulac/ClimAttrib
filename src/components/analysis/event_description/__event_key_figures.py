@@ -74,11 +74,6 @@ def key_figures(event: dict):
                         extra=duration_extra_str
                     ),
                     create_stat_card(
-                        icon="fluent:braces-variable-48-regular",
-                        label="Variable",
-                        value="Mean temperature"
-                    ),
-                    create_stat_card(
                         icon="fluent:temperature-48-regular",
                         label="Intensity",
                         value=intensity_str
