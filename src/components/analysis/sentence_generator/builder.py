@@ -142,7 +142,7 @@ def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
         render_template("intro", variables, lang=lang)
     )
 
-    if should_include_today_update(year_then, today):
+    if year_then < today:
         # Lookup updated quantities
         pF_today = float(stats['pF'].sel(time=today, quantile='BE'))
         PR_today = float(stats['PR'].sel(time=today, quantile='BE'))
