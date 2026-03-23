@@ -6,7 +6,6 @@ from .__formatter import (
     prob_with_CI, return_period_with_CI, PR_with_CI, FAR_with_CI
 )
 from .__text_with_tooltip import render_text_with_tooltips
-from .__logic import should_include_today_update
 
 
 DEFAULT_LANG = "en"
