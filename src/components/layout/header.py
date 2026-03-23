@@ -29,7 +29,7 @@ _how_to_use = html.Div(children=[
                 # Define the tabs themselves
                 dmc.TabsList([
                         dmc.TabsTab("Quick guide", value="quickguide"),
-                        dmc.TabsTab("Results interpration", value="interpretation")
+                        dmc.TabsTab("Results interpretation", value="interpretation")
                     ]),
                 # Then comes the conent of each tab
                 dmc.TabsPanel(
