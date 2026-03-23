@@ -24,7 +24,7 @@ disclaimer_layout = [
                     ),
                 ],
                 justify="space-between",
-                style={"minHeight": 208},
+                style={"minHeight": 158},
             )
         ],
         centered=True,
