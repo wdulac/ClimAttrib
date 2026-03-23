@@ -6,7 +6,8 @@ import dash_mantine_components as dmc
 from components.resources import (
     QUICKGUIDE_CONTENT,
     INTERPRETATION_HELP_CONTENT,
-    ABOUT_CONTENT
+    ABOUT_CONTENT,
+    DISCLAIMER_CONTENT
 )
 
 from app_platform.shared.urls import asset_url, URL_PREFIX_DASH
@@ -112,6 +113,27 @@ _about = html.Div(children=[
 ])
 
 
+_disclaimer = html.Div(children=[
+    dmc.Button(
+        'Disclaimer',
+        id='disclaimer-button',
+        variant='subtle'
+    ),
+    dmc.Modal(
+        id='disclaimer-modal-bis',
+        title='Disclaimer',
+        size='55%',
+        styles={
+            "title": {
+                "fontSize": "32px",
+                "fontWeight": 700
+            },
+        },
+        children=dcc.Markdown(DISCLAIMER_CONTENT)
+    )
+])
+
+
 _github_action_button = html.A(
     href='https://github.com/wdulac/ClimAttrib',
     target='_blank',
@@ -134,6 +156,7 @@ _header_right = dmc.Group(
         children=[
             _how_to_use,
             _about,
+            _disclaimer,
             # _language_menu,
             dmc.Space(w='10px'), # For even spacing of the buttons
             _github_action_button
@@ -190,4 +213,14 @@ def toggle_how_to_use(n_cliks, opened):
     prevent_initial_call=True,
 )
 def toggle_about(n, opened):
+    return not opened
+
+
+@callback(
+    Output('disclaimer-modal-bis', 'opened'),
+    Input('disclaimer-button', 'n_clicks'),
+    State('disclaimer-modal-bis', 'opened'),
+    prevent_initial_call=True
+)
+def toggle_disclaimer(n, opened):
     return not opened
