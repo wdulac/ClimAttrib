@@ -1,5 +1,5 @@
 from dash import html, dcc
-from dash import Output, Input, State, callback
+from dash import Output, Input, State, callback, MATCH
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc
 
@@ -17,13 +17,13 @@ from app_platform.shared.urls import asset_url, URL_PREFIX_DASH
 _how_to_use = html.Div(children=[
     dmc.Button(
         "How to use",
-        id='how-to-button',
+        id={"type": "modal-button", "name": "how-to-use"},
         variant='subtle',
         rightSection=DashIconify(icon="fluent:book-question-mark-24-regular", width=28)
     ),
     dmc.Modal(
         title="How to use",
-        id='how-to-modal',
+        id={"type": "modal-content", "name": "how-to-use"},
         children=[
             dmc.Tabs([
                 # Define the tabs themselves
@@ -84,11 +84,11 @@ _about_logos = [
 _about = html.Div(children=[
     dmc.Button(
     "About",
-    id="about-button",
+    id={"type": "modal-button", "name": "about"},
     variant="subtle"
     ),
     dmc.Modal(
-        id="about-modal",
+        id={"type": "modal-content", "name": "about"},
         title="About",
         size="55%",
         styles={
@@ -116,11 +116,11 @@ _about = html.Div(children=[
 _disclaimer = html.Div(children=[
     dmc.Button(
         'Disclaimer',
-        id='disclaimer-button',
+        id={"type": "modal-button", "name": "disclaimer"},
         variant='subtle'
     ),
     dmc.Modal(
-        id='disclaimer-modal-bis',
+        id={"type": "modal-content", "name": "disclaimer"},
         title='Disclaimer',
         size='55%',
         styles={
@@ -197,30 +197,10 @@ header = html.Header(
 
 
 @callback(
-    Output('how-to-modal', 'opened'),
-    Input('how-to-button', 'n_clicks'),
-    State('how-to-modal', 'opened'),
+    Output({"type": "modal-content", "name": MATCH}, "opened"),
+    Input({"type": "modal-button", "name": MATCH}, "n_clicks"),
+    State({"type": "modal-content", "name": MATCH}, "opened"),
     prevent_initial_call=True
 )
-def toggle_how_to_use(n_cliks, opened):
-    return not opened
-
-
-@callback(
-    Output("about-modal", "opened"),
-    Input("about-button", "n_clicks"),
-    State("about-modal", "opened"),
-    prevent_initial_call=True,
-)
-def toggle_about(n, opened):
-    return not opened
-
-
-@callback(
-    Output('disclaimer-modal-bis', 'opened'),
-    Input('disclaimer-button', 'n_clicks'),
-    State('disclaimer-modal-bis', 'opened'),
-    prevent_initial_call=True
-)
-def toggle_disclaimer(n, opened):
+def toggle_modal(n, opened):
     return not opened
