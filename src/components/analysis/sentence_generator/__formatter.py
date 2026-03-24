@@ -98,7 +98,7 @@ def format_prob_adaptive(
     if pct < lower_display:
         # format lower_display with sig significant figures but ensure we show it as decimal (not exponent)
         lower_str = _fmt_sig(lower_display, sig)
-        return f"less than {lower_str}{('\u00A0' + unit) if unit else ''}"
+        return f"< {lower_str}{('\u00A0' + unit) if unit else ''}"
 
     # Otherwise format pct with sig significant figures
     s = _fmt_sig(pct, sig)
@@ -116,7 +116,7 @@ def format_return_period_adaptive(
     rp: float,
     sig: int = 2,
     max_val: float = 1 / EPSILON,
-    inf_str: str = "infinity",
+    inf_str: str = "∞",
     unit: str = "year",
     include_unit: bool = True
 ) -> str:
@@ -162,12 +162,12 @@ def format_ratio_adaptive(
 
     # beyond upper bound
     if value >= max_val:
-        s = f"over {int(max_val):,}"
+        s = f"≥ {int(max_val):,}"
     # below lower bound
     elif value < min_val:
         # show 'less than {min_val}' formatted with sig figs
         min_str = _fmt_sig(min_val, sig)
-        s = f"less than {min_str}"
+        s = f"< {min_str}"
     else:
         # normal formatting: keep unit-appropriate presentation
         rounded = _round_to_n_sigfigs(value, sig)
@@ -178,7 +178,7 @@ def format_ratio_adaptive(
             s = _fmt_sig(rounded, sig, thousands_sep=False)
 
     if include_unit:
-        plural = "s" if (not ("less than" in s and "over" not in s) and float(_round_to_n_sigfigs(value, sig)) > 1) else ""
+        plural = "s" if (not ("<" in s and "≥" not in s) and float(_round_to_n_sigfigs(value, sig)) > 1) else ""
         # plural calculation: if we used 'less than X' or 'over X' keep standard plural rule (value > 1)
         return f"{s}\u00A0{unit}{plural}".strip()
 
@@ -202,11 +202,11 @@ def format_far_adaptive(far: float, unit: str = "%") -> str:
 
     # Lower bound
     if p < 0.01:
-        return f"less than 0.01{('\u00A0' + unit) if unit else ''}"
+        return f"< 0.01{('\u00A0' + unit) if unit else ''}"
 
     # Upper bound
     if p >= 99.9:
-        return f"over 99.9{('\u00A0' + unit) if unit else ''}"
+        return f"≥ 99.9{('\u00A0' + unit) if unit else ''}"
 
     # Adaptive sig figs
     if p > 99.0:
