@@ -1,5 +1,7 @@
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from datetime import datetime
+import xarray as xr
+
 from .__loader import render_template, register_filters
 from .__formatter import (
     # ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR,
@@ -11,7 +13,7 @@ from .__text_with_tooltip import render_text_with_tooltips
 DEFAULT_LANG = "en"
 
 
-def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
+def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):
 
     # Register formatting functions as filters usable in the .md templates
     register_filters(
