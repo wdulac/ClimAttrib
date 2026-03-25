@@ -34,9 +34,22 @@ def far_of(ci: CIValue):
 
 
 def build_metrics(stats, t):
+
+    def to_celsius(ci):
+        return CIValue(
+            value=ci.value - 273.15,
+            ql=ci.ql - 273.15,
+            qu=ci.qu - 273.15,
+        )
+
     pF = extract_ci(stats, "pF", t)
     pC = extract_ci(stats, "pC", t)
     PR = extract_ci(stats, "PR", t)
+    RP_F = extract_ci(stats, "RF", t)
+    RP_C = extract_ci(stats, "RC", t)
+    IF = to_celsius(extract_ci(stats, "IF", t))
+    IC = to_celsius(extract_ci(stats, "IC", t))
+    dI = extract_ci(stats, "dI", t)
 
     return Metrics(
         pF=pF,
@@ -44,6 +57,9 @@ def build_metrics(stats, t):
         PR=PR,
         PR_inv=invert_ci(PR),
         FAR=far_of(PR),
-        RP_F=extract_ci(stats, "RF", t),
-        RP_C=extract_ci(stats, "RC", t),
+        RP_F=RP_F,
+        RP_C=RP_C,
+        IF=IF,
+        IC=IC,
+        dI=dI
     )
