@@ -112,6 +112,11 @@ def format_prob_adaptive(
     return f"{s}{('\u00A0' + unit) if unit else ''}"
 
 
+def _is_infinite_return_period(rp: float, max_val: float = 1 / EPSILON) -> bool:
+    if _is_nan(rp):
+        return False
+    return math.isinf(rp) or rp >= max_val
+
 def format_return_period_adaptive(
     rp: float,
     sig: int = 2,
@@ -127,7 +132,7 @@ def format_return_period_adaptive(
     """
     if _is_nan(rp):
         return "NaN"
-    if math.isinf(rp) or rp >= max_val:
+    if _is_infinite_return_period(rp):
         return inf_str
 
     rounded = _round_to_n_sigfigs(rp, sig)
@@ -218,40 +223,29 @@ def format_far_adaptive(far: float, unit: str = "%") -> str:
     return f"{s}{('\u00A0' + unit) if unit else ''}"
 
 
-# -------- Insertions de jetons parsables dans le rendu jinja2
+def format_intensity_adaptive(
+    x: float,
+    sig: int = 3,
+    unit: str = "°C",
+    include_unit: bool = False,
+):
+    """
+    Format an intensity value (e.g. temperature) with `sig` significant figures.
+    Keeps trailing zeros consistent with sig figs.
+    """
 
-## Jeton à parser : [[CI:LABEL|DISPLAY]] avec :
-## LABEL : La partie à afficher en tooltip
-## DISPLAY : La partie à afficher in-line
- 
-# token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
+    if _is_nan(x):
+        return "NaN"
+
+    if include_unit:
+        return f"{x:.1f}\u00A0{unit}"
+    
+    return f"{x:.1f}"
+
+
+#------------------------------------------------------------------------
 
 IPCC_format = lambda value,low,high,unit: f"**{value} *\[{low} to {high}\]* {unit}**"
-
-# def ci_token_prob(value, lo, hi, **kwargs) -> str:
-#     disp = format_prob_adaptive(value, **kwargs)
-#     lo_s = format_prob_adaptive(lo, **kwargs)
-#     hi_s = format_prob_adaptive(hi, **kwargs)
-#     return token(disp, lo_s, hi_s)
-
-# def ci_token_ret(value, lo, hi, **kwargs) -> str:
-#     disp = format_return_period_adaptive(value, **kwargs)
-#     lo_s = format_return_period_adaptive(lo, **kwargs)
-#     hi_s = format_return_period_adaptive(hi, **kwargs)
-#     return token(disp, lo_s, hi_s)
-
-# def ci_token_PR(value, lo, hi, **kwargs) -> str:
-#     disp = format_ratio_adaptive(value, **kwargs)
-#     lo_s = format_ratio_adaptive(lo, **kwargs)
-#     hi_s = format_ratio_adaptive(hi, **kwargs)
-#     return token(disp, lo_s, hi_s)
-
-# def ci_token_FAR(value, lo, hi, **kwargs) -> str:
-#     disp = format_far_adaptive(value, **kwargs)
-#     lo_s = format_far_adaptive(lo, **kwargs)
-#     hi_s = format_far_adaptive(hi, **kwargs)
-#     return token(disp, lo_s, hi_s)
-
 
 def prob_with_CI(value, lo, hi, **kwargs):
     prob = format_prob_adaptive(value, unit=None, **kwargs)
@@ -280,3 +274,10 @@ def FAR_with_CI(value, lo, hi, **kwargs):
     high = format_far_adaptive(hi, unit=None, **kwargs)
 
     return IPCC_format(far, low, high, "%")
+
+def intensity_with_CI(value, lo, hi, **kwargs):
+    val = format_intensity_adaptive(value, include_unit=False, **kwargs)
+    low = format_intensity_adaptive(lo, include_unit=False, **kwargs)
+    high = format_intensity_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(val, low, high, "°C")
