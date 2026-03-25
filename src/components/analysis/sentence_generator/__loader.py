@@ -17,13 +17,6 @@ def get_env(lang: str = "en") -> Environment:
     return env
 
 
-def register_filters(lang: str, **filters):
-
-    env = get_env(lang)
-    for name, fn in filters.items():
-        env.filters[name] = fn
-
-
 def render_template(name: str, variables: dict, lang: str = "en") -> str:
 
     env = get_env(lang)
