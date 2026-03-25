@@ -247,7 +247,7 @@ def format_intensity_adaptive(
 
 def IPCC_format(value, low, high, unit):
     unit_str = f" {unit}" if unit else ""
-    return f"**{value} *\[{low} to {high}\]*{unit_str}**"
+    return f"**{value} \[{low} to {high}\]{unit_str}**"
 
 
 def prob_with_CI(value, lo, hi, **kwargs):

@@ -14,11 +14,11 @@ def safe_ci_format(ci: CIValue, formatter, **formatter_kargs):
 def attribution_then(PR, PR_inv, FAR, format_PR, format_FAR):
 
     if PR.value >= 1:
-        pr_str = f"{safe_ci_format(PR, format_PR)} times more likely"
+        pr_str = f"{safe_ci_format(PR, format_PR)} more likely"
         far_value = safe_ci_format(FAR, format_FAR)
         has_far = True
     else:
-        pr_str = f"{safe_ci_format(PR_inv, format_PR)} times less likely"
+        pr_str = f"{safe_ci_format(PR_inv, format_PR)} less likely"
         far_value = ""
         has_far = False
 
