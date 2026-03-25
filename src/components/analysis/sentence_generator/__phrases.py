@@ -85,9 +85,9 @@ def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, format_PR):
     """
 
     if ratio.value >= 1:
-        return "increased", safe_ci_format(ratio, format_PR)
+        return "increased", safe_ci_format(ratio, format_PR, unit="")
     else:
-        return "decreased", safe_ci_format(ratio_inv, format_PR)
+        return "decreased", safe_ci_format(ratio_inv, format_PR, unit="")
 
 
 # =========================================================

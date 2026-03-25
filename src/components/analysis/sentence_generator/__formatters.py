@@ -245,7 +245,10 @@ def format_intensity_adaptive(
 
 #------------------------------------------------------------------------
 
-IPCC_format = lambda value,low,high,unit: f"**{value} *\[{low} to {high}\]* {unit}**"
+def IPCC_format(value, low, high, unit):
+    unit_str = f" {unit}" if unit else ""
+    return f"**{value} *\[{low} to {high}\]*{unit_str}**"
+
 
 def prob_with_CI(value, lo, hi, **kwargs):
     prob = format_prob_adaptive(value, unit=None, **kwargs)
@@ -261,12 +264,12 @@ def return_period_with_CI(value, lo, hi, **kwargs):
 
     return IPCC_format(ret, low, high, "years")
 
-def PR_with_CI(value, lo, hi, **kwargs):
+def PR_with_CI(value, lo, hi, unit="times", **kwargs):
     ratio = format_ratio_adaptive(value, include_unit=False, **kwargs)
     low = format_ratio_adaptive(lo, include_unit=False, **kwargs)
     high = format_ratio_adaptive(hi, include_unit=False, **kwargs)
 
-    return IPCC_format(ratio, low, high, 'times')
+    return IPCC_format(ratio, low, high, unit)
 
 def FAR_with_CI(value, lo, hi, **kwargs):
     far = format_far_adaptive(value, unit=None, **kwargs)
