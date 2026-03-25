@@ -97,27 +97,6 @@
   }
 }
 
-@keyframes double-bounce-down {
-  0%, 89% {
-    transform: translateY(0);
-  }
-  90% {
-    transform: translateY(6px); /* vers le bas */
-  }
-  92% {
-    transform: translateY(0);
-  }
-  94% {
-    transform: translateY(6px);
-  }
-  96% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
 
 .mantine-Carousel-control {
     background-color: transparent;
@@ -125,9 +104,6 @@
     box-shadow: none;
 }
 
-.bounce-down svg {
-    animation: double-bounce-down 10s ease-in-out infinite;
-}
 
 .bounce-up svg {
   animation: double-bounce-up 10s ease-in-out infinite;
@@ -149,11 +125,6 @@
   transition: opacity 0.4s ease;
 }
 
-/* rend le texte visuellement fixe malgré le bounce */
-.mantine-Carousel-control.bounce-up .carousel-hint,
-.mantine-Carousel-control.bounce-down .carousel-hint {
-  transform: translate(-50%, 0) !important;
-}
 
 .carousel-hint.visible {
   opacity: 0.85;
