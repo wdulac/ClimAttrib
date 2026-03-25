@@ -1,3 +1,3 @@
 from .carousel import results_carousel
 from .event_description import event_description_component
-from .sentence_generator import build_summary_component
+from .sentence_generator import automated_text

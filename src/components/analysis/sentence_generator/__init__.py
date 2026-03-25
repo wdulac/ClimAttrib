@@ -1,1 +1,1 @@
-from .builder import build_summary_component
+from .builder import automated_text

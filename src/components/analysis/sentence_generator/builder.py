@@ -1,158 +1,190 @@
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from datetime import datetime
-from .__loader import render_template, register_filters
-from .__formatter import (
-    ci_token_prob, ci_token_ret, ci_token_PR, ci_token_FAR
+import xarray as xr
+
+from .__data_models import CIValue
+from .__metrics import build_metrics, invert_ci
+from .__formatters import (
+    prob_with_CI,
+    return_period_with_CI,
+    PR_with_CI,
+    FAR_with_CI,
+    intensity_with_CI
 )
-from .__text_with_tooltip import render_text_with_tooltips
-from .__logic import should_include_today_update
+from .__phrases import (
+    attribution_then,
+    attribution_today,
+    attribution_future,
+    ratio_phrase,
+    impossible_sentence,
+)
+from .__loader import render_template
+
+from science.attribution.__data_loading import _load_obs
 
 
 DEFAULT_LANG = "en"
+EXTREME_PROB_THRESHOLD = 0.8 # 80 %
+DISTANCE_FROM_MAX_THRESHOLD = 1.0 # Kelvin
 
+YEAR_FOR_FUTURE_PARAGRAPH = 2050
 
-def build_summary_component(stats, lang: str | None = DEFAULT_LANG):
+def _fmt(ci, formatter):
+    return formatter(ci.value, ci.ql, ci.qu)
 
-    # Register formatting functions as filters usable in the .md templates
-    register_filters(
-        lang,
-        format_prob=ci_token_prob,
-        format_return_period=ci_token_ret,
-        format_year=lambda y: f"{int(y)}",
-        format_PR=ci_token_PR,
-        format_FAR=ci_token_FAR,
-    )
+def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):
 
-    def q(ds, var, t, qlabel='BE'):
-        return float(ds[var].sel(time=t, quantile=qlabel))
+    ## Evaluate which template to use...
 
-    def far_of(pr: float) -> float:
-        # FAR = 1 - 1/PR ; garde la valeur brute (peut être < 0 si PR < 1)
-        # protège la division si jamais PR≈0 (cas pathologique)
-        return 1.0 - (1.0 / pr) if pr and abs(pr) > 1e-15 else float('nan')
+    # Is the selected event extreme ? Check for pF and compare to Yo series
+    isExtreme = True
+    prob = float(stats['pF'].sel(time=event['date'].year, quantile='BE'))
+    if prob >= EXTREME_PROB_THRESHOLD:
+        # Not rare but maybe still a maxima, therefore extreme
+        Yo = _load_obs(event['lat'], event['lon'],
+                       event['extreme_type'], event['method'],
+                       event['start_date'], event['stop_date'],
+                       event['duration'])
+        
+        isMax = abs(event['intensity'] - Yo.sel(time=event['date'].year)) <= DISTANCE_FROM_MAX_THRESHOLD
+        isExtreme = isMax
     
-    def safe_inv(x: float) -> float:
-        return float('nan') if x is None or x == 0 else 1.0 / x
+    if isExtreme:
+        # Below :EXTREME_PROB_THRESHOLD: we consider the event rare enough to use the extreme templates
+        template = f"extreme/{event['method']}/{event['extreme_type']}"
+    else:
+        template = "non_extreme/generic"
+    
+    ## Extract all necessary values to fill in the template
 
-    year_then = stats.attrs["time"]
-    today = datetime.today().year
+    # Separate time references for each paragraph
+    year_then = event['date'].year
+    year_today = datetime.today().year
+    year_future = YEAR_FOR_FUTURE_PARAGRAPH
 
-       # --- BE (année de l'évènement) ---
-    pF_be = q(stats, 'pF', year_then, 'BE')
-    pC_be = q(stats, 'pC', year_then, 'BE')
-    RF_be = q(stats, 'RF', year_then, 'BE')
-    RC_be = q(stats, 'RC', year_then, 'BE')
-    PR_be = q(stats, 'PR', year_then, 'BE')
-    FAR_be = far_of(PR_be)
+    # Extract all relevant metrics for each time reference
+    then = build_metrics(stats, year_then)
+    today = None
+    if year_then < year_today:
+        today = build_metrics(stats, year_today)
+    future = build_metrics(stats, year_future)
 
-    # --- QL / QU (année de l'évènement) ---
-    pF_ql, pF_qu = q(stats, 'pF', year_then, 'QL'), q(stats, 'pF', year_then, 'QU')
-    pC_ql, pC_qu = q(stats, 'pC', year_then, 'QL'), q(stats, 'pC', year_then, 'QU')
-    RF_ql, RF_qu = q(stats, 'RF', year_then, 'QL'), q(stats, 'RF', year_then, 'QU')
-    RC_ql, RC_qu = q(stats, 'RC', year_then, 'QL'), q(stats, 'RC', year_then, 'QU')
-    PR_ql, PR_qu = q(stats, 'PR', year_then, 'QL'), q(stats, 'PR', year_then, 'QU')
-    FAR_ql, FAR_qu = far_of(PR_ql), far_of(PR_qu)
-
-    # --- Inverses pour PR_then (pour wording "less likely") ---
-    PR_inv     = safe_inv(PR_be)
-    PR_inv_ql  = safe_inv(PR_qu)  # inversion: bornes s’inversent
-    PR_inv_qu  = safe_inv(PR_ql)
-
-    # --- Today (BE + QL/QU) ---
-    pF_today     = q(stats, 'pF', today, 'BE')
-    pF_today_ql  = q(stats, 'pF', today, 'QL')
-    pF_today_qu  = q(stats, 'pF', today, 'QU')
-
-    PR_today     = q(stats, 'PR', today, 'BE')
-    PR_today_ql  = q(stats, 'PR', today, 'QL')
-    PR_today_qu  = q(stats, 'PR', today, 'QU')
-
-    # Inverses pour PR_today
-    PR_today_inv    = safe_inv(PR_today)
-    PR_today_inv_ql = safe_inv(PR_today_qu)
-    PR_today_inv_qu = safe_inv(PR_today_ql)
-
-    FAR_today    = far_of(PR_today)
-    FAR_today_ql = far_of(PR_today_ql)
-    FAR_today_qu = far_of(PR_today_qu)
-
-    # Ratios pF_today / pF_then (BE + QL/QU sur today ; dénominateur = BE à l’année de l’évènement)
-    ratio_now_then    = pF_today    / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
-    ratio_now_then_ql = pF_today_ql / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
-    ratio_now_then_qu = pF_today_qu / pF_be if pF_be and abs(pF_be) > 1e-15 else float('nan')
-
-    # Inverses pour le ratio (pour wording "times less/more likely" sans nombres < 1)
-    ratio_now_then_inv    = safe_inv(ratio_now_then)
-    ratio_now_then_inv_ql = safe_inv(ratio_now_then_qu)  # inversion des bornes
-    ratio_now_then_inv_qu = safe_inv(ratio_now_then_ql)
-
-    variables = {
-        # repères temporels
+    ### Build the context
+    context = {
         "year_then": year_then,
-        "year_today": today,
-        "has_had": "has" if year_then == today else "had",
-        "change": "more" if PR_be > 1 else "less",
-
-        # BE (intro)
-        "pF_then": pF_be,
-        "pC_then": pC_be,
-        "RP_F_then": RF_be,
-        "RP_C_then": RC_be,
-        "PR_then": PR_be,
-        "PR_then_inv": PR_inv,
-        "FAR_then": FAR_be,
-
-        # quantiles (intro, pour filtres *_ci)
-        "pF_then_ql": pF_ql, "pF_then_qu": pF_qu,
-        "pC_then_ql": pC_ql, "pC_then_qu": pC_qu,
-        "RP_F_then_ql": RF_ql, "RP_F_then_qu": RF_qu,
-        "RP_C_then_ql": RC_ql, "RP_C_then_qu": RC_qu,
-        "PR_then_ql": PR_ql, "PR_then_qu": PR_qu,
-        "PR_then_inv_ql": PR_inv_ql, "PR_then_inv_qu": PR_inv_qu,
-        "FAR_then_ql": FAR_ql, "FAR_then_qu": FAR_qu,
-
-        # today_update (BE + QL/QU)
-        "pF_today": pF_today,
-        "pF_today_ql": pF_today_ql, "pF_today_qu": pF_today_qu,
-        "PR_today": PR_today,
-        "PR_today_ql": PR_today_ql, "PR_today_qu": PR_today_qu,
-        "PR_today_inv": PR_today_inv,
-        "PR_today_inv_ql": PR_today_inv_ql, "PR_today_inv_qu": PR_today_inv_qu,
-        "FAR_today": FAR_today,
-        "FAR_today_ql": FAR_today_ql, "FAR_today_qu": FAR_today_qu,
-
-        # ratios (et inverses)
-        "pF_ratio_now_then":            ratio_now_then,
-        "pF_ratio_now_then_ql":         ratio_now_then_ql,
-        "pF_ratio_now_then_qu":         ratio_now_then_qu,
-        "pF_ratio_now_then_inv":        ratio_now_then_inv,
-        "pF_ratio_now_then_inv_ql":     ratio_now_then_inv_ql,
-        "pF_ratio_now_then_inv_qu":     ratio_now_then_inv_qu,
-
-        # libellés
-        "change_PR_today": "more" if PR_today > 1 else "less",
-        "change_today": "an increase" if ratio_now_then > 1 else "a decrease",
+        "year_today": year_today,
+        "year_future": year_future,
     }
 
-    paragraphs: list[str] = []
+    ## ======== Paragraphe THEN ======== ##
+    context.update({
+        "pF_then": _fmt(then.pF, prob_with_CI),
+        "pC_then": _fmt(then.pC, prob_with_CI),
+        "RP_F_then": _fmt(then.RP_F, return_period_with_CI),
+        "RP_C_then": _fmt(then.RP_C, return_period_with_CI),
+        "IC_then": _fmt(then.IC, intensity_with_CI),
+        "dI_then": _fmt(then.dI, intensity_with_CI),
+    })
 
-    # Paragraphe d'introduction
-    paragraphs.append(
-        render_template("intro", variables, lang=lang)
+    # PR / FAR
+    pr_then, far_then, has_far_then = attribution_then(
+        then.PR, then.PR_inv, then.FAR,
+        PR_with_CI, FAR_with_CI
     )
+    
+    context.update({
+        "PR_then_phrase": pr_then,
+        "FAR_then": far_then,
+        "has_far_then": has_far_then,
+    })
 
-    if should_include_today_update(year_then, today):
-        # Lookup updated quantities
-        pF_today = float(stats['pF'].sel(time=today, quantile='BE'))
-        PR_today = float(stats['PR'].sel(time=today, quantile='BE'))
-        FAR_today = 1 - (1/PR_today)
-        paragraphs.append(
-            render_template("today_update", variables, lang=lang)
+    # Impossible
+    context["impossible_sentence"] = impossible_sentence(then.RP_C)
+
+    ## ======== Paragraphe TODAY ======== ##
+    context["has_today"] = today is not None
+
+    if today:
+        context.update({
+            "pF_today": _fmt(today.pF, prob_with_CI),
+            "RP_F_today": _fmt(today.RP_F, return_period_with_CI),
+            "IF_today": _fmt(today.IF, intensity_with_CI),
+            "IC_today": _fmt(today.IC, intensity_with_CI),
+            "dI_today": _fmt(today.dI, intensity_with_CI),
+        })
+    
+        # PR / FAR
+        pr_today, far_today, has_far_today = attribution_today(
+            today.PR, today.PR_inv, today.FAR,
+            PR_with_CI, FAR_with_CI
         )
+    
+        context.update({
+            "PR_today_phrase": pr_today,
+            "FAR_today": far_today,
+            "has_far_today": has_far_today,
+        })
+    
+        # Ratio today / then
+        ratio_today = CIValue(
+            value=today.pF.value / then.pF.value,
+            ql=today.pF.ql / then.pF.value,
+            qu=today.pF.qu / then.pF.value,
+        )
+        ratio_today_inv = invert_ci(ratio_today)
+    
+        word, value = ratio_phrase(ratio_today, ratio_today_inv, PR_with_CI)
+    
+        context.update({
+            "ratio_today_word": word,
+            "ratio_today_value": value,
+        })
 
-    # Markdown → HTML
+    ## ======== Paragraphe FUTURE ======== ##
+    context.update({
+        "pF_future": _fmt(future.pF, prob_with_CI),
+        "RP_F_future": _fmt(future.RP_F, return_period_with_CI),
+        "IF_future": _fmt(future.IF, intensity_with_CI),
+        "IC_future": _fmt(future.IC, intensity_with_CI),
+        "dI_future": _fmt(future.dI, intensity_with_CI),
+    })
+
+    pr_future, far_future, has_far_future = attribution_future(
+        future.PR, future.PR_inv, future.FAR,
+        PR_with_CI, FAR_with_CI
+    )
+    
+    context.update({
+        "PR_future_phrase": pr_future,
+        "FAR_future": far_future,
+        "has_far_future": has_far_future,
+    })
+
+    if today:
+        ratio_future = CIValue(
+            value=future.pF.value / today.pF.value,
+            ql=future.pF.ql / today.pF.value,
+            qu=future.pF.qu / today.pF.value,
+        )
+        ratio_future_inv = invert_ci(ratio_future)
+    
+        word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
+    
+        context.update({
+            "ratio_future_word": word,
+            "ratio_future_value": value,
+        })
+    else:
+        context.update({
+            "ratio_future_word": "",
+            "ratio_future_value": "",
+        })
+
+
+    text = render_template(template, context)
+    
     return html.Div(children=[
-        render_text_with_tooltips(paragraph) for paragraph in paragraphs
+        dcc.Markdown(text)
     ], style={'userSelect': 'text', 'width': '70%'}, id='generated-sentences')
 
 
