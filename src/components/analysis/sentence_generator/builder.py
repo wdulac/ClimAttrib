@@ -180,12 +180,14 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
             "ratio_future_value": "",
         })
 
-
+    ## Render template and build component
     text = render_template(template, context)
     
-    return html.Div(children=[
+    component = html.Div(children=[
         dcc.Markdown(text)
     ], style={'userSelect': 'text', 'width': '70%'}, id='generated-sentences')
+
+    return component
 
 
 clientside_callback(
