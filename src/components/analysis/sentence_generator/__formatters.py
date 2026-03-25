@@ -98,7 +98,7 @@ def format_prob_adaptive(
     if pct < lower_display:
         # format lower_display with sig significant figures but ensure we show it as decimal (not exponent)
         lower_str = _fmt_sig(lower_display, sig)
-        return f"less than {lower_str}{('\u00A0' + unit) if unit else ''}"
+        return f"< {lower_str}{('\u00A0' + unit) if unit else ''}"
 
     # Otherwise format pct with sig significant figures
     s = _fmt_sig(pct, sig)
@@ -112,12 +112,18 @@ def format_prob_adaptive(
     return f"{s}{('\u00A0' + unit) if unit else ''}"
 
 
+def _is_infinite_return_period(rp: float, max_val: float = 1 / EPSILON) -> bool:
+    if _is_nan(rp):
+        return False
+    return math.isinf(rp) or rp >= max_val
+
 def format_return_period_adaptive(
     rp: float,
     sig: int = 2,
     max_val: float = 1 / EPSILON,
-    inf_str: str = "infinity",
+    inf_str: str = "∞",
     unit: str = "year",
+    include_unit: bool = True
 ) -> str:
     """
     Format a return period (years) using `sig` significant figures.
@@ -126,7 +132,7 @@ def format_return_period_adaptive(
     """
     if _is_nan(rp):
         return "NaN"
-    if math.isinf(rp) or rp >= max_val:
+    if _is_infinite_return_period(rp):
         return inf_str
 
     rounded = _round_to_n_sigfigs(rp, sig)
@@ -137,8 +143,11 @@ def format_return_period_adaptive(
     else:
         s = _fmt_sig(rounded, sig, thousands_sep=False)
 
-    plural = "s" if rounded > 1 else ""
-    return f"{s}\u00A0{unit}{plural}".strip()
+    if include_unit:
+        plural = "s" if rounded > 1 else ""
+        return f"{s}\u00A0{unit}{plural}".strip()
+    
+    return s
 
 
 def format_ratio_adaptive(
@@ -158,12 +167,12 @@ def format_ratio_adaptive(
 
     # beyond upper bound
     if value >= max_val:
-        s = f"over {int(max_val):,}"
+        s = f"≥ {int(max_val):,}"
     # below lower bound
     elif value < min_val:
         # show 'less than {min_val}' formatted with sig figs
         min_str = _fmt_sig(min_val, sig)
-        s = f"less than {min_str}"
+        s = f"< {min_str}"
     else:
         # normal formatting: keep unit-appropriate presentation
         rounded = _round_to_n_sigfigs(value, sig)
@@ -174,19 +183,19 @@ def format_ratio_adaptive(
             s = _fmt_sig(rounded, sig, thousands_sep=False)
 
     if include_unit:
-        plural = "s" if (not ("less than" in s and "over" not in s) and float(_round_to_n_sigfigs(value, sig)) > 1) else ""
+        plural = "s" if (not ("<" in s and "≥" not in s) and float(_round_to_n_sigfigs(value, sig)) > 1) else ""
         # plural calculation: if we used 'less than X' or 'over X' keep standard plural rule (value > 1)
         return f"{s}\u00A0{unit}{plural}".strip()
 
     return s
 
 
-def format_far_adaptive(far: float) -> str:
+def format_far_adaptive(far: float, unit: str = "%") -> str:
     """
     Format FAR = 1 - 1/PR with adaptive significant figures:
     - FAR <= 99%: 2 sig figs
     - 99% < FAR < 99.9%: 3 sig figs
-    - FAR >= 99.9%: 'over 99.9%'
+    - FAR >= 99.9%: 'over 99.9{unit}'
     Negative FAR returns '--'.
     """
     if _is_nan(far):
@@ -198,49 +207,80 @@ def format_far_adaptive(far: float) -> str:
 
     # Lower bound
     if p < 0.01:
-        return "less than 0.01\u00A0%"
+        return f"< 0.01{('\u00A0' + unit) if unit else ''}"
 
-    # Upper bound: over 99.9%
+    # Upper bound
     if p >= 99.9:
-        return "over 99.9\u00A0%"
+        return f"≥ 99.9{('\u00A0' + unit) if unit else ''}"
 
     # Adaptive sig figs
     if p > 99.0:
-        sig = 3  # 99.0 - 99.9%
+        sig = 3
     else:
-        sig = 2  # <= 99%
+        sig = 2
 
     s = _fmt_sig(p, sig)
-    return f"{s}\u00A0%"
+    return f"{s}{('\u00A0' + unit) if unit else ''}"
 
-# -------- Insertions de jetons parsables dans le rendu jinja2
 
-## Jeton à parser : [[CI:LABEL|DISPLAY]] avec :
-## LABEL : La partie à afficher en tooltip
-## DISPLAY : La partie à afficher in-line
- 
-token = lambda disp,lo_s,hi_s: f"[[CI:Ranging from {lo_s} to {hi_s}|{disp}]]"
+def format_intensity_adaptive(
+    x: float,
+    sig: int = 3,
+    unit: str = "°C",
+    include_unit: bool = False,
+):
+    """
+    Format an intensity value (e.g. temperature) with `sig` significant figures.
+    Keeps trailing zeros consistent with sig figs.
+    """
 
-def ci_token_prob(value, lo, hi, **kwargs) -> str:
-    disp = format_prob_adaptive(value, **kwargs)
-    lo_s = format_prob_adaptive(lo, **kwargs)
-    hi_s = format_prob_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+    if _is_nan(x):
+        return "NaN"
 
-def ci_token_ret(value, lo, hi, **kwargs) -> str:
-    disp = format_return_period_adaptive(value, **kwargs)
-    lo_s = format_return_period_adaptive(lo, **kwargs)
-    hi_s = format_return_period_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+    if include_unit:
+        return f"{x:.1f}\u00A0{unit}"
+    
+    return f"{x:.1f}"
 
-def ci_token_PR(value, lo, hi, **kwargs) -> str:
-    disp = format_ratio_adaptive(value, **kwargs)
-    lo_s = format_ratio_adaptive(lo, **kwargs)
-    hi_s = format_ratio_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
 
-def ci_token_FAR(value, lo, hi, **kwargs) -> str:
-    disp = format_far_adaptive(value, **kwargs)
-    lo_s = format_far_adaptive(lo, **kwargs)
-    hi_s = format_far_adaptive(hi, **kwargs)
-    return token(disp, lo_s, hi_s)
+#------------------------------------------------------------------------
+
+def IPCC_format(value, low, high, unit):
+    unit_str = f" {unit}" if unit else ""
+    return f"**{value} *\[{low} to {high}\]*{unit_str}**"
+
+
+def prob_with_CI(value, lo, hi, **kwargs):
+    prob = format_prob_adaptive(value, unit=None, **kwargs)
+    low = format_prob_adaptive(lo, unit=None, **kwargs)
+    high = format_prob_adaptive(hi, unit=None, **kwargs)
+
+    return IPCC_format(prob, low, high, "%")
+
+def return_period_with_CI(value, lo, hi, **kwargs):
+    ret = format_return_period_adaptive(value, include_unit=False, **kwargs)
+    low = format_return_period_adaptive(lo, include_unit=False, **kwargs)
+    high = format_return_period_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(ret, low, high, "years")
+
+def PR_with_CI(value, lo, hi, unit="times", **kwargs):
+    ratio = format_ratio_adaptive(value, include_unit=False, **kwargs)
+    low = format_ratio_adaptive(lo, include_unit=False, **kwargs)
+    high = format_ratio_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(ratio, low, high, unit)
+
+def FAR_with_CI(value, lo, hi, **kwargs):
+    far = format_far_adaptive(value, unit=None, **kwargs)
+    low = format_far_adaptive(lo, unit=None, **kwargs)
+    high = format_far_adaptive(hi, unit=None, **kwargs)
+
+    return IPCC_format(far, low, high, "%")
+
+def intensity_with_CI(value, lo, hi, **kwargs):
+    val = format_intensity_adaptive(value, include_unit=False, **kwargs)
+    low = format_intensity_adaptive(lo, include_unit=False, **kwargs)
+    high = format_intensity_adaptive(hi, include_unit=False, **kwargs)
+
+    return IPCC_format(val, low, high, "°C")

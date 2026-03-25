@@ -77,7 +77,7 @@ def _safe_prob(value, fp=2, min_val=EPSILON, zero_str="0", unit="%"):
     return f"{s}{unit if unit else ''}"
 
 
-def _safe_ret(value, max_val=1/EPSILON, inf_str="infinity", unit="year"):
+def _safe_ret(value, max_val=1/EPSILON, inf_str="∞", unit="year"):
     """Durée de retour (années) avec 2 chiffres significatifs + suffixes k/M/G."""
     if np.isnan(value):
         return "NaN"
@@ -117,7 +117,7 @@ def _safe_PR(value, max_val=1e5, min_val=1e-3):
     # borne haute : "> max_val"
     if v >= max_val:
         # on garde l'affichage avec espace comme avant
-        return f"> {int(max_val):,}".replace(",", " ")
+        return f"≥ {int(max_val):,}".replace(",", " ")
 
     # borne basse : "< min_val"
     if v < min_val:
@@ -158,7 +158,7 @@ def _safe_FAR(value, unit="%"):
 
     # borne haute
     if p >= 99.9:
-        return f"> 99.9{unit if unit else ''}"
+        return f"≥ 99.9{unit if unit else ''}"
 
     # entre 99 et 99.9 : 3 chiffres significatifs
     if p > 99.0:

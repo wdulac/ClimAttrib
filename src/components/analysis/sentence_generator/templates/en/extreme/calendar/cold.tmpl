@@ -1,0 +1,17 @@
+In {{ year_then }}, the probability of such an event was {{ pF_then }}, corresponding to a return period of {{ RP_F_then }} for events occurring within this time of year.
+Without human influence, an event with the same probability would have had an intensity of {{ IC_then }}, implying a warming contribution of {{ dI_then }} attributable to climate change.
+In that counterfactual world, the probability of such an event occurring during this period would have been {{ pC_then }}, corresponding to a return period of {{ RP_C_then }} for events occurring within this time of year.
+{{ impossible_sentence }} Overall, human activities made this event {{ PR_then_phrase }}, and increased its intensity.
+
+{% if has_today %}
+Today in {{ year_today }}, the probability of such an event is {{ pF_today }}, corresponding to a return period of {{ RP_F_today }} for events occurring within this time of year.
+The intensity of a comparable event is estimated at {{ IF_today }}, while the counterfactual intensity remains lower at {{ IC_today }}.
+This corresponds to an intensity shift of {{ dI_today }}. Compared to {{ year_then }}, the probability has {{ ratio_today_word }} by a factor of {{ ratio_today_value }}.
+Human influence alone now makes such an event {{ PR_today_phrase }} to occur during this period of the year.
+{% endif %}
+
+Looking ahead to {{ year_future }} under a high emission scenario (SSP3-7.0), the probability of such an event is projected to reach {{ pF_future }}, corresponding to a return period of {{ RP_F_future }} for events occurring within this time of year.
+The intensity of comparable events is expected to increase further, reaching {{ IF_future }}, while the counterfactual intensity would remain near {{ IC_future }}.
+This implies a total anthropogenic contribution of {{ dI_future }} to the event intensity.
+Relative to {{ year_today }}, the probability would {{ ratio_future_word }} by a factor of {{ ratio_future_value }}.
+By {{ year_future }}, human influence would make such events {{ PR_future_phrase }} to occur within this time of year.

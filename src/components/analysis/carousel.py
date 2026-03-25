@@ -11,7 +11,7 @@ from .__plotly_plots import (
     annual_cycle_with_daily_obs_plot
 )
 
-from components.analysis.sentence_generator import build_summary_component
+from components.analysis.sentence_generator import automated_text
 
 
 DEFAULT_SLIDE_BACKGROUND_COLOR = dmc.DEFAULT_THEME['colors']['gray'][1]
@@ -51,7 +51,7 @@ def results_carousel(stats, event, cache_key):
                         'width': '100%',
                         'alignItems': 'center'
                     },
-                    children=build_summary_component(stats)
+                    children=automated_text(event, stats)
                 )
             )
         ),
