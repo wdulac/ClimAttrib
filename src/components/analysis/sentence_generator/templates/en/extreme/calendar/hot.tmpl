@@ -11,9 +11,9 @@ Today in {{ year_today }}, the probability of such an event is {{ pF_today }}, c
 The intensity of a comparable event is estimated at {{ IF_today }}, while the counterfactual intensity remains lower at {{ IC_today }}.
 This corresponds to an intensity shift of {{ dI_today }}. Compared to {{ year_then }}, the probability has {{ ratio_today_word }} by a factor of {{ ratio_today_value }}.
 Human influence alone now makes such an event {{ PR_today_phrase }} to occur during this period of the year
-{% if has_far_today %}
+{%- if has_far_today %}
 , which is equivalent to saying that {{ FAR_today }} of the likelihood could be attributed to climate change, should such an event occur today
-{% endif %}.
+{%- endif %}.
 {% endif %}
 
 Looking ahead to {{ year_future }} under a high emission scenario (SSP3-7.0), the probability of such an event is projected to reach {{ pF_future }}, corresponding to a return period of {{ RP_F_future }} for events occurring within this time of year.
@@ -21,6 +21,6 @@ The intensity of comparable events is expected to increase further, reaching {{ 
 This implies a total anthropogenic contribution of {{ dI_future }} to the event intensity.
 Relative to {{ year_today }}, the probability would {{ ratio_future_word }} by a factor of {{ ratio_future_value }}.
 By {{ year_future }}, human influence would make such events {{ PR_future_phrase }} to occur within this time of year
-{% if has_far_future %}
+{%- if has_far_future %}
 , corresponding to {{ FAR_future }} of the likelihood being attributable to climate change
-{% endif %}.
+{%- endif %}.
