@@ -2,15 +2,25 @@ In {{ year_then }}, the probability of such an event was {{ pF_then }}, correspo
 Without human influence, an event with the same probability would have had an intensity of {{ IC_then }}, implying a warming contribution of {{ dI_then }} attributable to climate change.
 In that counterfactual world, the probability of such an event would have been {{ pC_then }}, corresponding to a return period of {{ RP_C_then }}.
 {{ impossible_sentence }} Overall, human activities made this event {{ PR_then_phrase }}, and increased its intensity.
+{% if has_far_then %}
 This implies that {{ FAR_then }} of the likelihood of this event can be attributed to climate change.
+{% endif %}
 
+{% if has_today %}
 Today in {{ year_today }}, the probability of such an event is {{ pF_today }}, corresponding to a return period of {{ RP_F_today }}.
 The intensity of a comparable event is estimated at {{ IF_today }}, while the counterfactual intensity remains lower at {{ IC_today }}.
-This corresponds to an intensity shift of {{ dI_today }}. Compared to {{ year_then }}, the probability has increased by a factor of {{ ratio_today_then }}.
-Human influence alone now makes such an event {{ PR_today_phrase }} to occur, which is equivalent to saying that {{ FAR_today }} of the likelihood could be attributed to climate change, should such an event occur today.
+This corresponds to an intensity shift of {{ dI_today }}. Compared to {{ year_then }}, the probability has {{ ratio_today_word }} by a factor of {{ ratio_today_value }}.
+Human influence alone now makes such an event {{ PR_today_phrase }} to occur
+{%- if has_far_today %}
+, which is equivalent to saying that {{ FAR_today }} of the likelihood could be attributed to climate change, should such an event occur today
+{%- endif %}.
+{% endif %}
 
 Looking ahead to {{ year_future }} under a high emission scenario (SSP3-7.0), the probability of such an event is projected to reach {{ pF_future }}, corresponding to a return period of {{ RP_F_future }}.
 The intensity of comparable events is expected to increase further, reaching {{ IF_future }}, while the counterfactual intensity would remain near {{ IC_future }}.
 This implies a total anthropogenic contribution of {{ dI_future }} to the event intensity.
-Relative to {{ year_today }}, the probability would increase by a factor of {{ ratio_future_today }}.
-By {{ year_future }}, human influence would make such events {{ PR_future_phrase }}, corresponding to {{ FAR_future }} of the likelihood being attributable to climate change.
+Relative to {{ year_today }}, the probability would {{ ratio_future_word }} by a factor of {{ ratio_future_value }}.
+By {{ year_future }}, human influence would make such events {{ PR_future_phrase }}
+{%- if has_far_future %}
+, corresponding to {{ FAR_future }} of the likelihood being attributable to climate change
+{%- endif %}.
