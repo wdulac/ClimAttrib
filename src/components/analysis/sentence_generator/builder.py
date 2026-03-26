@@ -46,7 +46,11 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
                        event['start_date'], event['stop_date'],
                        event['duration'])
         
-        isMax = abs(event['intensity'] - Yo.sel(time=event['date'].year)) <= DISTANCE_FROM_MAX_THRESHOLD
+        Yo_year = event['date'].year
+        # If Yo record is unavaiable for the selected year, use the last available Yo.
+        if Yo_year > Yo.time.values[-1]:
+            Yo_year = Yo.time.values[-1]
+        isMax = abs(event['intensity'] - Yo.sel(time=Yo_year)) <= DISTANCE_FROM_MAX_THRESHOLD
         isExtreme = isMax
     
     if isExtreme:
@@ -160,25 +164,29 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         "has_far_future": has_far_future,
     })
 
+    # If today is not included, use `then` metrics for ratio_future
     if today:
         ratio_future = CIValue(
             value=future.pF.value / today.pF.value,
             ql=future.pF.ql / today.pF.value,
             qu=future.pF.qu / today.pF.value,
         )
-        ratio_future_inv = invert_ci(ratio_future)
-    
-        word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
-    
-        context.update({
-            "ratio_future_word": word,
-            "ratio_future_value": value,
-        })
     else:
-        context.update({
-            "ratio_future_word": "",
-            "ratio_future_value": "",
-        })
+        ratio_future = CIValue(
+            value=future.pF.value / then.pF.value,
+            ql=future.pF.ql / then.pF.value,
+            qu=future.pF.qu / then.pF.value,
+        )
+    
+    ratio_future_inv = invert_ci(ratio_future)
+
+    word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
+
+    context.update({
+        "ratio_future_word": word,
+        "ratio_future_value": value,
+    })
+
 
     ## Render template and build component
     text = render_template(template, context)

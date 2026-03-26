@@ -7,8 +7,8 @@ from app_platform.shared.config import URL_PREFIX
 CSV_HEADERS = {
     'All': """# This CSV contains the time series data for the selected graph resulting from the attribution analysis.
 # Columns are organized as <variable>_<quantile> where :
-# - QL = Quantile Low = 2.5%
-# - QU = Quantile Up = 97.5%
+# - QL = Quantile Low = 5%
+# - QU = Quantile Up = 95%
 # - BE = Best Estimate
 """,
 
