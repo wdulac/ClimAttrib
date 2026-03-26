@@ -164,11 +164,20 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         "has_far_future": has_far_future,
     })
 
-    ratio_future = CIValue(
-        value=future.pF.value / today.pF.value,
-        ql=future.pF.ql / today.pF.value,
-        qu=future.pF.qu / today.pF.value,
-    )
+    # If today is not included, use `then` metrics for ratio_future
+    if today:
+        ratio_future = CIValue(
+            value=future.pF.value / today.pF.value,
+            ql=future.pF.ql / today.pF.value,
+            qu=future.pF.qu / today.pF.value,
+        )
+    else:
+        ratio_future = CIValue(
+            value=future.pF.value / then.pF.value,
+            ql=future.pF.ql / then.pF.value,
+            qu=future.pF.qu / then.pF.value,
+        )
+    
     ratio_future_inv = invert_ci(ratio_future)
 
     word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
