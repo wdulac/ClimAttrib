@@ -46,7 +46,11 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
                        event['start_date'], event['stop_date'],
                        event['duration'])
         
-        isMax = abs(event['intensity'] - Yo.sel(time=event['date'].year)) <= DISTANCE_FROM_MAX_THRESHOLD
+        Yo_year = event['date'].year
+        # If Yo record is unavaiable for the selected year, use the last available Yo.
+        if Yo_year > Yo.time.values[-1]:
+            Yo_year = Yo.time.values[-1]
+        isMax = abs(event['intensity'] - Yo.sel(time=Yo_year)) <= DISTANCE_FROM_MAX_THRESHOLD
         isExtreme = isMax
     
     if isExtreme:
