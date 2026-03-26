@@ -61,12 +61,13 @@ window.dash_clientside = Object.assign({}, window.dash_clientside, {
           nextBtn.appendChild(hint);
         }
     
-        // apparition synchronisée avec le bounce (~9s)
+        // apparition retardée
+        let delay=18000 // ms
         nextBtn._hintTimeout = setTimeout(() => {
           if (hint) {
             hint.classList.add("visible");
           }
-        }, 9000); // à ajuster si besoin
+        }, delay); // à ajuster si besoin
     
       } else {
         // fade-out + cleanup
