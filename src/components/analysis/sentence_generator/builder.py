@@ -160,25 +160,20 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         "has_far_future": has_far_future,
     })
 
-    if today:
-        ratio_future = CIValue(
-            value=future.pF.value / today.pF.value,
-            ql=future.pF.ql / today.pF.value,
-            qu=future.pF.qu / today.pF.value,
-        )
-        ratio_future_inv = invert_ci(ratio_future)
-    
-        word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
-    
-        context.update({
-            "ratio_future_word": word,
-            "ratio_future_value": value,
-        })
-    else:
-        context.update({
-            "ratio_future_word": "",
-            "ratio_future_value": "",
-        })
+    ratio_future = CIValue(
+        value=future.pF.value / today.pF.value,
+        ql=future.pF.ql / today.pF.value,
+        qu=future.pF.qu / today.pF.value,
+    )
+    ratio_future_inv = invert_ci(ratio_future)
+
+    word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
+
+    context.update({
+        "ratio_future_word": word,
+        "ratio_future_value": value,
+    })
+
 
     ## Render template and build component
     text = render_template(template, context)
