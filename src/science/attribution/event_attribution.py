@@ -218,21 +218,28 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
         result_dict[key] = q
 
     ## Construction PR depuis pF / pC
+
+    PR_samples = pF / pC # PR à partir des samples clippés entre e et 1-e
+
+    # Calcul des quantiles
+    PR_q = np.quantile(PR_samples, [CI/2, 0.5, 1-CI/2], axis=-1, method="median_unbiased").transpose((1,2,0))
+
+    # On réintroduit les bornes 0 et inf en fonction des bornes pF et pC
     qF = result_dict["pF"]
     qC = result_dict["pC"]
 
-    PR_q = np.empty_like(qF)
-
-    # Silence les warning de divisions invalides
-    with np.errstate(divide='ignore', invalid='ignore'):
-        PR_q[:, :, 0] = qF[:, :, 0] / qC[:, :, 2]
-        PR_q[:, :, 1] = qF[:, :, 1] / qC[:, :, 1]
-        PR_q[:, :, 2] = qF[:, :, 2] / qC[:, :, 0]
+    PR_q[:, :, 2] = np.where(qC[:, :, 0] == 0, np.inf, PR_q[:, :, 2]) # Borne haute -> inf quand borne basse pC == 0
+    PR_q[:, :, 0] = np.where(qF[:, :, 0] == 0, 0.0, PR_q[:, :, 0]) # Borne basse -> 0 quand borne basse pF == 0
 
     result_dict["PR"] = PR_q
 
     ## Construction du FAR depuis PR
-    FAR_q = 1 - 1 / PR_q
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        FAR_q = 1 - 1 / PR_q
+
+    FAR_q = np.where(PR_q < 1.0, np.nan, FAR_q)
+
     result_dict["FAR"] = FAR_q
 
     ## Conversion en xr.Dataset
