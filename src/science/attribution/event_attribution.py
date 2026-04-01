@@ -44,7 +44,7 @@ def _worker_block(sample_chunk: Sequence[int],
     return sample_chunk, block
 
 
-def attribute_event(event:dict, save_to_disk=True, n_process=4) -> xr.Dataset:
+def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     # Lecture du prior contraint par la covariable
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
@@ -228,9 +228,6 @@ def attribute_event(event:dict, save_to_disk=True, n_process=4) -> xr.Dataset:
         PR_q[:, :, 0] = qF[:, :, 0] / qC[:, :, 2]
         PR_q[:, :, 1] = qF[:, :, 1] / qC[:, :, 1]
         PR_q[:, :, 2] = qF[:, :, 2] / qC[:, :, 0]
-
-    # Cas 0 / 0
-    PR_q = np.where((qF == 0) & (qC == 0), np.nan, PR_q)
 
     result_dict["PR"] = PR_q
 
