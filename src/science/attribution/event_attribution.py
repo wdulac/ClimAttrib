@@ -44,7 +44,7 @@ def _worker_block(sample_chunk: Sequence[int],
     return sample_chunk, block
 
 
-def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
+def attribute_event(event:dict, save_to_disk=True, n_process=4) -> xr.Dataset:
 
     # Lecture du prior contraint par la covariable
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
@@ -196,23 +196,56 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     RF = 1./pF
     RC = 1./pC
     dI = IF - IC
-    PR = pF/pC
 
-    ## Calcul de la médiane et de son incertitude
+    ## Calcul des quantiles
     # On conserve également les paramètres non stationnaires de la loi utilisée
-    data = [pF, pC, IF, IC, dI, PR, RF, RC] + [kwargsF[_].values for _ in kwargsF.keys()]
-    keys = ["pF","pC","IF","IC","dI","PR", "RF", "RC"] + [f"{param}F" for param in kwargsF.keys()]
-    result_dict  = { key : data[ikey] for ikey,key in enumerate(keys) }
+    data = [pF, pC, IF, IC, dI, RF, RC] + [kwargsF[_].values for _ in kwargsF.keys()]
+    keys = ["pF","pC","IF","IC","dI","RF","RC"] + [f"{param}F" for param in kwargsF.keys()]
+    # result_dict  = { key : data[ikey] for ikey,key in enumerate(keys) }
 
-    # Conversion en xr.Dataset
+    result_dict = {}
+    for key, value in zip(keys, data):
+        q = np.quantile(value, [CI/2, 0.5, 1-CI/2], axis=-1, method='median_unbiased')
+        q = q.transpose((1,2,0)) # (scenario, time, quantile)
+
+        # Remplacement des bornes par 0 ou inf quand applicable sur la proba et la durée de retour
+        if key in ['pF', 'pC']:
+            q = np.where(q == e, 0.0, q)
+            q = np.where(q == 1-e, 1.0, q)
+        elif key in ["RF", "RC"]:
+            q = np.where(q == 1/e, np.inf, q)
+
+        result_dict[key] = q
+
+    ## Construction PR depuis pF / pC
+    qF = result_dict["pF"]
+    qC = result_dict["pC"]
+
+    PR_q = np.empty_like(qF)
+
+    # Silence les warning de divisions invalides
+    with np.errstate(divide='ignore', invalid='ignore'):
+        PR_q[:, :, 0] = qF[:, :, 0] / qC[:, :, 2]
+        PR_q[:, :, 1] = qF[:, :, 1] / qC[:, :, 1]
+        PR_q[:, :, 2] = qF[:, :, 2] / qC[:, :, 0]
+
+    # Cas 0 / 0
+    PR_q = np.where((qF == 0) & (qC == 0), np.nan, PR_q)
+
+    result_dict["PR"] = PR_q
+
+    ## Construction du FAR depuis PR
+    FAR_q = 1 - 1 / PR_q
+    result_dict["FAR"] = FAR_q
+
+    ## Conversion en xr.Dataset
     scenarios = ['ssp370', 'ssp585']
     time = prior['time'] # 1850 -- 2100
     modes = np.array(["QL","BE","QU"])
 
     data_arrays = []
     
-    for key, value in result_dict.items():
-        array = np.quantile(value, [CI/2, 0.5, 1-CI/2], axis=-1, method='median_unbiased').transpose((1,2,0))
+    for key, array in result_dict.items():
         da = xr.DataArray(
             array,
             coords=[scenarios, time, modes],
