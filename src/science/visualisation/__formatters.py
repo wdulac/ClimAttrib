@@ -55,7 +55,7 @@ def _safe_prob(value, fp=2, min_val=EPSILON, zero_str="0", unit="%"):
     pct = value * 100.0
 
     # ultra-petit -> zéro
-    if 100 * value <= min_val:
+    if value <= min_val:
         return f"{zero_str} {unit}" if unit else zero_str
 
     # borne basse : "< 0.01%" pour sig=2

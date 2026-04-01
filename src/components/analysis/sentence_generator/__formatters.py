@@ -90,7 +90,7 @@ def format_prob_adaptive(
     pct = p * 100.0
 
     # ultra-small zero threshold (same semantics as before)
-    if 100 * p <= min_val:
+    if p <= min_val:
         return f"{zero_str}{('\u00A0' + unit) if unit else ''}"
 
     # lower display bound like "less than 0.01%" for sig=2
@@ -153,7 +153,8 @@ def format_return_period_adaptive(
 def format_ratio_adaptive(
     value: float,
     sig: int = 2,
-    max_val: float = 1e5,
+    soft_max_val: float = 1e5,
+    max_val=1/EPSILON,
     min_val: float = 1e-3,
     unit: str = "time",
     include_unit: bool = True,
@@ -167,7 +168,9 @@ def format_ratio_adaptive(
 
     # beyond upper bound
     if value >= max_val:
-        s = f"≥ {int(max_val):,}"
+        s = "∞"
+    elif value >= soft_max_val:
+        s = f'≥ {int(soft_max_val):,}'
     # below lower bound
     elif value < min_val:
         # show 'less than {min_val}' formatted with sig figs
