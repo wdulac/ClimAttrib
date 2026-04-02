@@ -1,6 +1,7 @@
 .env
 data/
 libraries/
+scripts/
 .venv/
 .vscode/
 __pycache__/
