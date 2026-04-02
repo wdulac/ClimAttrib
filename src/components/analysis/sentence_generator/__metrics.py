@@ -25,14 +25,6 @@ def invert_ci(ci: CIValue):
     )
 
 
-def far_of(ci: CIValue):
-    return CIValue(
-        value=1 - 1/ci.value if ci.value and abs(ci.value) > 1e-15 else float('nan'),
-        ql=1 - 1/ci.ql if ci.ql and abs(ci.value) > 1e-15 else float('nan'),
-        qu=1 - 1/ci.qu if ci.qu and abs(ci.value) > 1e-15 else float('nan'),
-    )
-
-
 def build_metrics(stats, t):
 
     def to_celsius(ci):
@@ -50,13 +42,14 @@ def build_metrics(stats, t):
     IF = to_celsius(extract_ci(stats, "IF", t))
     IC = to_celsius(extract_ci(stats, "IC", t))
     dI = extract_ci(stats, "dI", t)
+    FAR = extract_ci(stats, "FAR", t)
 
     return Metrics(
         pF=pF,
         pC=pC,
         PR=PR,
         PR_inv=invert_ci(PR),
-        FAR=far_of(PR),
+        FAR=FAR,
         RP_F=RP_F,
         RP_C=RP_C,
         IF=IF,
