@@ -16,9 +16,11 @@ def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
         return 0
     
 
-def _fmt_sig(x: float, sig: int = 2):
+def _fmt_sig(x: float, sig: int = 2) -> str:
     """
     Convert numbers to strings using :sig: significant digits.
+    Uses decimal notation instead of scientific
+
     Handles:
     * Integers (e.g "1" instead of "1.0" if sig=2)
     * NaN and Infinity
@@ -29,8 +31,8 @@ def _fmt_sig(x: float, sig: int = 2):
     if np.isinf(x):
         return "∞"
     
+    # Arrondit le nombre à :sig: chiffres significatifs
     _x = _round_to_n_sigfigs(x, sig)
-
     if _x == 0:
         return "0"
     
