@@ -65,7 +65,6 @@ def _return_period(
     if x < np.inf:
 
         _x = _round_to_n_sigfigs(x, n=sig)
-        _soft_max = _round_to_n_sigfigs(soft_max, n=sig)
 
         if compact:
 
@@ -88,7 +87,7 @@ def _return_period(
                 return f"{s_val}{suffix}"
             
             if x > soft_max:
-                soft_max_str = eval_compact_notation(_soft_max) # Use compact notation for :soft_max: as well
+                soft_max_str = eval_compact_notation(soft_max) # Use compact notation for :soft_max: as well
                 s = ">" + unbreakable_space + soft_max_str
             else:
                 s = eval_compact_notation(_x)
@@ -107,7 +106,7 @@ def _return_period(
 
 
             if x > soft_max:
-                soft_max_str = eval_standard_notation(_soft_max)
+                soft_max_str = eval_standard_notation(soft_max)
                 s = ">" + unbreakable_space + soft_max_str
             else:
                 s = eval_standard_notation(_x)
