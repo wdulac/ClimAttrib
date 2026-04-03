@@ -47,7 +47,7 @@ def _fmt(ci, formatter, **kwargs):
     
 
 fmt_prob = lambda ci: _fmt(ci, probability)
-fmt_RP = lambda ci: _fmt(ci, return_period)
+fmt_RP = lambda ci: _fmt(ci, return_period, thousand_sep=",")
 fmt_PR = lambda ci: _fmt(ci, probability_ratio)
 fmt_FAR = lambda ci: _fmt(ci, fraction_of_attributable_risk)
 fmt_temp = lambda ci: _fmt(ci, temperature)
