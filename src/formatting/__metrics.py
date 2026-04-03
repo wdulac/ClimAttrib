@@ -21,7 +21,7 @@ from .__settings import (
 unbreakable_space = "\u00A0"
 
 
-def _probability(
+def probability(
         x: float,
         sig: int = DEFAULT_SIG,
         soft_min: float = PROB_SOFT_MIN,
@@ -61,7 +61,7 @@ def _probability(
     return s
 
 
-def _return_period(
+def return_period(
         x: float,
         compact: bool = False,
         thousand_sep: str | None = None,
@@ -160,7 +160,7 @@ def probability_ratio(
                 s = "<" + unbreakable_space + lower_str
         else:
             # i.e x is in fact np.inf -> let _fmt_sig handle it
-            s = _fmt_sig
+            s = _fmt_sig(x)
     else:
         # i.e x is in fact 0 -> let _fmt_sig handle it
         s = _fmt_sig(x)
