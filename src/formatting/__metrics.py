@@ -3,9 +3,19 @@ import numpy as np
 from .__numbers import _fmt_sig, _round_to_n_sigfigs
 from .__settings import (
     DEFAULT_SIG,
+
     PROB_SOFT_MIN,
     PROB_SOFT_MAX,
-    RET_SOFT_MAX
+
+    RET_SOFT_MAX,
+
+    PR_SOFT_MIN,
+    PR_SOFT_MAX,
+
+    FAR_SIG_SECONDARY,
+    FAR_SIG_THRESHOLD,
+    FAR_SOFT_MAX,
+    FAR_NAN_STR
 )
 
 unbreakable_space = "\u00A0"
@@ -18,7 +28,7 @@ def _probability(
         soft_max: float = PROB_SOFT_MAX
     ) -> str:
     """
-    Formats a probability defined on [0, 1] into a formated percentage string rounded to :sig: significant digits.
+    Converts a probability defined on [0, 1] into a formated percentage string rounded to :sig: significant digits.
     Handles: 
     * A soft min (expressed as a percentage) so that any x in ]0, :soft_min:[ returns "< :soft_min:"
     * A soft max (expressed as a percentage) so that any x in ]:soft_max:, 1[ returns "> :soft_max:"
@@ -31,15 +41,19 @@ def _probability(
     pct = 100 * x
 
     if pct > 0:
-        if pct > soft_max:
-            upper_str = str(soft_max)
-            s = ">" + unbreakable_space + upper_str
-        elif pct >= soft_min:
-            s = _fmt_sig(pct, sig=sig)
+        if pct < 100:
+            if pct > soft_max:
+                upper_str = str(soft_max)
+                s = ">" + unbreakable_space + upper_str
+            elif pct >= soft_min:
+                s = _fmt_sig(pct, sig=sig)
+            else:
+                # i.e 0 < pct < soft_min
+                low_str = str(soft_min)
+                s = "<" + unbreakable_space + low_str
         else:
-            # i.e pct < soft_min
-            low_str = str(soft_min)
-            s = "<" + unbreakable_space + low_str
+            #i.e pct == 100 %
+            s = _fmt_sig(pct, sig=sig)
     else:
         # i.e pct == 0
         s = _fmt_sig(pct)
@@ -55,7 +69,7 @@ def _return_period(
         soft_max: float = RET_SOFT_MAX
     ) -> str:
     """
-    Formats a return period defined on [1, ∞] into a formated string rounded to :sig: significant digits.
+    Converts a return period defined on [1, ∞] into a formated string rounded to :sig: significant digits.
     Handles:
     * Compact notation, e.g 1.2k for 1 200
     * Standard decimal notation with an arbitrary thousand sperator
@@ -116,3 +130,108 @@ def _return_period(
         s = _fmt_sig(x)
 
     return s
+
+
+def probability_ratio(
+        x: float,
+        sig: int = DEFAULT_SIG,
+        soft_min: float = PR_SOFT_MIN,
+        soft_max: float = PR_SOFT_MAX
+    ) -> str:
+    """
+    Converts a probability ratio defined on [0, ∞] into a formatted string rounded to :sig: significant digits.
+    Handles:
+    * A soft min so that any x in ]0, :soft_min:[ returns "< :soft_min:"
+    * A soft max so that any x in ]:soft_max:, ∞[ returns "> :soft_max:"
+
+    0 and ∞ are permitted values and displayed as such.
+    """
+    
+    if x > 0:
+        if x < np.inf:
+            if x > soft_max:
+                upper_str = str(soft_max)
+                s = ">" + unbreakable_space + upper_str
+            elif x >= soft_min:
+                s = _fmt_sig(x, sig=sig)
+            else:
+                # i.e x is in between ]0, :soft_min:[
+                lower_str = str(soft_min)
+                s = "<" + unbreakable_space + lower_str
+        else:
+            # i.e x is in fact np.inf -> let _fmt_sig handle it
+            s = _fmt_sig
+    else:
+        # i.e x is in fact 0 -> let _fmt_sig handle it
+        s = _fmt_sig(x)
+
+    return s
+
+
+def fraction_of_attributable_risk(
+        x: float,
+        sig: int = DEFAULT_SIG,
+        sig_secondary: int = FAR_SIG_SECONDARY,
+        sig_threshold: float = FAR_SIG_THRESHOLD,
+        soft_max: float = FAR_SOFT_MAX,
+        nan_str: str = FAR_NAN_STR
+) -> str:
+    """
+    Converts a FAR defined on [0, 1] into a formated percentage string rounded to :sig: significant digits.
+    Handles:
+    * A soft max so that any x in ]:soft_max:, 1[ returns "> :soft_max:"
+    * A FAR threshold above which the amount of significant digits differs (e.g 3 digits when above 99%, 2 otherwise)
+    * Custom NaN string
+
+    0 and 100 (%) are permitted values and are displayed as such (without unit)
+    """
+
+    pct = x * 100
+    
+    if pct < 100:
+        if pct > soft_max:
+            upper_str = str(soft_max)
+            s = ">" + unbreakable_space + upper_str
+        elif pct > sig_threshold:
+            s = _fmt_sig(pct, sig=sig_secondary)
+        else:
+            s = _fmt_sig(pct, sig=sig)
+    else:
+        # FAR is either nan or 100 %
+        if np.isnan(pct):
+            s = _fmt_sig(pct, nan_str=nan_str)
+        else:
+            # FAR is 100 %
+            s = _fmt_sig(pct, sig=sig)
+
+    return s
+
+
+def temperature(
+        x: float,
+        sig: int = DEFAULT_SIG,
+        signed_notation : bool = False,
+        force_one_decimal: bool = False
+) -> str:
+    """
+    Converts a temperature into a formatted string rounded to :sig: significant digits
+
+    Supports optional signed notation to reflect Deltas.
+    """
+
+    if force_one_decimal:
+        if signed_notation:
+            return f"{x:+.1f}"
+        else:
+            return f"{x:.1f}"
+
+    # Cas standard avec chiffres significatifs
+    s = _fmt_sig(x, sig=sig)
+
+    if not signed_notation:
+        return s
+    
+    if s.startswith('-'):
+        return s
+    else:
+        return f"+{s}"
