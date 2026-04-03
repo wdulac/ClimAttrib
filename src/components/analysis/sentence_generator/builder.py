@@ -4,13 +4,16 @@ import xarray as xr
 
 from .__data_models import CIValue
 from .__metrics import build_metrics, invert_ci
-from .__formatters import (
-    prob_with_CI,
-    return_period_with_CI,
-    PR_with_CI,
-    FAR_with_CI,
-    intensity_with_CI
+
+from formatting import FORMATTERS
+from formatting import (
+    probability,
+    return_period,
+    probability_ratio,
+    fraction_of_attributable_risk,
+    temperature
 )
+
 from .__phrases import (
     attribution_then,
     attribution_today,
@@ -29,8 +32,26 @@ DISTANCE_FROM_MAX_THRESHOLD = 1.0 # Kelvin
 
 YEAR_FOR_FUTURE_PARAGRAPH = 2050
 
-def _fmt(ci, formatter):
-    return formatter(ci.value, ci.ql, ci.qu)
+def _fmt(ci, formatter, **kwargs):
+    val = formatter(ci.value, **kwargs)
+    low = formatter(ci.ql, **kwargs)
+    high = formatter(ci.qu, **kwargs)
+
+    unit_func = FORMATTERS.get(formatter)
+
+    if unit_func:
+        unit = unit_func(ci.value)
+        return f"**{val}\u00A0\[{low} to {high}\]\u00A0{unit}**"
+    else:
+        return f"**{val}\u00A0\[{low} to {high}\]**"
+    
+
+fmt_prob = lambda ci: _fmt(ci, probability)
+fmt_RP = lambda ci: _fmt(ci, return_period)
+fmt_PR = lambda ci: _fmt(ci, probability_ratio)
+fmt_FAR = lambda ci: _fmt(ci, fraction_of_attributable_risk)
+fmt_temp = lambda ci: _fmt(ci, temperature)
+
 
 def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):
 
@@ -82,18 +103,18 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
 
     ## ======== Paragraphe THEN ======== ##
     context.update({
-        "pF_then": _fmt(then.pF, prob_with_CI),
-        "pC_then": _fmt(then.pC, prob_with_CI),
-        "RP_F_then": _fmt(then.RP_F, return_period_with_CI),
-        "RP_C_then": _fmt(then.RP_C, return_period_with_CI),
-        "IC_then": _fmt(then.IC, intensity_with_CI),
-        "dI_then": _fmt(then.dI, intensity_with_CI),
+        "pF_then": fmt_prob(then.pF),
+        "pC_then": fmt_prob(then.pC),
+        "RP_F_then": fmt_RP(then.RP_F),
+        "RP_C_then": fmt_RP(then.RP_C),
+        "IC_then": fmt_temp(then.IC),
+        "dI_then": fmt_temp(then.dI),
     })
 
     # PR / FAR
     pr_then, far_then, has_far_then = attribution_then(
         then.PR, then.PR_inv, then.FAR,
-        PR_with_CI, FAR_with_CI
+        fmt_PR, fmt_FAR
     )
     
     context.update({
@@ -110,17 +131,17 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
 
     if today:
         context.update({
-            "pF_today": _fmt(today.pF, prob_with_CI),
-            "RP_F_today": _fmt(today.RP_F, return_period_with_CI),
-            "IF_today": _fmt(today.IF, intensity_with_CI),
-            "IC_today": _fmt(today.IC, intensity_with_CI),
-            "dI_today": _fmt(today.dI, intensity_with_CI),
+            "pF_today": fmt_prob(today.pF),
+            "RP_F_today": fmt_RP(today.RP_F),
+            "IF_today": fmt_temp(today.IF),
+            "IC_today": fmt_temp(today.IC),
+            "dI_today": fmt_temp(today.dI),
         })
     
         # PR / FAR
         pr_today, far_today, has_far_today = attribution_today(
             today.PR, today.PR_inv, today.FAR,
-            PR_with_CI, FAR_with_CI
+            fmt_PR, fmt_FAR
         )
     
         context.update({
@@ -137,7 +158,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         )
         ratio_today_inv = invert_ci(ratio_today)
     
-        word, value = ratio_phrase(ratio_today, ratio_today_inv, PR_with_CI)
+        word, value = ratio_phrase(ratio_today, ratio_today_inv, fmt_PR)
     
         context.update({
             "ratio_today_word": word,
@@ -146,16 +167,16 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
 
     ## ======== Paragraphe FUTURE ======== ##
     context.update({
-        "pF_future": _fmt(future.pF, prob_with_CI),
-        "RP_F_future": _fmt(future.RP_F, return_period_with_CI),
-        "IF_future": _fmt(future.IF, intensity_with_CI),
-        "IC_future": _fmt(future.IC, intensity_with_CI),
-        "dI_future": _fmt(future.dI, intensity_with_CI),
+        "pF_future": fmt_prob(future.pF),
+        "RP_F_future": fmt_RP(future.RP_F),
+        "IF_future": fmt_temp(future.IF),
+        "IC_future": fmt_temp(future.IC),
+        "dI_future": fmt_temp(future.dI),
     })
 
     pr_future, far_future, has_far_future = attribution_future(
         future.PR, future.PR_inv, future.FAR,
-        PR_with_CI, FAR_with_CI
+        fmt_PR, fmt_FAR
     )
     
     context.update({
@@ -180,7 +201,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     
     ratio_future_inv = invert_ci(ratio_future)
 
-    word, value = ratio_phrase(ratio_future, ratio_future_inv, PR_with_CI)
+    word, value = ratio_phrase(ratio_future, ratio_future_inv, fmt_PR)
 
     context.update({
         "ratio_future_word": word,
