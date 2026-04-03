@@ -16,7 +16,7 @@ def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
         return 0
     
 
-def _fmt_sig(x: float, sig: int = 2) -> str:
+def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞") -> str:
     """
     Convert numbers to strings using :sig: significant digits.
     Uses decimal notation instead of scientific
@@ -27,9 +27,9 @@ def _fmt_sig(x: float, sig: int = 2) -> str:
     """
 
     if np.isnan(x):
-        return "NaN"
+        return nan_str
     if np.isinf(x):
-        return "∞"
+        return inf_str
     
     # Arrondit le nombre à :sig: chiffres significatifs
     _x = _round_to_n_sigfigs(x, sig)
