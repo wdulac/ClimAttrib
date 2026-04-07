@@ -27,7 +27,8 @@ from components.layout import(
 from app_platform.web import (
     register_redirects,
     register_geojson_routes,
-    register_download_routes
+    register_download_routes,
+    register_admin_routes
 )
 
 import logging
@@ -96,6 +97,7 @@ application.layout = dmc.MantineProvider(layout)
 register_redirects(server)
 register_geojson_routes(server)
 register_download_routes(server)
+register_admin_routes(server)
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.
