@@ -7,15 +7,18 @@ from .__settings import DEFAULT_SIG, DEFAULT_THOUSAND_SEP
 def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
     """
     Round x to n significant figures.
-    Does not expect any negative numbers.
     """
 
-    if x > 0:
-        exponent = math.floor(math.log10(x))
-        factor = 10 ** (exponent - (n - 1))
-        return round(x / factor) * factor
-    elif x == 0:
+    if x == 0:
         return 0
+
+    sign = 1 if x > 0 else -1
+    x_abs = abs(x)
+
+    exponent = math.floor(math.log10(x_abs))
+    factor = 10 ** (exponent - (n - 1))
+
+    return sign * round(x_abs / factor) * factor
     
 
 def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞", thousand_sep: str = DEFAULT_THOUSAND_SEP) -> str:
@@ -39,7 +42,7 @@ def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞",
         return "0"
     
     # Force l'affichage en décimales (non scientifique)
-    exponent = math.floor(math.log10(_x))
+    exponent = math.floor(math.log10(abs(_x)))
     decimals = max(0, sig - 1 - exponent)
     if thousand_sep:
         s = f"{_x:,.{decimals}f}"
