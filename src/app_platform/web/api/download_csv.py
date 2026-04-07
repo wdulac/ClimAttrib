@@ -2,7 +2,7 @@ from flask import request, Response
 import io
 
 from app_platform.compute.redis import get_cache
-from app_platform.shared.config import URL_PREFIX
+from app_platform.web.api import api_bp
 
 CSV_HEADERS = {
     'All': """# This CSV contains the time series data for the selected graph resulting from the attribution analysis.
@@ -31,44 +31,42 @@ CSV_HEADERS = {
 """
 }
 
-def register_download_routes(server):
+@api_bp.route("/download_csv")
+def download_csv():
 
-    @server.route(f"{URL_PREFIX}/download_csv")
-    def download_csv():
+    cache_key = request.args.get("key")
+    variables = request.args.get("variables")
 
-        cache_key = request.args.get("key")
-        variables = request.args.get("variables")
+    if not cache_key or not variables:
+        return "Missing parameters", 400
+    
+    result = get_cache(cache_key)
 
-        if not cache_key or not variables:
-            return "Missing parameters", 400
-        
-        result = get_cache(cache_key)
+    if result['status'] == 'timeout':
+        return "Data not available", 500
 
-        if result['status'] == 'timeout':
-            return "Data not available", 500
+    stats = result['result']
+    
+    try:
+        df = stats[variables.split('_')].to_dataframe().unstack("quantile")
+        df.columns = [f"{var}_{q}" for var, q in df.columns]
+        df.reset_index(inplace=True)
+    except Exception as e:
+        return f"Failed to convert dataset: {e}", 500
+    
+    csv_io = io.StringIO()
 
-        stats = result['result']
-        
-        try:
-            df = stats[variables.split('_')].to_dataframe().unstack("quantile")
-            df.columns = [f"{var}_{q}" for var, q in df.columns]
-            df.reset_index(inplace=True)
-        except Exception as e:
-            return f"Failed to convert dataset: {e}", 500
-        
-        csv_io = io.StringIO()
+    header = CSV_HEADERS['All'] + CSV_HEADERS[variables]
 
-        header = CSV_HEADERS['All'] + CSV_HEADERS[variables]
+    csv_io.write(header)
 
-        csv_io.write(header)
+    df.to_csv(csv_io, index=False)
+    csv_io.seek(0)
 
-        df.to_csv(csv_io, index=False)
-        csv_io.seek(0)
-
-        return Response(
-            csv_io, mimetype="text/csv",
-            headers={
-                "Content-Disposition": f"attachment;filename=plot_data_{variables}.csv"
-            }
-        )
+    return Response(
+        csv_io, mimetype="text/csv",
+        headers={
+            "Content-Disposition": f"attachment;filename=plot_data_{variables}.csv"
+        }
+    )
 

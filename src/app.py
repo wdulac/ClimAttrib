@@ -26,10 +26,9 @@ from components.layout import(
 
 from app_platform.web import (
     register_redirects,
-    register_geojson_routes,
-    register_download_routes,
-    register_admin_routes
+    register_admin_routes,
 )
+from app_platform.web.api import register_api_routes
 
 import logging
 
@@ -94,10 +93,9 @@ register_disclaimer_callbacks(application)
 application.layout = dmc.MantineProvider(layout)
 
 # Attach functionnalities (redirection rules and routes) to server
-register_redirects(server)
-register_geojson_routes(server)
-register_download_routes(server)
+register_api_routes(server)
 register_admin_routes(server)
+register_redirects(server)
 
 # Enable Dash built-in debug tools, even when running with Flask.
 # Pro tip : Run with the Flask debugger without this, then toggle the variable.
