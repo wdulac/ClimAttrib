@@ -86,12 +86,12 @@ def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, fmt_ratio):
 # Phrase "impossible"
 # =========================================================
 
-def impossible_sentence(RP_C: CIValue):
+def impossible_sentence(pC: CIValue):
     """
-    Détecte si l'intervalle inclut l'infini
+    Détecte si l'intervalle contre-factuel inclut le 0
     """
 
-    if np.isinf(RP_C.qu):
+    if pC.ql == 0.0:
         return (
             "Given the uncertainty, it cannot be excluded that such an event "
             "would have been effectively impossible without human influence."

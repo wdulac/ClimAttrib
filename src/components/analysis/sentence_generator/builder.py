@@ -124,7 +124,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     })
 
     # Impossible
-    context["impossible_sentence"] = impossible_sentence(then.RP_C)
+    context["impossible_sentence"] = impossible_sentence(then.pC)
 
     ## ======== Paragraphe TODAY ======== ##
     context["has_today"] = today is not None
