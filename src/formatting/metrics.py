@@ -3,8 +3,7 @@ import numpy as np
 from .__numbers import (
     _fmt_sig,
     _round_to_n_sigfigs,
-    _eval_compact_notation,
-    _eval_standard_notation
+    _compact_notation,
 )
 
 from .__settings import (
@@ -91,18 +90,18 @@ def format_return_period(
         if compact:
 
             if x > soft_max:
-                soft_max_str = _eval_compact_notation(soft_max, sig) # Use compact notation for :soft_max: as well
+                soft_max_str = _compact_notation(soft_max, sig) # Use compact notation for :soft_max: as well
                 s = ">" + unbreakable_space + soft_max_str
             else:
-                s = _eval_compact_notation(_x, sig)
+                s = _compact_notation(_x, sig)
 
         else:
 
             if x > soft_max:
-                soft_max_str = _eval_standard_notation(soft_max, sig, thousand_sep)
+                soft_max_str = _fmt_sig(soft_max, sig, thousand_sep=thousand_sep)
                 s = ">" + unbreakable_space + soft_max_str
             else:
-                s = _eval_standard_notation(_x, sig, thousand_sep)
+                s = _fmt_sig(_x, sig, thousand_sep=thousand_sep)
 
     else:
         # i.e x == np.inf
@@ -130,13 +129,13 @@ def format_probability_ratio(
     if x > 0:
         if x < np.inf:
             if x > soft_max:
-                upper_str = _eval_standard_notation(soft_max, sig, thousand_sep)
+                upper_str = _fmt_sig(soft_max, sig, thousand_sep=thousand_sep)
                 s = ">" + unbreakable_space + upper_str
             elif x >= soft_min:
-                s = _eval_standard_notation(x, sig, thousand_sep)
+                s = _fmt_sig(x, sig, thousand_sep=thousand_sep)
             else:
                 # i.e x is in between ]0, :soft_min:[
-                lower_str = _eval_standard_notation(soft_min, sig)
+                lower_str = _fmt_sig(soft_min, sig)
                 s = "<" + unbreakable_space + lower_str
         else:
             # i.e x is in fact np.inf -> let _fmt_sig handle it

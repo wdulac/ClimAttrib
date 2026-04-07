@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-from .__settings import DEFAULT_SIG
+from .__settings import DEFAULT_SIG, DEFAULT_THOUSAND_SEP
 
 
 def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
@@ -18,7 +18,7 @@ def _round_to_n_sigfigs(x: float, n: int = 2) -> float:
         return 0
     
 
-def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞") -> str:
+def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞", thousand_sep: str = DEFAULT_THOUSAND_SEP) -> str:
     """
     Convert numbers to strings using :sig: significant digits.
     Uses decimal notation instead of scientific
@@ -41,7 +41,12 @@ def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞")
     # Force l'affichage en décimales (non scientifique)
     exponent = math.floor(math.log10(_x))
     decimals = max(0, sig - 1 - exponent)
-    s = f"{_x:.{decimals}f}"
+    if thousand_sep:
+        s = f"{_x:,.{decimals}f}"
+        if thousand_sep != ",":
+            s = s.replace(",", thousand_sep)
+    else:
+        s = f"{_x:.{decimals}f}"
 
     # Retire les trailing 0 (par exemple afficher 0.49 à 3 chiffres significatifs -> reste 0.49 et pas 0.490)
     if "." in s:
@@ -50,18 +55,7 @@ def _fmt_sig(x: float, sig: int = 2, nan_str: str = "NaN", inf_str: str = "∞")
     return s
 
 
-def _eval_standard_notation(val: float, sig: int = DEFAULT_SIG, thousand_sep: str | None = None):
-    if val >= 1000:
-        v = int(round(val))
-        if thousand_sep is None:
-            return str(v)
-        else:
-            return f"{v:,}".replace(",", thousand_sep)
-    else:
-        return _fmt_sig(val, sig=sig)
-    
-
-def _eval_compact_notation(val: float, sig: int = DEFAULT_SIG):
+def _compact_notation(val: float, sig: int = DEFAULT_SIG):
 
     if val < 1_000:
         # valeurs < 1000 : nombre brut à 2 :sig: significatifs
