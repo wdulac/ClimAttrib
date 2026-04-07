@@ -1,4 +1,4 @@
-from .__units import UNITS
+from .units import UNITS
 from .metrics import (
     format_probability,
     format_return_period,
