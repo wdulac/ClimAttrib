@@ -1,24 +1,18 @@
+import numpy as np
 from .__data_models import CIValue
-from .__formatters import _is_infinite_return_period
-
-
-def safe_ci_format(ci: CIValue, formatter, **formatter_kargs):
-    """Helper pour éviter répétition."""
-    return formatter(ci.value, ci.ql, ci.qu, **formatter_kargs)
-
 
 # =========================================================
 # PR + FAR (année de l'événement)
 # =========================================================
 
-def attribution_then(PR, PR_inv, FAR, format_PR, format_FAR):
+def attribution_then(PR, PR_inv, FAR, fmt_PR, fmt_FAR):
 
     if PR.value >= 1:
-        pr_str = f"{safe_ci_format(PR, format_PR)} more likely"
-        far_value = safe_ci_format(FAR, format_FAR)
+        pr_str = f"{fmt_PR(PR)} more likely"
+        far_value = fmt_FAR(FAR)
         has_far = True
     else:
-        pr_str = f"{safe_ci_format(PR_inv, format_PR)} less likely"
+        pr_str = f"{fmt_PR(PR_inv)} less likely"
         far_value = ""
         has_far = False
 
@@ -29,8 +23,7 @@ def attribution_then(PR, PR_inv, FAR, format_PR, format_FAR):
 # PR + FAR (today)
 # =========================================================
 
-def attribution_today(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
-                      format_PR, format_FAR):
+def attribution_today(PR: CIValue, PR_inv: CIValue, FAR: CIValue, fmt_PR, fmt_FAR):
     """
     Retourne :
     - PR_today_phrase
@@ -38,11 +31,11 @@ def attribution_today(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
     """
 
     if PR.value >= 1:
-        pr_str = f"{safe_ci_format(PR, format_PR)} more likely"
-        far_str = safe_ci_format(FAR, format_FAR)
+        pr_str = f"{fmt_PR(PR)} more likely"
+        far_str = fmt_FAR(FAR)
         has_far = True
     else:
-        pr_str = f"{safe_ci_format(PR_inv, format_PR)} less likely"
+        pr_str = f"{fmt_PR(PR_inv)} less likely"
         far_str = ""
         has_far = False
 
@@ -53,8 +46,7 @@ def attribution_today(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
 # PR + FAR (future)
 # =========================================================
 
-def attribution_future(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
-                       format_PR, format_FAR):
+def attribution_future(PR: CIValue, PR_inv: CIValue, FAR: CIValue, fmt_PR, fmt_FAR):
     """
     Retourne :
     - PR_future_phrase
@@ -62,11 +54,11 @@ def attribution_future(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
     """
 
     if PR.value >= 1:
-        pr_str = f"{safe_ci_format(PR, format_PR)} more likely"
-        far_str = safe_ci_format(FAR, format_FAR)
+        pr_str = f"{fmt_PR(PR)} more likely"
+        far_str = fmt_FAR(FAR)
         has_far = True
     else:
-        pr_str = f"{safe_ci_format(PR_inv, format_PR)} less likely"
+        pr_str = f"{fmt_PR(PR_inv)} less likely"
         far_str = ""
         has_far = False
 
@@ -77,7 +69,7 @@ def attribution_future(PR: CIValue, PR_inv: CIValue, FAR: CIValue,
 # Ratio de probabilité (today vs then, future vs today)
 # =========================================================
 
-def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, format_PR):
+def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, fmt_ratio):
     """
     Retourne :
     - mot ("increased" / "decreased")
@@ -85,21 +77,21 @@ def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, format_PR):
     """
 
     if ratio.value >= 1:
-        return "increased", safe_ci_format(ratio, format_PR, unit="")
+        return "increased", fmt_ratio(ratio)
     else:
-        return "decreased", safe_ci_format(ratio_inv, format_PR, unit="")
+        return "decreased", fmt_ratio(ratio_inv)
 
 
 # =========================================================
 # Phrase "impossible"
 # =========================================================
 
-def impossible_sentence(RP_C: CIValue):
+def impossible_sentence(pC: CIValue):
     """
-    Détecte si l'intervalle inclut l'infini
+    Détecte si l'intervalle contre-factuel inclut le 0
     """
 
-    if _is_infinite_return_period(RP_C.qu):
+    if pC.ql == 0.0:
         return (
             "Given the uncertainty, it cannot be excluded that such an event "
             "would have been effectively impossible without human influence."

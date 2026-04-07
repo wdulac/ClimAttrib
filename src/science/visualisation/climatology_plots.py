@@ -6,10 +6,6 @@ import datetime as dt
 import plotly.graph_objects as go
 
 from .__plotly import _clim_plots_base_layout
-from .__formatters import (
-    _annual_series_hover,
-    _daily_temperature_hover
-)
 
 from science.attribution.__calendar_utils import (
     _datetime_to_doy,
@@ -135,6 +131,50 @@ def _load_clim_data(event: dict):
 # ==================================================================
 #  Annual maxima + non-stationary return levels
 # ==================================================================
+
+### Dynamic hover templates for both Yo timeseries + annual cycle plots
+
+def _annual_series_hover(event=False, return_level=False, p=None):
+    if event:
+        return (
+            "<b>User event</b>: %{y:.1f} °C"
+            "<extra></extra>"
+        )
+
+    if return_level:
+        if p:
+            pre = int(1/p)
+            return (
+                f"<b>{pre}-year return level</b>: %{{y:.1f}} °C"
+                "<extra></extra>"
+            )
+        else:
+            return (
+                "<b>Return level</b>: %{y:.1f} °C"
+                "<extra></extra>"
+            )
+
+
+    return (
+        "<b>Annual maximum</b>: %{y:.1f} °C"
+        "<extra></extra>"
+    )
+
+
+def _daily_temperature_hover(ref=False, year=None):
+
+    if ref:
+        return (
+            "<b>1991 — 2020 median</b>: %{y:.1f} °C"
+            "<extra></extra>"
+        )
+    else:
+        return (
+            "%{customdata}<br>"
+            f"<b>Temperature</b>: %{{y:.1f}} °C"
+            "<extra></extra>"
+        )
+
 
 def plot_observed_Yo(
     event: dict,
