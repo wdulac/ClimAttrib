@@ -51,7 +51,8 @@ def customdata_prob(stats, var):
         )
         customdata[i, 1] = ipcc_custom_data(
             be_rp[i], ql_rp[i], qu_rp[i],
-            format_return_period
+            format_return_period,
+            compact=True
         )
 
     return customdata
