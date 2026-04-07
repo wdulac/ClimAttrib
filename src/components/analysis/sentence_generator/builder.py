@@ -5,13 +5,13 @@ import xarray as xr
 from .__data_models import CIValue
 from .__metrics import build_metrics, invert_ci
 
-from formatting import FORMATTERS
-from formatting import (
-    probability,
-    return_period,
-    probability_ratio,
-    fraction_of_attributable_risk,
-    temperature
+from formatting import UNITS
+from formatting.metrics import (
+    format_probability,
+    format_return_period,
+    format_probability_ratio,
+    format_fraction_of_attributable_risk,
+    format_temperature
 )
 
 from .__phrases import (
@@ -37,7 +37,7 @@ def _fmt(ci, formatter, **kwargs):
     low = formatter(ci.ql, **kwargs)
     high = formatter(ci.qu, **kwargs)
 
-    unit_func = FORMATTERS.get(formatter)
+    unit_func = UNITS.get(formatter)
 
     if unit_func:
         unit = unit_func(ci.value)
@@ -46,11 +46,11 @@ def _fmt(ci, formatter, **kwargs):
         return f"**{val}\u00A0\[{low} to {high}\]**"
     
 
-fmt_prob = lambda ci: _fmt(ci, probability)
-fmt_RP = lambda ci: _fmt(ci, return_period, thousand_sep=",")
-fmt_PR = lambda ci: _fmt(ci, probability_ratio)
-fmt_FAR = lambda ci: _fmt(ci, fraction_of_attributable_risk)
-fmt_temp = lambda ci: _fmt(ci, temperature)
+fmt_prob = lambda ci: _fmt(ci, format_probability)
+fmt_RP = lambda ci: _fmt(ci, format_return_period)
+fmt_PR = lambda ci: _fmt(ci, format_probability_ratio)
+fmt_FAR = lambda ci: _fmt(ci, format_fraction_of_attributable_risk)
+fmt_temp = lambda ci: _fmt(ci, format_temperature)
 
 
 def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):

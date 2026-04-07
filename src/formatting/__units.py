@@ -1,13 +1,13 @@
-from .__metrics import (
-    probability,
-    return_period,
-    probability_ratio,
-    fraction_of_attributable_risk,
-    temperature
+from .metrics import (
+    format_probability,
+    format_return_period,
+    format_probability_ratio,
+    format_fraction_of_attributable_risk,
+    format_temperature
 )
 
 
-def unit_probability(value: float) -> str:
+def unit_percentage(value: float) -> str:
     return "%"
 
 
@@ -23,17 +23,11 @@ def unit_ratio(value: float) -> str:
     return "time" if value == 1 else "times"
 
 
+# Map each formatter function to a unit function
 UNITS = {
-    "probability": unit_probability,
-    "temperature": unit_temperature,
-    "return_period": unit_return_period,
-    "ratio": unit_ratio,
-}
-
-FORMATTERS = {
-    probability: unit_probability,
-    return_period: unit_return_period,
-    probability_ratio: unit_ratio,
-    fraction_of_attributable_risk: unit_probability,
-    temperature: unit_temperature,
+    format_probability: unit_percentage,
+    format_return_period: unit_return_period,
+    format_probability_ratio: unit_ratio,
+    format_fraction_of_attributable_risk: unit_percentage,
+    format_temperature: unit_temperature,
 }

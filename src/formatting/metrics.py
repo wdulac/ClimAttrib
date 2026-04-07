@@ -1,6 +1,12 @@
 import numpy as np
 
-from .__numbers import _fmt_sig, _round_to_n_sigfigs
+from .__numbers import (
+    _fmt_sig,
+    _round_to_n_sigfigs,
+    _eval_compact_notation,
+    _eval_standard_notation
+)
+
 from .__settings import (
     DEFAULT_SIG,
 
@@ -8,6 +14,8 @@ from .__settings import (
     PROB_SOFT_MAX,
 
     RET_SOFT_MAX,
+
+    DEFAULT_THOUSAND_SEP,
 
     PR_SOFT_MIN,
     PR_SOFT_MAX,
@@ -21,7 +29,7 @@ from .__settings import (
 unbreakable_space = "\u00A0"
 
 
-def probability(
+def format_probability(
         x: float,
         sig: int = DEFAULT_SIG,
         soft_min: float = PROB_SOFT_MIN,
@@ -61,10 +69,10 @@ def probability(
     return s
 
 
-def return_period(
+def format_return_period(
         x: float,
         compact: bool = False,
-        thousand_sep: str | None = None,
+        thousand_sep: str = DEFAULT_THOUSAND_SEP,
         sig: int = DEFAULT_SIG,
         soft_max: float = RET_SOFT_MAX
     ) -> str:
@@ -82,48 +90,19 @@ def return_period(
 
         if compact:
 
-            def eval_compact_notation(val, sig=sig):
-
-                if val < 1_000:
-                    # valeurs < 1000 : nombre brut à 2 :sig: significatifs
-                    s_val = _fmt_sig(val, sig=sig)
-                    suffix = ""
-                elif val < 1_000_000:
-                    s_val = _fmt_sig(val / 1_000.0, sig=sig)
-                    suffix = "k"
-                elif val < 1_000_000_000:
-                    s_val = _fmt_sig(val / 1_000_000.0, sig=sig)
-                    suffix = "M"
-                else:
-                    s_val = _fmt_sig(val / 1_000_000_000.0, sig=sig)
-                    suffix = "G"
-                
-                return f"{s_val}{suffix}"
-            
             if x > soft_max:
-                soft_max_str = eval_compact_notation(soft_max) # Use compact notation for :soft_max: as well
+                soft_max_str = _eval_compact_notation(soft_max, sig) # Use compact notation for :soft_max: as well
                 s = ">" + unbreakable_space + soft_max_str
             else:
-                s = eval_compact_notation(_x)
+                s = _eval_compact_notation(_x, sig)
 
         else:
-            
-            def eval_standard_notation(val):
-                if val >= 1000:
-                    v = int(round(val))
-                    if thousand_sep is None:
-                        return str(v)
-                    else:
-                        return f"{v:,}".replace(",", thousand_sep)
-                else:
-                    return _fmt_sig(val, sig=sig)
-
 
             if x > soft_max:
-                soft_max_str = eval_standard_notation(soft_max)
+                soft_max_str = _eval_standard_notation(soft_max, sig, thousand_sep)
                 s = ">" + unbreakable_space + soft_max_str
             else:
-                s = eval_standard_notation(_x)
+                s = _eval_standard_notation(_x, sig, thousand_sep)
 
     else:
         # i.e x == np.inf
@@ -132,11 +111,12 @@ def return_period(
     return s
 
 
-def probability_ratio(
+def format_probability_ratio(
         x: float,
         sig: int = DEFAULT_SIG,
         soft_min: float = PR_SOFT_MIN,
-        soft_max: float = PR_SOFT_MAX
+        soft_max: float = PR_SOFT_MAX,
+        thousand_sep: int = DEFAULT_THOUSAND_SEP
     ) -> str:
     """
     Converts a probability ratio defined on [0, ∞] into a formatted string rounded to :sig: significant digits.
@@ -150,13 +130,13 @@ def probability_ratio(
     if x > 0:
         if x < np.inf:
             if x > soft_max:
-                upper_str = str(soft_max)
+                upper_str = _eval_standard_notation(soft_max, sig, thousand_sep)
                 s = ">" + unbreakable_space + upper_str
             elif x >= soft_min:
-                s = _fmt_sig(x, sig=sig)
+                s = _eval_standard_notation(x, sig, thousand_sep)
             else:
                 # i.e x is in between ]0, :soft_min:[
-                lower_str = str(soft_min)
+                lower_str = _eval_standard_notation(soft_min, sig)
                 s = "<" + unbreakable_space + lower_str
         else:
             # i.e x is in fact np.inf -> let _fmt_sig handle it
@@ -168,7 +148,7 @@ def probability_ratio(
     return s
 
 
-def fraction_of_attributable_risk(
+def format_fraction_of_attributable_risk(
         x: float,
         sig: int = DEFAULT_SIG,
         sig_secondary: int = FAR_SIG_SECONDARY,
@@ -207,7 +187,7 @@ def fraction_of_attributable_risk(
     return s
 
 
-def temperature(
+def format_temperature(
         x: float,
         sig: int = DEFAULT_SIG,
         signed_notation : bool = False,
