@@ -6,7 +6,7 @@ import datetime as dt
 import plotly.graph_objects as go
 
 from .__plotly import _clim_plots_base_layout
-from .__formatters import (
+from .__customdata import (
     _annual_series_hover,
     _daily_temperature_hover
 )

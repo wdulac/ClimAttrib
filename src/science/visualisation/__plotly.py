@@ -58,7 +58,7 @@ def create_attribution_plotly_graph(
         fill_traces += [lower, upper]
 
         # Trace médiane
-        customdata = customdata_func(ql, be, qu) if customdata_func else None
+        customdata = customdata_func(stats, var) if customdata_func else None
 
         median = go.Scatter(
             x=time,

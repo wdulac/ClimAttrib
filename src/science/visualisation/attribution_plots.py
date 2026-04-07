@@ -1,19 +1,21 @@
 # For typing
+import sys
 import numpy as np
 import xarray as xr
 import plotly.graph_objects as go
 
-from .__plotly import create_attribution_plotly_graph
-from .__formatters import (
-    _safe_prob,
-    _safe_ret,
-    _safe_PR,
-    _safe_FAR,
-    _safe_intensity,
-    _safe_intensity_change
+from .__plotly import (
+    create_attribution_plotly_graph,
 )
-from .__formatters import EPSILON
 
+from .__customdata import (
+    customdata_prob,
+    customdata_PR,
+    customdata_intensity,
+    customdata_intensity_change
+)
+
+EPSILON = 10*sys.float_info.epsilon
 
 ## Link functions for the custom y axis
 
@@ -57,19 +59,11 @@ def plot_probability(stats: xr.DataArray, cache_key: str) -> go.Figure:
         ],
         labels=['With human influence', 'Without human influence'],
         transform_func=plink,
-        customdata_func=lambda ql, be, qu: np.stack([
-            [_safe_prob(p, unit=None) for p in be],
-            [_safe_prob(p, unit=None) for p in ql],
-            [_safe_prob(p, unit=None) for p in qu],
-            [_safe_ret(1/p, unit=None) for p in be],
-            [_safe_ret(1/p, unit=None) for p in qu],
-            [_safe_ret(1/p, unit=None) for p in ql]
-        ], axis=-1),
+        customdata_func=customdata_prob,
         hovermode='x unified',
         hovertemplate=(
-            # "<b>Year</b> : %{x}<br>" +
-            "<b>Probability</b> : %{customdata[0]} <i>[%{customdata[1]} to %{customdata[2]}]</i> %<br>" +
-            "<b>Return period</b> : %{customdata[3]} <i>[%{customdata[4]} to %{customdata[5]}]</i> years<br>" +
+            "<b>Probability</b> : %{customdata[0]}<br>"
+            "<b>Return period</b> : %{customdata[1]}<br>"
             "<extra></extra>"
         )
     )
@@ -106,19 +100,11 @@ def plot_PR_FAR(stats: xr.Dataset, cache_key: str) -> go.Figure:
         xaxis_domain=[0, 0.91],
         # colors=["204,85,0"], # Orange foncé
         colors=["0,128,128"], # Turquoise foncé
-        customdata_func=lambda ql, be, qu: np.stack([
-            [_safe_PR(pr) for pr in ql],
-            [_safe_PR(pr) for pr in be],
-            [_safe_PR(pr) for pr in qu],
-            [_safe_FAR(1-(1/pr), unit=None) for pr in ql],
-            [_safe_FAR(1-(1/pr), unit=None) for pr in be],
-            [_safe_FAR(1-(1/pr), unit=None) for pr in qu]
-        ], axis=-1),
+        customdata_func=customdata_PR,
         hovermode='x unified',
         hovertemplate=(
-            # "<b>Year</b> : %{x}<br>" +
-            "<b>Ratio</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i><br>" +
-            "<b>FAR</b> : %{customdata[4]} <i>[%{customdata[3]} to %{customdata[5]}]</i> %<br>" +
+            "<b>Ratio</b> : %{customdata[0]}<br>"
+            "<b>FAR</b> : %{customdata[1]}<br>"
             "<extra></extra>"
         ),
         transform_func=PRlink
@@ -146,14 +132,10 @@ def plot_intensity(stats: xr.Dataset, cache_key: str) -> go.Figure:
             'With human influence',
             'Without human influence'
         ],
-        customdata_func=lambda ql, be, qu: np.stack([
-            [_safe_intensity(t, unit=None) for t in ql],
-            [_safe_intensity(t, unit=None) for t in be],
-            [_safe_intensity(t, unit=None) for t in qu],
-        ], axis=-1),
+        customdata_func=customdata_intensity,
         hovermode='x unified',
         hovertemplate=(
-            "%{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i> °C" +
+            "%{customdata[0]}"
             "<extra></extra>"
         )
     )
@@ -172,16 +154,11 @@ def plot_intensity_change(stats: xr.Dataset, cache_key: str) -> go.Figure:
             'tickformat': '+'
         },
         {'side': 'right', 'tickvals': [], 'ticktext': []}],
-        customdata_func=lambda ql, be, qu: np.stack([
-            [_safe_intensity_change(delta, unit=None) for delta in ql],
-            [_safe_intensity_change(delta, unit=None) for delta in be],
-            [_safe_intensity_change(delta, unit=None) for delta in qu]
-        ], axis=-1),
+        customdata_func=customdata_intensity_change,
         hovermode='x unified',
         hovertemplate=(
-            # "<b>Year</b> : %{x}<br>" +
-            "<b>Change</b> : %{customdata[1]} <i>[%{customdata[0]} to %{customdata[2]}]</i> °C" +
-            "<extra></extra>"
+             "%{customdata[0]}"
+             "<extra></extra>"
         ),
         colors=["204,85,0"]
     )
