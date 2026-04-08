@@ -75,7 +75,7 @@ def plot_PR_FAR(stats: xr.Dataset, cache_key: str) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
-    ytickslabelsR = ["", "", "", "", "", "0%", "80%", "90%", "99%", "99,99%", "100%"]
+    ytickslabelsR = ["", "", "", "", "", "0%", "80%", "90%", "99%", "99,9%", "100%"]
 
     fig = create_attribution_plotly_graph(
         stats,
