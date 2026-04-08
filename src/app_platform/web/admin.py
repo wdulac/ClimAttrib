@@ -6,14 +6,14 @@ from app_platform.compute.redis import redis_client
 
 admin_bp = Blueprint("admin", __name__)
 
-CACHE_CLEAR_TOKEN = os.getenv("CACHE_CLEAR_TOKEN")
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")
 
 @admin_bp.route("/clear-cache", methods=["POST"])
 def clear_redis_cache():
     
     token = request.headers.get("Admin-Token")
 
-    if not token or token != CACHE_CLEAR_TOKEN:
+    if not token or token != ADMIN_TOKEN:
         abort(403)
 
     # Vider db 1 redis
