@@ -224,13 +224,14 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     # On réintroduit les bornes e et 1/e et inf en fonction de pF et pC
     PR_samples = np.where(pC == e, 1/e, PR_samples)
     PR_samples = np.where(pF == e, e, PR_samples)
+    PR_samples = np.where((pC == e) & (pF == e), 1, PR_samples)
 
     # Calcul des quantiles sur le PR clippé et correctement borné entre e et 1/e
     PR_q = np.quantile(PR_samples, [CI/2, 0.5, 1-CI/2], axis=-1, method="median_unbiased").transpose((1,2,0))
 
     # On remplace les bornes e et 1/e par respectivement 0 et infini
-    PR_q[:] = np.where(PR_q == 1/e, np.inf, PR_q[:])
-    PR_q[:] = np.where(PR_q == e, 0.0, PR_q[:])
+    PR_q = np.where(PR_q == 1/e, np.inf, PR_q)
+    PR_q = np.where(PR_q == e, 0.0, PR_q)
 
     result_dict["PR"] = PR_q
 
