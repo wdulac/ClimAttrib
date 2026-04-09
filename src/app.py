@@ -26,9 +26,9 @@ from components.layout import(
 
 from app_platform.web import (
     register_redirects,
-    register_admin_routes,
 )
 from app_platform.web.api import register_api_routes
+from app_platform.web.admin import register_admin_routes
 
 import logging
 
