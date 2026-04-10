@@ -5,6 +5,8 @@ from celery.exceptions import SoftTimeLimitExceeded
 from science.attribution import attribute_event
 from .redis import set_cache, make_cache_key
 
+from science.attribution.__settings import STAN_WORK_DIR
+from ANKIALE.stats.__tools import nslawid_to_class
 
 import os
 
@@ -44,3 +46,16 @@ def attribution(event, cache_key=None):
         # Shorten the TTL to 5 seconds so that the DOA result does not stay in cache for 48 hours
         # But still long enough for the callback to see the timeout at least once
         set_cache(cache_key, {'status': 'timeout'}, ttl=5)
+
+
+@celery_app.task(
+    name="compile_model"
+)
+def compile_stan_model(model):
+
+    # Map input parameter to proper nslawid
+    nslawid = {"GEV": "GEV", "NORMAL": "Normal"}[model]
+    cnslaw = nslawid_to_class(nslawid)
+
+    # Start compilation
+    cnslaw().init_stan(tmp=STAN_WORK_DIR, force_compile=True)
