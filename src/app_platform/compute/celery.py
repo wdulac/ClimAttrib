@@ -49,7 +49,7 @@ def attribution(event, cache_key=None):
 
 
 @celery_app.task(
-    name="compile_model"
+    name="compilation"
 )
 def compile_stan_model(model):
 
