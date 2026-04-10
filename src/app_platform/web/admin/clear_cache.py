@@ -36,4 +36,4 @@ def clear_redis_cache():
 
     # Vider db 1 redis
     redis_client.flushdb()
-    return jsonify({"status": "cache cleared"})
+    return jsonify({"status": "ok", "redis": "cache cleared"})

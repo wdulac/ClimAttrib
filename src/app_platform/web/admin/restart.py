@@ -32,12 +32,9 @@ def restart_app():
     signature = request.headers.get('Signature')
 
     if not all([timestamp, signature]):
-        print("Here 1")
         abort(403)
 
     if not verify_signature("restart", timestamp, signature):
-        print("Here 2")
-
         abort(403)
     
     results = {}
