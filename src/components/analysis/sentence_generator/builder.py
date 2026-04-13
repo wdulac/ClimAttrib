@@ -70,27 +70,32 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     ## Evaluate which template to use...
 
     # Is the selected event extreme ? Check for pF and compare to Yo series
-    isExtreme = True
     prob = float(stats['pF'].sel(time=event['date'].year, quantile='BE'))
-    if prob >= EXTREME_PROB_THRESHOLD:
-        # Not rare but maybe still a maxima, therefore extreme
-        Yo = _load_obs(event['lat'], event['lon'],
-                       event['extreme_type'], event['method'],
-                       event['start_date'], event['stop_date'],
-                       event['duration'])
-        
-        Yo_year = event['date'].year
-        # If Yo record is unavaiable for the selected year, use the last available Yo.
-        if Yo_year > Yo.time.values[-1]:
-            Yo_year = Yo.time.values[-1]
-        isMax = abs(event['intensity'] - Yo.sel(time=Yo_year)) <= DISTANCE_FROM_MAX_THRESHOLD
-        isExtreme = isMax
-    
-    if isExtreme:
-        # Below :EXTREME_PROB_THRESHOLD: we consider the event rare enough to use the extreme templates
-        template = f"extreme/{event['method']}/{event['extreme_type']}"
+
+    if prob == 1.0:
+        template = "non_extreme/out_of_bound"
+
     else:
-        template = "non_extreme/very_common"
+        isExtreme = True
+        if prob >= EXTREME_PROB_THRESHOLD:
+            # Not rare but maybe still a maxima, therefore extreme
+            Yo = _load_obs(event['lat'], event['lon'],
+                        event['extreme_type'], event['method'],
+                        event['start_date'], event['stop_date'],
+                        event['duration'])
+            
+            Yo_year = event['date'].year
+            # If Yo record is unavaiable for the selected year, use the last available Yo.
+            if Yo_year > Yo.time.values[-1]:
+                Yo_year = Yo.time.values[-1]
+            isMax = abs(event['intensity'] - Yo.sel(time=Yo_year)) <= DISTANCE_FROM_MAX_THRESHOLD
+            isExtreme = isMax
+    
+        if isExtreme:
+            # Below :EXTREME_PROB_THRESHOLD: we consider the event rare enough to use the extreme templates
+            template = f"extreme/{event['method']}/{event['extreme_type']}"
+        else:
+            template = "non_extreme/very_common"
     
     ## Extract all necessary values to fill in the template
 
