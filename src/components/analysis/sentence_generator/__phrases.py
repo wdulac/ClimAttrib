@@ -1,6 +1,8 @@
 import numpy as np
 from .__data_models import CIValue
 
+from formatting.metrics import format_temperature
+
 # =========================================================
 # PR + FAR (année de l'événement)
 # =========================================================
@@ -97,3 +99,29 @@ def impossible_sentence(pC: CIValue):
             "would have been effectively impossible without human influence."
         )
     return ""
+
+
+# =========================================================
+# Phrase de définition de l'événement
+# =========================================================
+
+def event_definition_phrase(duration: int, To: float, extreme_type: str):
+
+    num2words = {
+        '1': 'one',
+        '2': 'two',
+        '3': 'three',
+        '4': 'four',
+        '5': 'five',
+        '7': 'seven',
+        '10': 'ten',
+        '14': 'fourteen'
+    }
+
+    duration_str = f"{num2words[str(duration)]}-day"
+    temp_then_factual = f"{format_temperature(To, force_one_decimal=True)}\u00A0°C"
+    higher_or_lower = {"hot": "higher", "cold": "lower"}[extreme_type]
+
+    event_definition = f"having a {duration_str} average temperature of {temp_then_factual} or {higher_or_lower}"
+
+    return event_definition

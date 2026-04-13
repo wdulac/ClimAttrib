@@ -20,6 +20,7 @@ from .__phrases import (
     attribution_future,
     ratio_phrase,
     impossible_sentence,
+    event_definition_phrase
 )
 from .__loader import render_template
 
@@ -104,21 +105,24 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     if year_then < year_today:
         today = build_metrics(stats, year_today)
     future = build_metrics(stats, year_future)
-    
-    # Format duration and factual temperature
-    duration_str = f"{num2words[str(int(event['duration']))]}-day"
-    temp_then_factual = (f"{format_temperature(then.IF.value, force_one_decimal=True)}\u00A0"
-                         f"{UNITS.get(format_temperature)(then.IF.value)}")
 
     ### Build the context
     context = {
-        "duration": duration_str,
         "year_then": year_then,
         "year_today": year_today,
         "year_future": year_future,
     }
 
     ## ======== Paragraphe THEN ======== ##
+
+    event_def = event_definition_phrase(
+        event['duration'],
+        event['intensity'] - 273.15,
+        event['extreme_type']
+    )
+
+    context["event_definition"] = event_def
+
     context.update({
         "pF_then": fmt_prob(then.pF),
         "pC_then": fmt_prob(then.pC),
@@ -126,7 +130,6 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         "RP_C_then": fmt_RP(then.RP_C),
         "IC_then": fmt_temp(then.IC),
         "dI_then": fmt_temp(then.dI),
-        "IF_then": temp_then_factual,
     })
 
     # PR / FAR
