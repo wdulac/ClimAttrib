@@ -40,96 +40,117 @@ CAROUSEL_SETTINGS = {
 
 def results_carousel(stats, event, cache_key):
 
-    component = dmc.Carousel([
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Stack(
+    automated_text_slide = dmc.CarouselSlide(
+        dmc.Center(
+            style=DEFAULT_CENTERED_SLIDE_STYLE,
+            children=dmc.Stack(
+                style={
+                    'maxHeight': 'calc(100% - 130px)',
+                    'overflowY': 'auto',
+                    'width': '100%',
+                    'alignItems': 'center'
+                },
+                children=automated_text(event, stats)
+            )
+        )
+    )
+
+    probability_slide = dmc.CarouselSlide(
+        dmc.Center(
+            style=DEFAULT_CENTERED_SLIDE_STYLE,
+            children=dmc.Stack(
+                style={
+                    'maxHeight': '80%',
+                    'overflowY': 'auto',
+                    'width': '100%'
+                },
+                children=dmc.Group(
                     style={
-                        'maxHeight': 'calc(100% - 130px)',
-                        'overflowY': 'auto',
+                        'justify-content': 'space-around',
+                        'align-items': 'flex-end',
                         'width': '100%',
-                        'alignItems': 'center'
+                        'userSelect': 'none'
                     },
-                    children=automated_text(event, stats)
-                )
-            )
-        ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Stack(
-                    style={
-                        'maxHeight': '80%',
-                        'overflowY': 'auto',
-                        'width': '100%'
-                    },
-                    children=dmc.Group(
-                        style={
-                            'justify-content': 'space-around',
-                            'align-items': 'flex-end',
-                            'width': '100%',
-                            'userSelect': 'none'
-                        },
-                        children=[
-                            probability_plot(stats, cache_key),
-                            PR_FAR_plot(stats, cache_key)
-                        ]
-                    )
-                )
-            )
-        ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Stack(
-                    style={
-                        'maxHeight': '100%',
-                        'overflowY': 'auto',
-                        'width': '100%'
-                    },
-                    children=dmc.Group(
-                        style={
-                            'justify-content': 'space-around',
-                            'align-items': 'flex-end',
-                            'width': '100%',
-                            'userSelect': 'none'
-                        },
-                        children=[
-                            intensity_plot(stats, cache_key),
-                            intensity_change_plot(stats, cache_key)
-                        ]
-                    )
-                )
-            )
-        ),
-        dmc.CarouselSlide(
-            dmc.Center(
-                style=DEFAULT_CENTERED_SLIDE_STYLE,
-                children=dmc.Stack(
-                    style={
-                        'maxHeight': '100%',
-                        'overflowY': 'auto',
-                        'width': '100%'
-                    },
-                    children=dmc.Group(
-                        style={
-                            'justify-content': 'space-around',
-                            'align-items': 'flex-end',
-                            'width': '100%',
-                            'userSelect': 'none'
-                        },
-                        children=[
-                            observed_Yo_with_return_levels_plot(event, stats, cache_key),
-                            annual_cycle_with_daily_obs_plot(event)
-                        ]
-                    )
+                    children=[
+                        probability_plot(stats, cache_key),
+                        PR_FAR_plot(stats, cache_key)
+                    ]
                 )
             )
         )
-    ],
-    **CAROUSEL_SETTINGS, 
-    id='my-carousel' )
+    )
+
+    temperature_slide = dmc.CarouselSlide(
+        dmc.Center(
+            style=DEFAULT_CENTERED_SLIDE_STYLE,
+            children=dmc.Stack(
+                style={
+                    'maxHeight': '100%',
+                    'overflowY': 'auto',
+                    'width': '100%'
+                },
+                children=dmc.Group(
+                    style={
+                        'justify-content': 'space-around',
+                        'align-items': 'flex-end',
+                        'width': '100%',
+                        'userSelect': 'none'
+                    },
+                    children=[
+                        intensity_plot(stats, cache_key),
+                        intensity_change_plot(stats, cache_key)
+                    ]
+                )
+            )
+        )
+    )
+
+    observations_slide = dmc.CarouselSlide(
+        dmc.Center(
+            style=DEFAULT_CENTERED_SLIDE_STYLE,
+            children=dmc.Stack(
+                style={
+                    'maxHeight': '100%',
+                    'overflowY': 'auto',
+                    'width': '100%'
+                },
+                children=dmc.Group(
+                    style={
+                        'justify-content': 'space-around',
+                        'align-items': 'flex-end',
+                        'width': '100%',
+                        'userSelect': 'none'
+                    },
+                    children=[
+                        observed_Yo_with_return_levels_plot(event, stats, cache_key),
+                        annual_cycle_with_daily_obs_plot(event)
+                    ]
+                )
+            )
+        )
+    )
+
+    # Exclude temperature slide if prob = 1.0, as chances are the temperature estimates are wrong.
+    prob = float(stats['pF'].sel(time=event['date'].year, quantile='BE'))
+    if prob < 1.0:
+        carousel_content = [
+            automated_text_slide,
+            probability_slide,
+            temperature_slide,
+            observations_slide
+        ]
+    else:
+        carousel_content = [
+            automated_text_slide,
+            probability_slide,
+            observations_slide
+        ]
+
+    component = dmc.Carousel(
+        children=carousel_content,
+        **CAROUSEL_SETTINGS, 
+        id='my-carousel' 
+    )
     
     return component
 
