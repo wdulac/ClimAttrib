@@ -52,6 +52,17 @@ fmt_PR = lambda ci: _fmt(ci, format_probability_ratio)
 fmt_FAR = lambda ci: _fmt(ci, format_fraction_of_attributable_risk)
 fmt_temp = lambda ci: _fmt(ci, format_temperature)
 
+num2words = {
+    '1': 'one',
+    '2': 'two',
+    '3': 'three',
+    '4': 'four',
+    '5': 'five',
+    '7': 'seven',
+    '10': 'ten',
+    '14': 'fourteen'
+}
+
 
 def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):
 
@@ -93,9 +104,15 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     if year_then < year_today:
         today = build_metrics(stats, year_today)
     future = build_metrics(stats, year_future)
+    
+    # Format duration and factual temperature
+    duration_str = f"{num2words[str(int(event['duration']))]}-day"
+    temp_then_factual = (f"{format_temperature(then.IF.value, force_one_decimal=True)}\u00A0"
+                         f"{UNITS.get(format_temperature)(then.IF.value)}")
 
     ### Build the context
     context = {
+        "duration": duration_str,
         "year_then": year_then,
         "year_today": year_today,
         "year_future": year_future,
@@ -109,6 +126,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         "RP_C_then": fmt_RP(then.RP_C),
         "IC_then": fmt_temp(then.IC),
         "dI_then": fmt_temp(then.dI),
+        "IF_then": temp_then_factual,
     })
 
     # PR / FAR
