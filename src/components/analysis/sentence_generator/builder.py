@@ -89,7 +89,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
         # Below :EXTREME_PROB_THRESHOLD: we consider the event rare enough to use the extreme templates
         template = f"extreme/{event['method']}/{event['extreme_type']}"
     else:
-        template = "non_extreme/generic"
+        template = "non_extreme/very_common"
     
     ## Extract all necessary values to fill in the template
 
