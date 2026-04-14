@@ -8,8 +8,9 @@ This implies that {{ FAR_then }} of the likelihood of this event can be attribut
 
 {% if has_today %}
 Today in {{ year_today }}, the probability of such an event occurring within this time of year is {{ pF_today }}.
-The intensity of a comparable event is estimated at {{ IF_today }}, while the counterfactual intensity remains lower at {{ IC_today }}.
-This corresponds to an intensity shift of {{ dI_today }}. Compared to {{ year_then }}, the probability has {{ ratio_today_word }} by a factor of {{ ratio_today_value }}.
+The intensity of a comparable event is estimated at {{ IF_today }}.
+This corresponds to an intensity shift of {{ dI_today }} relative to pre-industrial conditions.
+Compared to {{ year_then }}, the probability has {{ ratio_today_word }} by a factor of {{ ratio_today_value }}.
 Human influence alone now makes such an event {{ PR_today_phrase }} to occur within this time of year
 {%- if has_far_today %}
 , which is equivalent to saying that {{ FAR_today }} of the likelihood could be attributed to climate change, should such an event occur today
@@ -17,8 +18,8 @@ Human influence alone now makes such an event {{ PR_today_phrase }} to occur wit
 {% endif %}
 
 Looking ahead to {{ year_future }} under a high emission scenario (SSP3-7.0), the probability of such an event occurring within this time of year is projected to reach {{ pF_future }}.
-The intensity of comparable events is expected to increase further, reaching {{ IF_future }}, while the counterfactual intensity would remain near {{ IC_future }}.
-This implies a total anthropogenic contribution of {{ dI_future }} to the event intensity.
+The intensity of comparable events is expected to increase further, reaching {{ IF_future }}.
+This implies a total anthropogenic contribution of {{ dI_future }} to the event intensity relative to pre-industrial conditions.
 Relative to {{ year_today }}, the probability would {{ ratio_future_word }} by a factor of {{ ratio_future_value }}.
 By {{ year_future }}, human influence would make such events {{ PR_future_phrase }} to occur within this time of year
 {%- if has_far_future %}
