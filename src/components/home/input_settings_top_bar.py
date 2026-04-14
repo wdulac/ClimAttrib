@@ -218,7 +218,7 @@ _extreme_type_segmented = dmc.Stack(children=[
 # Annual max / calendar selector
 _computation_method_segmented = dmc.Stack(children=[
     dmc.Group(children=[
-        dmc.Text("Restrict to same dates", **TOP_BAR_INPUTS_LABEL_PROPS),
+        dmc.Text("Seasonal context", **TOP_BAR_INPUTS_LABEL_PROPS),
         _help_tooltip_hovercard(COMPUTE_TOOLTIP_CONTENT)
     ], gap='sm'),
     dmc.SegmentedControl(
@@ -321,8 +321,8 @@ def event_definition_component():
         dmc.Grid(children=[
             dmc.GridCol(children=[
                 dmc.Group(children=[
-                    _extreme_type_segmented,
                     _date_selector_calendar(),
+                    _extreme_type_segmented,
                     _computation_method_segmented,
                     _temperature_readout
                     ], id='left-column')
