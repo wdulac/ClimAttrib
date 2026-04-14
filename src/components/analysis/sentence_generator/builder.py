@@ -42,27 +42,16 @@ def _fmt(ci, formatter, **kwargs):
 
     if unit_func:
         unit = unit_func(ci.value)
-        return f"**{val}\u00A0\[{low} to {high}\]\u00A0{unit}**"
+        return f"**{val}\u00A0\[{low}\u00A0to\u00A0{high}\]\u00A0{unit}**"
     else:
-        return f"**{val}\u00A0\[{low} to {high}\]**"
+        return f"**{val}\u00A0\[{low}\u00A0to\u00A0{high}\]**"
     
 
 fmt_prob = lambda ci: _fmt(ci, format_probability)
 fmt_RP = lambda ci: _fmt(ci, format_return_period)
 fmt_PR = lambda ci: _fmt(ci, format_probability_ratio)
 fmt_FAR = lambda ci: _fmt(ci, format_fraction_of_attributable_risk)
-fmt_temp = lambda ci: _fmt(ci, format_temperature)
-
-num2words = {
-    '1': 'one',
-    '2': 'two',
-    '3': 'three',
-    '4': 'four',
-    '5': 'five',
-    '7': 'seven',
-    '10': 'ten',
-    '14': 'fourteen'
-}
+fmt_temp = lambda ci: _fmt(ci, format_temperature, force_one_decimal=True)
 
 
 def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LANG):
