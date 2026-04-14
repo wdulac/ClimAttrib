@@ -130,7 +130,7 @@ def results_carousel(stats, event, cache_key):
         )
     )
 
-    # Exclude temperature slide if prob = 1.0, as chances are the temperature estimates are wrong.
+    # Exclude proba/temperature slides if prob = 1.0, as chances are the temperature estimates are wrong.
     prob = float(stats['pF'].sel(time=event['date'].year, quantile='BE'))
     if prob < 1.0:
         carousel_content = [
@@ -142,7 +142,6 @@ def results_carousel(stats, event, cache_key):
     else:
         carousel_content = [
             automated_text_slide,
-            probability_slide,
             observations_slide
         ]
 
