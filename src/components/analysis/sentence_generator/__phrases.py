@@ -71,17 +71,22 @@ def attribution_future(PR: CIValue, PR_inv: CIValue, FAR: CIValue, fmt_PR, fmt_F
 # Ratio de probabilité (today vs then, future vs today)
 # =========================================================
 
-def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, fmt_ratio):
+def ratio_phrase(ratio: CIValue, ratio_inv: CIValue, fmt_ratio, past_tense: bool = True):
     """
     Retourne :
-    - mot ("increased" / "decreased")
+    - mot ("increase" / "decrease") avec conjugaison au passé en option
     - valeur formatée
     """
 
     if ratio.value >= 1:
-        return "increased", fmt_ratio(ratio)
+        word, formatted_value = "increase", fmt_ratio(ratio)
     else:
-        return "decreased", fmt_ratio(ratio_inv)
+        word, formatted_value = "decrease", fmt_ratio(ratio_inv)
+
+    if past_tense:
+        word += "d"
+
+    return word, formatted_value
 
 
 # =========================================================

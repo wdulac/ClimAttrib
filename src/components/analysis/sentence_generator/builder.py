@@ -216,7 +216,7 @@ def automated_text(event: dict, stats: xr.Dataset, lang: str | None = DEFAULT_LA
     
     ratio_future_inv = invert_ci(ratio_future)
 
-    word, value = ratio_phrase(ratio_future, ratio_future_inv, fmt_PR)
+    word, value = ratio_phrase(ratio_future, ratio_future_inv, fmt_PR, past_tense=False)
 
     context.update({
         "ratio_future_word": word,
