@@ -247,8 +247,8 @@ def toggle_plots(
             panel_content = dmc.Box(
                 dmc.Center(
                     dmc.Stack([
-                        dcc.Graph(figure=plot_annual_cycle(params, scale=0.75)),
-                        dcc.Graph(figure=plot_observed_Yo(params, scale=0.75)),
+                        dcc.Graph(figure=plot_annual_cycle(params, scale=0.65), config=dict(displaylogo=False)),
+                        dcc.Graph(figure=plot_observed_Yo(params, scale=0.65), config=dict(displaylogo=False)),
                     ], gap=0),
                 ), 
             )
