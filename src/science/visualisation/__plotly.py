@@ -38,14 +38,24 @@ def create_attribution_plotly_graph(
     fill_alpha: float = 0.5,
     line_alpha: float = 0.8,
     background_alpha: float = 0.3,
-    title: str = ""
+    title: str = "",
+    scale: float = 1.0,
+    fit_max_height: int | None = None
 ) -> go.Figure:
 
     # Taille
     mm = 1. / 25.4
     ratio = 16 / 11
-    width = 180 * mm * 110
-    height = width / ratio
+    width_ref = 180 * mm * 110
+    height_ref = width_ref / ratio
+    
+    width = width_ref * scale
+    height = height_ref * scale
+
+    if fit_max_height is not None:
+        fit_scale = min(1.0, fit_max_height / height)
+        width *= fit_scale
+        height *= fit_scale
 
     # Couleurs
     colors_fill = [f'rgba({c},{fill_alpha})' for c in colors][:len(variables)]
@@ -202,7 +212,8 @@ def _clim_plots_base_layout(
     cache_key: str | None = None,
     extra_bottom_margin: int = 0,
     standoff : int | None=None,
-    scale: float = 1.0
+    scale: float = 1.0,
+    fit_max_height: int | None = None
 ):
 
     # Taille
@@ -213,6 +224,11 @@ def _clim_plots_base_layout(
 
     width = width_ref * scale
     height = height_ref * scale
+
+    if fit_max_height is not None:
+        fit_scale = min(1.0, fit_max_height / height)
+        width *= fit_scale
+        height *= fit_scale
 
     base_margin = dict(l=60, r=40, t=40, b=40)
     

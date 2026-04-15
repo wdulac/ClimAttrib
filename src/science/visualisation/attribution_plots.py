@@ -55,7 +55,7 @@ def PRlink(x: float, e:float=3) -> float:
 
 ## Individual plot creation
 
-def plot_probability(stats: xr.DataArray, cache_key: str) -> go.Figure:
+def plot_probability(stats: xr.DataArray, cache_key: str, **kwargs) -> go.Figure:
 
     yticks = np.array([EPSILON,1e-6,1e-3,1e-2,1/40,1/10,0.25,0.5,1-EPSILON])
     yticklabelsL = ["0", "0,0001%", "0,1%", "1%", "2,5%", "10%", "25%", "50%", "100%"]
@@ -89,13 +89,14 @@ def plot_probability(stats: xr.DataArray, cache_key: str) -> go.Figure:
             "<b>Probability</b> : %{customdata[0]}<br>"
             "<b>Return period</b> : %{customdata[1]}<br>"
             "<extra></extra>"
-        )
+        ),
+        **kwargs
     )
 
     return fig
 
 
-def plot_PR_FAR(stats: xr.Dataset, cache_key: str) -> go.Figure:
+def plot_PR_FAR(stats: xr.Dataset, cache_key: str, **kwargs) -> go.Figure:
     
     yticks = np.array([EPSILON, 1e-3, 1e-2, 0.1, 0.2, 1, 5, 10, 100, 1000, 1/EPSILON])
     yticklabelsL = ["0", "1/1000", "1/100", "1/10", "1/5", "1", "5", "10", "100", "1000", "∞"]
@@ -131,13 +132,14 @@ def plot_PR_FAR(stats: xr.Dataset, cache_key: str) -> go.Figure:
             "<b>FAR</b> : %{customdata[1]}<br>"
             "<extra></extra>"
         ),
-        transform_func=PRlink
+        transform_func=PRlink,
+        **kwargs
     )
 
     return fig
 
 
-def plot_intensity(stats: xr.Dataset, cache_key: str) -> go.Figure:
+def plot_intensity(stats: xr.Dataset, cache_key: str, **kwargs) -> go.Figure:
 
     # Note to self: If this somehow causes issues (e.g offset subtracted multiple times) 
     # the alternative would be to add an offset parameter to the :create_attribution_plotly_graph: function.
@@ -161,13 +163,14 @@ def plot_intensity(stats: xr.Dataset, cache_key: str) -> go.Figure:
         hovertemplate=(
             "%{customdata[0]}"
             "<extra></extra>"
-        )
+        ),
+        **kwargs
     )
 
     return fig
 
 
-def plot_intensity_change(stats: xr.Dataset, cache_key: str) -> go.Figure:
+def plot_intensity_change(stats: xr.Dataset, cache_key: str, **kwargs) -> go.Figure:
 
     fig = create_attribution_plotly_graph(
         stats,
@@ -184,7 +187,8 @@ def plot_intensity_change(stats: xr.Dataset, cache_key: str) -> go.Figure:
              "%{customdata[0]}"
              "<extra></extra>"
         ),
-        colors=["204,85,0"]
+        colors=["204,85,0"],
+        **kwargs
     )
 
     return fig
