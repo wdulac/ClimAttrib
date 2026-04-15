@@ -2,9 +2,9 @@
 
 ### Definition of an event
 
-An event is defined as a temperature **intensity threshold** associated with a **variable** and a given **duration**. Here, the intensity noted in the *Intensity* field corresponds to the value of the variable noted in the *Variable* field taken over the selected dates (in days) and is representative of the whole area covered by the selected grid cell.
+An event is defined as a temperature **intensity threshold** associated with a **variable** and a given **duration**. Here, the intensity noted in the *Intensity* field corresponds to the average temperature taken over the selected dates (in days) and is representative of the whole area covered by the selected grid cell. Currently, the average temperature is the only variable available.
 
-A typical example of an event could be : A 3-day mean temperature of at least 30°C.
+A typical example of an event could be : A 3-day average temperature of at least 30°C.
 
 ### Probabilities
 
