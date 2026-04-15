@@ -210,22 +210,13 @@ _temperature_readout = dmc.Group(
                 dmc.Text(id='temp-readout-anomaly', children=None, fz=18, c='white')
             ], gap='xs', align='center', wrap="nowrap")
         ], gap='3px', style={'minHeight': 56.8}),
-
-        # Climatology element with dropdown hovercard
-        dmc.Stack(children=[
-            dmc.Group(children=[
-                dmc.Text('Climatology', **TOP_BAR_INPUTS_LABEL_PROPS),
-                _help_tooltip_hovercard(CLIMATOLOGY_TOOLTIP_CONTENT)
-            ],gap='xs'),
-            dmc.Text(id='temp-readout-clim', children=None, fz=18, c='white')
-        ], gap='3px', style={'minHeight': 55.7})
     ],
     justify='left',
     align='center',
     gap='md',
     grow=False,
     wrap="nowrap",
-    style={'minWidth': '433px'}
+    style={'minWidth': '288px'}
 )
 
 def event_definition_component():
@@ -323,7 +314,6 @@ def calendar_error(dates: list):
         Output('temp-readout-value', 'children'),
         Output('temp-readout-anomaly', 'children'),
         Output('temp-readout-anomaly-icon', 'children'),
-        Output('temp-readout-clim', 'children'),
         Output('data:intensity', 'data'),
         Input('input:selected-point', 'data'),
         Input('input:extreme-type', 'value'),
@@ -338,13 +328,13 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
     """
     if None in date:
         # incomplete selection
-        return ("Select a date range", "", MINUS_ICON, "", None)
+        return ("Select a date range", "", MINUS_ICON, None)
 
     if date_error:
-        return ("Select a valid date range", "", MINUS_ICON, "", None)
+        return ("Select a valid date range", "", MINUS_ICON, None)
 
     if grid_point is None:
-        return ("Select a grid point", "", MINUS_ICON, "", None)
+        return ("Select a grid point", "", MINUS_ICON, None)
 
     # parse inputs -> use dt.datetime objects (required by _datetime_to_doy)
     start_dt, stop_dt = [dt.datetime.strptime(_, '%Y-%m-%d') for _ in date]
@@ -376,12 +366,9 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
 
     # Extract quantiles (strings like '10%', '50%', '90%')
     try:
-        q10 = float(cyc_mean.sel(quantile='10%').data)
         median = float(cyc_mean.sel(quantile='50%').data)
-        q90 = float(cyc_mean.sel(quantile='90%').data)
     except Exception:
-        # If selection failed, fallback to NaNs
-        q10 = median = q90 = float('nan')
+        median = float('nan')
 
     # anomaly (K) -> same magnitude in °C
     anomaly = To_val - median
@@ -398,13 +385,10 @@ def update_temperature(grid_point: str, extreme_type: str, date: list,
         icon = MINUS_ICON
         anom_text = f"{anomaly_c:.1f}°C"
 
-    # prepare small climatology string
-    clim_text = f"{q10-273.15:.1f}°C / {median-273.15:.1f}°C / {q90-273.15:.1f}°C"
-
     # display observed temp in °C
     temp_text = f"{To_val-273.15:.1f}°C"
 
-    return temp_text, anom_text, icon, clim_text, f"{To_val:.2f}"
+    return temp_text, anom_text, icon, f"{To_val:.2f}"
 
 
 @callback(
