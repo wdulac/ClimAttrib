@@ -220,7 +220,7 @@ _temperature_readout = dmc.Group(
             dmc.Text(id='temp-readout-clim', children=None, fz=18, c='white')
         ], gap='3px', style={'minHeight': 55.7})
     ],
-    justify='center',
+    justify='left',
     align='center',
     gap='md',
     grow=False,
