@@ -7,4 +7,4 @@
 6. **Click *Continue*** to proceed to the results page.
 
 **Note**: The *Seasonal context* selector determines whether the selected event should be evaluated within its specific calendar context, or not. If *yes*, the calculated probability will reflect the likelihood of the event occurring at this exact time of the year (+/- one week). If *no*, it will reflect the likelihood of the event occurring any time during the year.
-For instance, a winter heatwave may be unlikely for that time of year (i.e. winter), yet the actual temperatures recorded could be values that typically occur every year (but in other seasons, e.g. summer)
+For instance, a winter heatwave may be unlikely for that time of year (i.e. winter), yet the actual temperatures recorded could be values that typically occur every year (but in other seasons, e.g. summer).
