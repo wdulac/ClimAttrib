@@ -8,8 +8,8 @@ A typical example of an event could be : A 3-day average temperature of at least
 
 ### Probabilities
 
-Probabilities on the results page represent **annual probabilities of exceeding** the temperature noted in the *Intensity* field for any given year. Therefore, probabilities are interpreted as frequencies of occurrence for an episode at least as intense as the one selected.
+Probabilities on the results page represent **probabilities of exceeding** the temperature noted in the *Intensity* field for any given year. Therefore, probabilities are interpreted as frequencies of occurrence for an episode at least as intense as the one selected.
 
 ### Return periods
 
-When applicable,. Return periods are defined as the inverse of the frequency of occurrence (i.e probabilities). For example, a 10-year heatwave has a 1/10 = 0.1 or 10% chance of being exceeded each year.
+Return periods are defined as the inverse of the frequency of occurrence (i.e probabilities). For example, a 10-year heatwave has a 1/10 = 0.1 or 10% chance of being exceeded each year.
