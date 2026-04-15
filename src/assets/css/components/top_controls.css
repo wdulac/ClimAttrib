@@ -21,8 +21,9 @@
 
 
 #left-column {
-    justify-content: space-around;
-    align-items: flex-end;
+    margin-left: 20px;
+    gap: 100px;
+    justify-content: flex-start;
 }
 
 
@@ -79,4 +80,15 @@
 .tooltip-markdown p {
     font-size: 14px;
     margin: 8px 0px;
+}
+
+/* Small resolution handling */
+@media (max-width: 1536px) {
+
+    #left-column {
+        margin-left: 10px;
+        gap: 25px;  /* réduire l'espacement entre éléments */
+        justify-content: flex-start;  /* au lieu de space-around */
+    }
+
 }
