@@ -73,7 +73,7 @@ def results_carousel(stats, event, cache_key):
             style=DEFAULT_CENTERED_SLIDE_STYLE,
             children=dmc.Stack(
                 style={
-                    'maxHeight': 'calc(100% - 130px)',
+                    'maxHeight': 'calc(100% - 200px)',
                     'overflowY': 'auto',
                     'width': '100%',
                     'alignItems': 'center'
@@ -88,7 +88,7 @@ def results_carousel(stats, event, cache_key):
             style=DEFAULT_CENTERED_SLIDE_STYLE,
             children=dmc.Stack(
                 style={
-                    'maxHeight': '80%',
+                    'maxHeight': 'calc(100% - 130px)',
                     'overflowY': 'auto',
                     'width': '100%'
                 },
@@ -113,7 +113,7 @@ def results_carousel(stats, event, cache_key):
             style=DEFAULT_CENTERED_SLIDE_STYLE,
             children=dmc.Stack(
                 style={
-                    'maxHeight': '100%',
+                    'maxHeight': 'calc(100% - 130px)',
                     'overflowY': 'auto',
                     'width': '100%'
                 },
@@ -138,7 +138,7 @@ def results_carousel(stats, event, cache_key):
             style=DEFAULT_CENTERED_SLIDE_STYLE,
             children=dmc.Stack(
                 style={
-                    'maxHeight': '100%',
+                    'maxHeight': 'calc(100% - 130px)',
                     'overflowY': 'auto',
                     'width': '100%'
                 },
