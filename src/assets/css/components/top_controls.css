@@ -21,8 +21,8 @@
 
 
 #left-column {
-    margin-left: 20px;
-    gap: 100px;
+    margin-left: 40px;
+    gap: 120px;
     justify-content: flex-start;
 }
 
@@ -83,7 +83,7 @@
 }
 
 /* Small resolution handling */
-@media (max-width: 1536px) {
+@media (max-width: 1611px) {
 
     #left-column {
         margin-left: 10px;
