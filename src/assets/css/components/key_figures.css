@@ -1,0 +1,36 @@
+@media (max-width: 1536px) {
+
+    /* Gap entre les cartes */
+    .key-figures-group {
+        gap: 2rem !important;
+    }
+
+    /* Icône plus petite */
+    .stat-card .iconify {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    /* Textes légèrement réduits */
+    .stat-card .mantine-Text-root[data-size="xl"] {
+        font-size: 16px !important;
+    }
+
+    .stat-card .mantine-Text-root[data-size="md"] {
+        font-size: 13px !important;
+    }
+
+    .stat-card .mantine-Text-root[data-size="sm"] {
+        font-size: 12px !important;
+    }
+
+    /* Padding du bandeau */
+    #event-description-container {
+        padding-inline: 1rem !important;
+    }
+
+    #back-button {
+        font-size: 14px !important;
+        padding: 8px 16px !important;
+    }
+}

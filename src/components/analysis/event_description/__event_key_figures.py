@@ -39,7 +39,8 @@ def create_stat_card(icon: str, label: str, value: str, icon_style: dict | None=
                     dmc.Text(value, size='xl', fw=600)
                 ] + extra_line
             )
-        ]
+        ],
+        className='stat-card'
     )
 
 
@@ -121,7 +122,8 @@ def key_figures(event: dict):
             dmc.Group(
                 justify='space-around',
                 gap='3rem',
-                children=card_list
+                children=card_list,
+                className="key-figures-group"
             )
         ]
     )
