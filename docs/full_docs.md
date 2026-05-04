@@ -28,7 +28,7 @@ The attribution calculation takes ~20 seconds and involves CPU-intensive scienti
 
 **Celery** is a task queue system: the web server places a computation request (a "task") into a queue, and a separate Celery worker process picks it up and executes it independently. The web server immediately returns control to the browser, which then polls for the result.
 
-Workers are started separately via `./scripts/start_celery.sh`. The worker configuration is in `src/app_platform/compute/celery.py`.
+The worker configuration is in `src/app_platform/compute/celery.py`.
 
 ### 3. Shared memory (Redis)
 
@@ -37,7 +37,7 @@ Workers are started separately via `./scripts/start_celery.sh`. The worker confi
 - **DB 0 — task queue**: used by Celery as the communication channel between the web server (which enqueues tasks) and the workers (which dequeue and execute them).
 - **DB 1 — result cache**: once a worker finishes computing an attribution result, it serialises the result (as a Python object) and writes it to Redis DB 1 with a 48-hour expiry. The web server reads from this cache when displaying results, and also checks it first to avoid recomputing results that are already available.
 
-Redis is started via `./scripts/start_redis.sh` and configured in `redis.conf` (port 6380).
+Redis is configured in `redis.conf` (port 6380).
 
 ---
 
@@ -46,28 +46,28 @@ Redis is started via `./scripts/start_redis.sh` and configured in `redis.conf` (
 ```
 Browser                     Web server (Flask/Dash)          Celery worker          Redis
   │                                  │                              │                  │
-  │── open home page ──────────────►│                              │                  │
-  │◄── map + input form ────────────│                              │                  │
+  │── open home page ───────────────►│                              │                  │
+  │◄── map + input form ─────────────│                              │                  │
   │                                  │                              │                  │
   │── select location + dates ──────►│ (callback: reads ERA5 NetCDF)│                  │
-  │◄── observed temp + anomaly ─────│                              │                  │
+  │◄── observed temp + anomaly ──────│                              │                  │
   │                                  │                              │                  │
   │── click "Continue" ─────────────►│ (callback: encodes event as  │                  │
-  │◄── redirect to /analysis?p=... ─│  a signed URL token)         │                  │
+  │◄── redirect to /analysis?p=... ─ │  a signed URL token)         │                  │
   │                                  │                              │                  │
   │── load /analysis?p=... ─────────►│ (decodes token → event dict) │                  │
   │                                  │── check cache ──────────────────────────────►│  │
-  │                                  │◄── miss ────────────────────────────────────│  │
-  │                                  │── queue task ──────────────────────────────►│  │
-  │                                  │              (DB 0)          │◄── dequeue ──│  │
-  │◄── loading screen ──────────────│              │               │               │  │
-  │                                  │              │               │── compute ───│  │
-  │── poll every 1 s ───────────────►│── check cache──────────────────────────────►│  │
-  │◄── not ready yet ───────────────│◄── miss ────────────────────────────────────│  │
-  │                                  │              │               │── store result─►│  │
-  │── poll ─────────────────────────►│── check cache──────────────────────────────►│  │
-  │                                  │◄── hit ─────────────────────────────────────│  │
-  │◄── results carousel ────────────│                              │                  │
+  │                                  │◄── miss ──────────────────────────────────── │  │
+  │                                  │── queue task ──────────────────────────────► │  │
+  │                                  │              (DB 0)          │◄── dequeue ── │  │
+  │◄── loading screen ───────────────│              │               │               │  │
+  │                                  │              │               │── compute ─── │  │
+  │── poll every 1 s ───────────────►│── check cache──────────────────────────────► │  │
+  │◄── not ready yet ────────────────│◄── miss ──────────────────────────────────── │  │
+  │                                  │              │               │── store result─► │ 
+  │── poll ─────────────────────────►│── check cache──────────────────────────────► │  │
+  │                                  │◄── hit ───────────────────────────────────── │  │
+  │◄── results carousel ─────────────│                              │                  │
 ```
 
 ### Step 1 — Home page: event definition
