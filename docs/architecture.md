@@ -150,9 +150,4 @@ data/                           Large NetCDF files (not versioned, assumed prese
 ├── Yo/                         Observed annual extreme timeseries
 ├── daily/                      ERA5 daily temperature (used for live intensity readout)
 └── annual_cycle/               Smoothed daily climatology (used for anomaly display)
-
-libraries/                      Local scientific packages installed in editable mode
-├── ANKIALE/                    MCMC constraint and attribution framework
-├── SDFC-python/                Climate statistical distribution fitting (C++ via pybind11)
-└── zxarray/                    Extended xarray utilities for NetCDF/Zarr I/O
 ```
