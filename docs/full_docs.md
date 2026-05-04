@@ -44,30 +44,29 @@ Redis is configured in `redis.conf` (port 6380).
 ## Full user flow
 
 ```
-Browser                     Web server (Flask/Dash)          Celery worker          Redis
-  │                                  │                              │                  │
-  │── open home page ───────────────►│                              │                  │
-  │◄── map + input form ─────────────│                              │                  │
-  │                                  │                              │                  │
-  │── select location + dates ──────►│ (callback: reads ERA5 NetCDF)│                  │
-  │◄── observed temp + anomaly ──────│                              │                  │
-  │                                  │                              │                  │
-  │── click "Continue" ─────────────►│ (callback: encodes event as  │                  │
-  │◄── redirect to /analysis?p=... ─ │  a signed URL token)         │                  │
-  │                                  │                              │                  │
-  │── load /analysis?p=... ─────────►│ (decodes token → event dict) │                  │
-  │                                  │── check cache ──────────────────────────────►│  │
-  │                                  │◄── miss ──────────────────────────────────── │  │
-  │                                  │── queue task ──────────────────────────────► │  │
-  │                                  │              (DB 0)          │◄── dequeue ── │  │
-  │◄── loading screen ───────────────│              │               │               │  │
-  │                                  │              │               │── compute ─── │  │
-  │── poll every 1 s ───────────────►│── check cache──────────────────────────────► │  │
-  │◄── not ready yet ────────────────│◄── miss ──────────────────────────────────── │  │
-  │                                  │              │               │── store result─► │ 
-  │── poll ─────────────────────────►│── check cache──────────────────────────────► │  │
-  │                                  │◄── hit ───────────────────────────────────── │  │
-  │◄── results carousel ─────────────│                              │                  │
+Browser                     Web server (Flask/Dash)             Redis              Celery worker
+  │                                  │                             │                      │
+  │── open home page ───────────────►│                             │                      │
+  │◄── map + input form ─────────────│                             │                      │
+  │                                  │                             │                      │
+  │── select location + dates ──────►│ (reads ERA5 NetCDF)         │                      │
+  │◄── observed temp + anomaly ──────│                             │                      │
+  │                                  │                             │                      │
+  │── click "Continue" ─────────────►│ (encodes event as           │                      │
+  │◄── redirect to /analysis?p=... ──│  a signed URL token)        │                      │
+  │                                  │                             │                      │
+  │── load /analysis?p=... ─────────►│ (decodes token)             │                      │
+  │                                  │── check cache (DB 1) ──────►│                      │
+  │                                  │◄── miss ────────────────────│                      │
+  │                                  │── queue task (DB 0) ───────►│── dequeue ──────────►│
+  │◄── loading screen ───────────────│                             │                      │
+  │                                  │                             │       compute...     │
+  │── poll every 1 s ───────────────►│── check cache (DB 1) ──────►│                      │
+  │◄── not ready yet ────────────────│◄── miss ────────────────────│                      │
+  │                                  │                             │◄── store result ─────│
+  │── poll ─────────────────────────►│── check cache (DB 1) ──────►│                      │
+  │                                  │◄── hit ─────────────────────│                      │
+  │◄── results carousel ─────────────│                             │                      │
 ```
 
 ### Step 1 — Home page: event definition
@@ -757,29 +756,6 @@ Data classes for the sentence generator.
 - ``Metrics`` — a named collection of ``CIValue`` instances covering all attribution
   outputs for a single point in time: ``pF``, ``pC``, ``PR``, ``PR_inv``, ``FAR``,
   ``RP_F``, ``RP_C``, ``IF``, ``IC``, ``dI``.
-
-
----
-
-# Module `src/components/analysis/sentence_generator/__formatters.py`
-
-Adaptive metric formatters for the sentence generator.
-
-Provides scalar formatting functions tuned for use in natural-language sentences
-rather than chart axes: soft bounds use words ("less than 0.01%"), values near the
-upper end of the range use higher significant figures, and units are attached to the
-formatted string.
-
-These are distinct from ``formatting.metrics``, which is used for chart labels and
-hovertexts.
-
-Compound formatters that produce IPCC bracket notation (value [low to high] unit):
-``prob_with_CI``, ``return_period_with_CI``, ``PR_with_CI``, ``FAR_with_CI``,
-``intensity_with_CI``.
-
-Underlying scalar formatters: ``format_prob_adaptive``,
-``format_return_period_adaptive``, ``format_ratio_adaptive``,
-``format_far_adaptive``, ``format_intensity_adaptive``.
 
 
 ---
