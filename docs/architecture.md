@@ -44,30 +44,29 @@ Redis is configured in `redis.conf` (port 6380).
 ## Full user flow
 
 ```
-Browser                     Web server (Flask/Dash)          Celery worker          Redis
-  │                                  │                              │                  │
-  │── open home page ───────────────►│                              │                  │
-  │◄── map + input form ─────────────│                              │                  │
-  │                                  │                              │                  │
-  │── select location + dates ──────►│ (callback: reads ERA5 NetCDF)│                  │
-  │◄── observed temp + anomaly ──────│                              │                  │
-  │                                  │                              │                  │
-  │── click "Continue" ─────────────►│ (callback: encodes event as  │                  │
-  │◄── redirect to /analysis?p=... ─ │  a signed URL token)         │                  │
-  │                                  │                              │                  │
-  │── load /analysis?p=... ─────────►│ (decodes token → event dict) │                  │
-  │                                  │── check cache ──────────────────────────────►│  │
-  │                                  │◄── miss ──────────────────────────────────── │  │
-  │                                  │── queue task ──────────────────────────────► │  │
-  │                                  │              (DB 0)          │◄── dequeue ── │  │
-  │◄── loading screen ───────────────│              │               │               │  │
-  │                                  │              │               │── compute ─── │  │
-  │── poll every 1 s ───────────────►│── check cache──────────────────────────────► │  │
-  │◄── not ready yet ────────────────│◄── miss ──────────────────────────────────── │  │
-  │                                  │              │               │── store result─► │ 
-  │── poll ─────────────────────────►│── check cache──────────────────────────────► │  │
-  │                                  │◄── hit ───────────────────────────────────── │  │
-  │◄── results carousel ─────────────│                              │                  │
+Browser                     Web server (Flask/Dash)             Redis              Celery worker
+  │                                  │                             │                      │
+  │── open home page ───────────────►│                             │                      │
+  │◄── map + input form ─────────────│                             │                      │
+  │                                  │                             │                      │
+  │── select location + dates ──────►│ (reads ERA5 NetCDF)         │                      │
+  │◄── observed temp + anomaly ──────│                             │                      │
+  │                                  │                             │                      │
+  │── click "Continue" ─────────────►│ (encodes event as           │                      │
+  │◄── redirect to /analysis?p=... ──│  a signed URL token)        │                      │
+  │                                  │                             │                      │
+  │── load /analysis?p=... ─────────►│ (decodes token)             │                      │
+  │                                  │── check cache (DB 1) ──────►│                      │
+  │                                  │◄── miss ────────────────────│                      │
+  │                                  │── queue task (DB 0) ───────►│── dequeue ──────────►│
+  │◄── loading screen ───────────────│                             │                      │
+  │                                  │                             │       compute...     │
+  │── poll every 1 s ───────────────►│── check cache (DB 1) ──────►│                      │
+  │◄── not ready yet ────────────────│◄── miss ────────────────────│                      │
+  │                                  │                             │◄── store result ─────│
+  │── poll ─────────────────────────►│── check cache (DB 1) ──────►│                      │
+  │                                  │◄── hit ─────────────────────│                      │
+  │◄── results carousel ─────────────│                             │                      │
 ```
 
 ### Step 1 — Home page: event definition
