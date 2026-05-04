@@ -43,7 +43,6 @@ ORDERED_MODULES = [
     "components/analysis/event_description/__temperature_plot.py",
     "components/analysis/sentence_generator/builder.py",
     "components/analysis/sentence_generator/__data_models.py",
-    "components/analysis/sentence_generator/__formatters.py",
     "components/analysis/sentence_generator/__loader.py",
     "components/analysis/sentence_generator/__metrics.py",
     "components/analysis/sentence_generator/__phrases.py",
