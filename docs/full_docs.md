@@ -859,20 +859,6 @@ Data classes for the sentence generator.
 
 ---
 
-# Module `src/components/analysis/sentence_generator/__loader.py`
-
-Jinja2 template loader for the sentence generator.
-
-Initialises a Jinja2 ``Environment`` pointing at the ``templates/`` directory adjacent
-to this file, with ``trim_blocks=True`` and ``lstrip_blocks=True`` for clean Markdown
-output. The environment is cached by language with ``lru_cache``.
-
-``render_template(name, variables, lang)`` loads ``templates/{lang}/{name}.tmpl`` and
-renders it with the supplied context dict. Templates follow the Jinja2 syntax.
-
-
----
-
 # Module `src/components/analysis/sentence_generator/__metrics.py`
 
 Metric extraction from the attribution xarray.Dataset.
@@ -885,6 +871,20 @@ phrasing), and returns a ``Metrics`` object ready for use in the template contex
 Helpers: ``extract_ci(ds, var, t)`` extracts a single variable's three quantiles;
 ``invert_ci(ci)`` computes the reciprocal of a ``CIValue``, correctly swapping QL
 and QU.
+
+
+---
+
+# Module `src/components/analysis/sentence_generator/__loader.py`
+
+Jinja2 template loader for the sentence generator.
+
+Initialises a Jinja2 ``Environment`` pointing at the ``templates/`` directory adjacent
+to this file, with ``trim_blocks=True`` and ``lstrip_blocks=True`` for clean Markdown
+output. The environment is cached by language with ``lru_cache``.
+
+``render_template(name, variables, lang)`` loads ``templates/{lang}/{name}.tmpl`` and
+renders it with the supplied context dict. Templates follow the Jinja2 syntax.
 
 
 ---
