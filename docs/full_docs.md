@@ -173,6 +173,24 @@ called before ``application.layout`` is assigned.
 
 ---
 
+# Module `src/app_platform/__init__.py`
+
+Infrastructure layer: runtime services and cross-cutting utilities.
+
+Sub-packages:
+
+- ``compute/`` — Celery worker configuration and the ``attribution`` task; Redis
+  cache client (DB 1).
+- ``shared/`` — utilities that any module in the application can import: runtime
+  settings (``config``), project-relative path constants (``paths``), HMAC-signed
+  URL tokens (``tokens``), and URL prefix helpers (``urls``). Pages, Dash
+  components, science modules, and workers all draw from this sub-package.
+- ``web/`` — Flask Blueprint registrations for the public API routes and the
+  password-protected admin routes.
+
+
+---
+
 # Module `src/app_platform/compute/celery.py`
 
 Celery application and background task definitions.
@@ -304,6 +322,20 @@ sub-path (e.g. ``/eventtest/``).
 
 ---
 
+# Module `src/app_platform/web/__init__.py`
+
+Flask route registrations for the web layer.
+
+- ``api/`` — public endpoints (GeoJSON tiles, CSV download); mounted under
+  ``/api/``.
+- ``admin/`` — protected endpoints (cache clear, process restart, Stan
+  pre-compilation); mounted under ``/admin/``, all require a valid
+  ``ADMIN_SECRET`` signature.
+- ``redirects.py`` — URL rewriting rules applied at app startup.
+
+
+---
+
 # Module `src/app_platform/web/redirects.py`
 
 URL redirect rules attached as a Flask ``before_request`` hook.
@@ -318,6 +350,17 @@ to the home page if:
 
 Registered on the Flask server by ``register_redirects(server)`` called from
 ``app.py``.
+
+
+---
+
+# Module `src/app_platform/web/api/__init__.py`
+
+Flask Blueprint for public API endpoints.
+
+Routes serve map tile data (GeoJSON) and attribution results (CSV download).
+The Blueprint is registered on the Flask app by ``register_api_routes``
+(called from ``web/__init__.py``).
 
 
 ---
@@ -373,6 +416,17 @@ and returns the result as a downloadable ``text/csv`` file.
 
 Response codes: 400 if parameters are missing, 500 if the cache entry signals a
 timeout or the dataset conversion fails.
+
+
+---
+
+# Module `src/app_platform/web/admin/__init__.py`
+
+Flask Blueprint for protected admin endpoints.
+
+All routes defined here require a valid ``ADMIN_SECRET`` HMAC signature
+(checked by ``__signature.py``). The Blueprint is registered on the Flask app
+by ``register_admin_routes`` (called from ``web/__init__.py``).
 
 
 ---
@@ -500,6 +554,36 @@ of loading state.
 
 ---
 
+# Module `src/components/__init__.py`
+
+Dash UI components, organised by page.
+
+- ``home/`` — components for the home page: the interactive map
+  (``location_selector``) and the event parameter input bar
+  (``input_settings_top_bar``).
+- ``analysis/`` — components for the analysis page: the results carousel
+  (``carousel``), the event description banner (``event_description``), and
+  the automated text generator (``sentence_generator``).
+- ``layout/`` — page-chrome components used on every page: header, footer,
+  and the legal disclaimer modal.
+- ``resources/`` — static text strings (Markdown tooltips, help text) shared
+  across components.
+
+
+---
+
+# Module `src/components/home/__init__.py`
+
+Home-page components.
+
+Exports:
+- ``event_definition_component`` — top bar with event type, date, and intensity
+  controls, plus the temperature readout.
+- ``interactive_map_component`` — Leaflet map for grid-cell selection.
+
+
+---
+
 # Module `src/components/home/input_settings_top_bar.py`
 
 Event definition bar — top of the home page.
@@ -600,6 +684,21 @@ Client-side (in ``assets/js/leaflet_extras.js``):
 
 ``map``, ``geojson``, ``marker``, ``zoom-to-select``, ``input:selected-point``,
 ``home-plots-panel``.
+
+
+---
+
+# Module `src/components/analysis/__init__.py`
+
+Analysis-page components.
+
+Exports:
+- ``results_carousel`` — four-slide carousel: automated text, probability
+  charts, intensity charts, observation plots.
+- ``event_description_component`` — banner above the carousel summarising the
+  event (location, dates, intensity, anomaly) with a back button.
+- ``automated_text`` — human-readable attribution paragraph generated from
+  Jinja2 templates.
 
 
 ---
@@ -827,6 +926,20 @@ in IPCC bracket notation.
 
 ---
 
+# Module `src/components/layout/__init__.py`
+
+Page-chrome components rendered on every page.
+
+Exports:
+- ``header`` — top navigation bar with logo and links.
+- ``footer`` — bottom bar with credits and external links.
+- ``disclaimer_layout`` — legal disclaimer modal (shown on first visit).
+- ``register_disclaimer_callbacks`` — registers the open/close callbacks for
+  the disclaimer modal.
+
+
+---
+
 # Module `src/components/layout/disclaimer.py`
 
 Blocking disclaimer modal shown on first visit.
@@ -888,6 +1001,20 @@ Exports the following string constants loaded from ``components/resources/md/``:
 
 ---
 
+# Module `src/science/__init__.py`
+
+Scientific computation modules.
+
+- ``attribution/`` — the core attribution pipeline: loads priors and
+  observations, runs the MCMC constraint (ANKIALE/Stan), and computes the full
+  set of attribution metrics (pF, pC, PR, FAR, return periods, intensity
+  shift).
+- ``visualisation/`` — Plotly figure builders for the science slides of the
+  results carousel (annual cycle, Yo timeseries, attribution time series).
+
+
+---
+
 # Module `src/science/attribution/event_attribution.py`
 
 Core attribution algorithm.
@@ -914,9 +1041,7 @@ statistics. This function is called by the Celery ``attribution`` task in
 3. **MCMC constraint** — using ANKIALE's ``constraint_var`` and Stan, samples the
    posterior distribution of the hyperparameters given the observations. The work is
    split across ``n_process`` subprocesses via ``ProcessPoolExecutor``; each process
-   handles a subset of the covariate samples (``N_SAMPLES_COV``). ``OMP_NUM_THREADS``
-   and ``MKL_NUM_THREADS`` are kept at 1 inside worker processes to avoid
-   thread-level oversubscription.
+   handles a subset of the covariate samples (``N_SAMPLES_COV``).
 
 4. **Compute attribution metrics** — from the constrained hyperparameters, derives:
    factual (pF) and counterfactual (pC) probabilities, their ratio (PR), fraction of
@@ -1086,6 +1211,26 @@ Low-level Plotly figure building utilities.
 - ``_clim_plots_base_layout(fig, ...)`` — applies a common layout (dimensions, axis
   styling, legend placement, hover mode) to the observational context figures
   (``climatology_plots``).
+
+
+---
+
+# Module `src/formatting/__init__.py`
+
+Human-readable formatting of attribution metrics.
+
+Converts raw numerical values (probabilities, return periods, probability
+ratios, FAR, temperatures) into display strings with appropriate precision,
+threshold-based boundary notation (``< 0.01 %``, ``> 10 000 years``, …), and
+unit labels.
+
+Exports:
+- ``UNITS`` — dict mapping variable names to their display unit strings.
+- ``format_probability`` — probability → percentage string.
+- ``format_return_period`` — return period → year string.
+- ``format_probability_ratio`` — PR → ratio string.
+- ``format_fraction_of_attributable_risk`` — FAR → percentage string.
+- ``format_temperature`` — temperature value → string with unit.
 
 
 ---
