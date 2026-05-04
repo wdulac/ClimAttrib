@@ -14,3 +14,4 @@ src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL
 src/science/stan_files/STAN_NORMALMODEL_PRIOR-NORMAL.stan
 dump.rdb
 .github/copilot-instructions.md
+CLAUDE.md
