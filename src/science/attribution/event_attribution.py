@@ -23,9 +23,7 @@ statistics. This function is called by the Celery ``attribution`` task in
 3. **MCMC constraint** — using ANKIALE's ``constraint_var`` and Stan, samples the
    posterior distribution of the hyperparameters given the observations. The work is
    split across ``n_process`` subprocesses via ``ProcessPoolExecutor``; each process
-   handles a subset of the covariate samples (``N_SAMPLES_COV``). ``OMP_NUM_THREADS``
-   and ``MKL_NUM_THREADS`` are kept at 1 inside worker processes to avoid
-   thread-level oversubscription.
+   handles a subset of the covariate samples (``N_SAMPLES_COV``).
 
 4. **Compute attribution metrics** — from the constrained hyperparameters, derives:
    factual (pF) and counterfactual (pC) probabilities, their ratio (PR), fraction of
