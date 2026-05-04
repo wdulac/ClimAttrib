@@ -1,3 +1,16 @@
+"""
+Blocking disclaimer modal shown on first visit.
+
+Exports ``disclaimer_layout`` (a list of Dash components: a ``dcc.Store`` and a
+``dmc.Modal``) to be included in the top-level app layout, and
+``register_disclaimer_callbacks(app)`` to be called after the Dash application
+object is created (to avoid circular imports with ``app.py``).
+
+The modal cannot be dismissed except by clicking "I understand". Acceptance is
+persisted in the browser's local storage (``disclaimer-store``), so the modal is
+only shown once per browser.
+"""
+
 from dash import dcc, Input, Output, no_update, ctx
 import dash_mantine_components as dmc
 

@@ -1,3 +1,13 @@
+"""
+Grid-cell reverse geocoding using a Natural Earth shapefile.
+
+Loads ``data/ne_10_admin/ne_10m_admin_1_states_provinces.shp`` at module import
+time. ``reverse_lookup(lat, lon, cell_size)`` builds a bounding box centred on the
+given coordinates, finds all administrative regions that intersect it, and returns
+the one with the largest intersection area as a dict with keys ``'country'``,
+``'region'``, and ``'sub-region'``. Returns ``None`` for ocean or uncovered cells.
+"""
+
 import geopandas as gpd
 from shapely.geometry import box
 from app_platform.shared.paths import DATA

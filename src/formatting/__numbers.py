@@ -1,3 +1,14 @@
+"""
+Low-level number formatting utilities used by ``metrics.py``.
+
+- ``_round_to_n_sigfigs(x, n)`` — rounds ``x`` to ``n`` significant figures.
+- ``_fmt_sig(x, sig, nan_str, inf_str, thousand_sep)`` — converts a number to a
+  string with ``sig`` significant figures in plain decimal notation (no scientific
+  notation), with optional thousand separator and NaN/∞ handling.
+- ``_compact_notation(val, sig)`` — formats large numbers with SI-like suffixes
+  (k, M, G) for display in compact chart labels.
+"""
+
 import numpy as np
 import math
 

@@ -1,3 +1,19 @@
+"""
+Admin endpoint: pre-compile Stan statistical models.
+
+Route: ``POST {URL_PREFIX}/admin/stan-compile``
+Required headers: ``Timestamp``, ``Signature`` (see ``__signature.py``).
+
+Checks which Stan model binaries (GEV, Normal) are absent from ``STAN_WORK_DIR``
+and queues Celery ``compilation`` tasks for the missing ones. When both need
+compiling, uses a Celery chain to run them sequentially on the same worker, avoiding
+the memory spike of two simultaneous compilations. Returns 403 if the signature is
+missing or invalid.
+
+Stan models must be compiled before the ``attribution`` task can run. On a fresh
+deployment, call this endpoint once before allowing user traffic.
+"""
+
 from flask import request, abort, jsonify
 import os
 

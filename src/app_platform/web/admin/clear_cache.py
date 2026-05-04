@@ -1,3 +1,13 @@
+"""
+Admin endpoint: clear the Redis result cache.
+
+Route: ``POST {URL_PREFIX}/admin/clear-cache``
+Required headers: ``Timestamp``, ``Signature`` (see ``__signature.py``).
+
+Flushes all entries in Redis DB 1 (the attribution result cache). Does not affect
+the Celery task queue in DB 0. Returns 403 if the signature is missing or invalid.
+"""
+
 from flask import request, abort, jsonify
 
 from app_platform.web.admin import admin_bp

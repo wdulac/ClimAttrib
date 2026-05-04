@@ -1,3 +1,25 @@
+"""
+HMAC-signed URL token encoding and decoding.
+
+Packs an event's parameters (extreme type, computation method, start/stop dates,
+lat, lon, intensity) into a compact 22-byte binary payload using ``struct``,
+appends a 16-byte truncated HMAC-SHA256 signature, and encodes the result as a
+URL-safe base64 string. The token is passed from the home page to the analysis page
+as the ``p`` query parameter.
+
+Public API:
+
+- ``encode_token(extreme_type, computation_method, date, lat, lon, intensity) -> str``
+- ``decode_token(token: str) -> dict`` — verifies the signature (raises ``ValueError``
+  on mismatch) and returns an event dict that includes derived fields: ``date``
+  (midpoint), ``duration`` (in days), and string-to-enum conversions for
+  ``extreme_type`` and ``method``.
+
+The signing key is read from the ``URL_SIG_SECRET_KEY`` environment variable. A
+random key is generated at startup if the variable is absent (development fallback;
+tokens will not survive server restarts in that mode).
+"""
+
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 import secrets
 import datetime as dt

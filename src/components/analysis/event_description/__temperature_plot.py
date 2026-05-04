@@ -1,3 +1,12 @@
+"""
+Legacy Matplotlib temperature sparkline (currently unused).
+
+``make_temperature_plot(event)`` loads a hardcoded ERA5 NetCDF file (tx3d annual
+maximum series), plots the timeseries as a small inline chart, and returns it as a
+base64-encoded PNG data URI for use in an ``<img>`` src attribute. This module is
+not referenced by the current carousel or event description components.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.figure

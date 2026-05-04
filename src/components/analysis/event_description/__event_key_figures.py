@@ -1,3 +1,12 @@
+"""
+Key-figure cards for the event description banner.
+
+``key_figures(event)`` builds a row of icon + label + value cards summarising
+the event parameters: location with reverse-geocoded country/region, duration
+and date range, observed intensity in °C, computation method, and (for the
+calendar method) the centred ±1-week seasonal window computed from the event dates.
+"""
+
 from dash import html
 import dash_mantine_components as dmc
 from dash_iconify import DashIconify

@@ -1,3 +1,20 @@
+"""
+Project-relative path constants.
+
+Locates the project root by walking up the directory tree from this file until a
+known marker file (``.git``, ``requirements.txt``, ``redis.conf``, ``.env``) is
+found, then exposes the following ``pathlib.Path`` constants:
+
+- ``ROOT`` — project root directory.
+- ``SRC`` — ``ROOT/src``.
+- ``DATA`` — ``ROOT/data`` (large NetCDF datasets, not versioned).
+- ``ASSETS`` — ``SRC/assets``.
+- ``COMPONENTS`` — ``SRC/components``.
+- ``MARKDOWN_RESOURCES`` — ``COMPONENTS/resources/md`` (tooltip and help Markdown files).
+
+Never hardcode filesystem paths anywhere in the codebase; always import from this module.
+"""
+
 from pathlib import Path
 
 def project_root(marker_files=(".git", "requirements.txt", "redis.conf", '.env')) -> Path:

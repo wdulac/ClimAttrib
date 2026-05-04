@@ -1,3 +1,10 @@
+"""
+Application footer component.
+
+Exports a ``footer`` element (``html.Footer``) containing a copyright notice.
+Included in the top-level layout in ``app.py``.
+"""
+
 from dash import html
 import dash_mantine_components as dmc
 

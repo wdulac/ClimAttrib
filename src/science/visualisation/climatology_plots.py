@@ -1,3 +1,24 @@
+"""
+Plotly figure builders for the observational context charts.
+
+- ``plot_observed_Yo(event, stats, cache_key)`` — annual extrema timeseries (Yo)
+  at the selected grid point, with the user-selected event highlighted (red dot and
+  crosshairs). When ``stats`` is provided, also draws non-stationary 2-year and
+  10-year return levels computed from the attributed GEV or Gaussian distribution
+  parameters.
+
+- ``plot_annual_cycle(event)`` — daily temperature for the event year plotted against
+  the 1991–2020 smoothed climatology (10th–90th percentile band and median). The
+  user-selected event period is highlighted with a grey rectangle. For the southern
+  hemisphere or cold events where the relevant season straddles the calendar year,
+  the time axis is shifted by 6 months so the event period appears near the centre
+  of the chart.
+
+Both functions call ``_load_clim_data`` and ``_load_obs`` from ``__data_loading`` to
+read ERA5 NetCDF files and handle the DOY coordinate system defined in
+``__calendar_utils``.
+"""
+
 import numpy as np
 import xarray as xr
 from scipy.stats import norm

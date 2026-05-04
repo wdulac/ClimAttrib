@@ -1,3 +1,20 @@
+"""
+Low-level Plotly figure building utilities.
+
+- ``create_attribution_plotly_graph(stats, variables, cache_key, ...)`` — the generic
+  figure builder used by all four attribution charts. Draws a shaded confidence band
+  (QL–QU) and a median line (BE) for each variable, adds a vertical line at the event
+  year, and configures one or two y-axes. Accepts an optional ``transform_func``
+  applied to all y-values and tick positions (used for the non-linear probability
+  axis). Figure dimensions are fixed at a 16:11 aspect ratio. The ``cache_key`` and
+  variable names are stored in ``fig.layout.meta`` so the CSV download button can
+  identify which dataset to export.
+
+- ``_clim_plots_base_layout(fig, ...)`` — applies a common layout (dimensions, axis
+  styling, legend placement, hover mode) to the observational context figures
+  (``climatology_plots``).
+"""
+
 # For typing
 import numpy as np
 import xarray as xr

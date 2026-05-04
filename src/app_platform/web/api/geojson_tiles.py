@@ -1,3 +1,20 @@
+"""
+HTTP endpoint: serve model grid cells as tiled GeoJSON.
+
+Route: ``GET {URL_PREFIX}/api/grid_tiles``
+Query parameter: ``bounds`` — JSON-encoded ``[[south, west], [north, east]]``
+bounding box sent by the Leaflet map.
+
+The model grid is pre-split into 10°×10° tile files stored under
+``assets/static/grid_tiles/tile_{x}_{y}.geojson``. This endpoint selects the tiles
+that overlap the requested bounding box, merges their features into a single GeoJSON
+FeatureCollection, and returns the result. Individual tile files are cached in
+memory with ``functools.lru_cache`` to avoid repeated disk reads.
+
+Flask-Compress (enabled on the API blueprint by ``register.py``) gzip-compresses
+the response automatically.
+"""
+
 import os
 import json
 

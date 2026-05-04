@@ -1,3 +1,17 @@
+"""
+Text resource loader — reads all Markdown files used by the UI at import time.
+
+Exports the following string constants loaded from ``components/resources/md/``:
+
+- ``QUICKGUIDE_CONTENT`` — quick-start guide shown in the header "How to use" modal.
+- ``INTERPRETATION_HELP_CONTENT`` — results interpretation guide (second tab).
+- ``DISCLAIMER_CONTENT`` — disclaimer text shown in the blocking modal and header button.
+- ``ABOUT_CONTENT`` — project description shown in the "About" modal.
+- ``COMPUTE_TOOLTIP_CONTENT`` — tooltip explaining the "Seasonal context" selector.
+- ``ANOMALY_TOOLTIP_CONTENT`` — tooltip explaining the anomaly readout.
+- ``CLIMATOLOGY_TOOLTIP_CONTENT`` — tooltip explaining the climatology readout.
+"""
+
 from app_platform.shared.paths import MARKDOWN_RESOURCES
 
 QUICKGUIDE_FILE = MARKDOWN_RESOURCES / 'quickguide.md'

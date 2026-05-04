@@ -1,3 +1,45 @@
+"""
+Core attribution algorithm.
+
+``attribute_event(event, n_process, save_to_disk)`` runs the full attribution
+pipeline for a single event and returns an ``xarray.Dataset`` of attribution
+statistics. This function is called by the Celery ``attribution`` task in
+``app_platform.compute.celery``.
+
+## Pipeline
+
+1. **Load prior** (``__data_loading._load_prior``) — reads the pre-computed
+   constrained climatology for the selected variable (hot/cold, yearmax/calendar,
+   duration) from a NetCDF file in ``data/prior/``. The prior encodes the statistical
+   distribution of temperature extremes as a function of a covariate (GMST), with
+   hyperparameters (``hpar``) and their covariance matrix (``hcov``) at each grid
+   point.
+
+2. **Load observations** (``__data_loading._load_obs``) — reads the annual extreme
+   timeseries (Yo) for the selected grid point from ``data/Yo/``. If the event
+   intensity sets a new record compared to the timeseries, the current year is
+   appended before computing the bias.
+
+3. **MCMC constraint** — using ANKIALE's ``constraint_var`` and Stan, samples the
+   posterior distribution of the hyperparameters given the observations. The work is
+   split across ``n_process`` subprocesses via ``ProcessPoolExecutor``; each process
+   handles a subset of the covariate samples (``N_SAMPLES_COV``). ``OMP_NUM_THREADS``
+   and ``MKL_NUM_THREADS`` are kept at 1 inside worker processes to avoid
+   thread-level oversubscription.
+
+4. **Compute attribution metrics** — from the constrained hyperparameters, derives:
+   factual (pF) and counterfactual (pC) probabilities, their ratio (PR), fraction of
+   attributable risk (FAR), return periods (RF, RC), and intensity estimates (IF, IC,
+   dI) for two climate scenarios (ssp370, ssp585) across the full 1850–2100 time axis.
+   Confidence intervals are computed as the 5th–95th percentile range across MCMC
+   samples.
+
+5. **Return** — an ``xr.Dataset`` with dimensions ``(scenario, time, quantile)``
+   keyed by variable name (pF, pC, PR, FAR, RF, RC, IF, IC, dI, plus the law
+   parameters). Only the scenario defined in ``__settings.SCENARIO`` is returned to
+   the caller.
+"""
+
 import sys
 import numpy as np
 import xarray as xr

@@ -1,3 +1,16 @@
+"""
+Unit string functions for formatted metric values.
+
+Exports a ``UNITS`` dict that maps each formatter function from ``metrics.py`` to a
+corresponding unit function. Each unit function takes the raw numeric value and
+returns the appropriate unit string (handling singular/plural for counts and return
+periods).
+
+``UNITS`` is consumed by ``sentence_generator.builder`` and
+``science.visualisation.__customdata`` to append the correct unit when building
+IPCC-style bracket notation strings.
+"""
+
 from .metrics import (
     format_probability,
     format_return_period,

@@ -1,3 +1,18 @@
+"""
+URL redirect rules attached as a Flask ``before_request`` hook.
+
+Validates incoming GET requests to ``/analysis`` before they reach Dash, redirecting
+to the home page if:
+
+- The ``p`` query parameter is absent.
+- There is more than one query parameter.
+- The base64-decoded payload is 16 bytes or shorter (a basic length check before the
+  full HMAC verification done in ``pages/analysis.py``).
+
+Registered on the Flask server by ``register_redirects(server)`` called from
+``app.py``.
+"""
+
 from flask import request, redirect
 import base64
 

@@ -1,3 +1,13 @@
+"""
+Data classes for the sentence generator.
+
+- ``CIValue(value, ql, qu)`` — a scalar metric together with its lower and upper
+  confidence interval bounds (QL = 5th percentile, QU = 95th percentile).
+- ``Metrics`` — a named collection of ``CIValue`` instances covering all attribution
+  outputs for a single point in time: ``pF``, ``pC``, ``PR``, ``PR_inv``, ``FAR``,
+  ``RP_F``, ``RP_C``, ``IF``, ``IC``, ``dI``.
+"""
+
 from dataclasses import dataclass
 
 @dataclass

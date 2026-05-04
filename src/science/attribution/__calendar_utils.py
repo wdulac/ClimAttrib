@@ -1,3 +1,21 @@
+"""
+Calendar utilities for the attribution algorithm.
+
+Handles the day-of-year (DOY) convention used throughout the science layer: DOY 60
+is permanently reserved for February 29, so non-leap years skip DOY 60 and DOY 366
+is valid for all years (it maps to December 31 in non-leap years after a shift).
+
+- ``_datetime_to_doy(date)`` — converts a ``datetime`` to a DOY in [1, 366] using
+  the leap-year convention above.
+- ``_doy_to_datetime(doy, year)`` — inverse conversion; raises ``ValueError`` for
+  DOY 60 in a non-leap year.
+- ``_best_window_from_range(day_start, day_end, n_days, win_len, step)`` — given an
+  event date range (as DOY values, possibly wrapping across year boundaries), finds
+  the 15-day comparison window (aligned to a 5-day grid) that best centres the
+  event. Returns the window as ``(start_doy, end_doy)``. Used to select the
+  matching prior file for the calendar computation method.
+"""
+
 import datetime as dt
 import calendar
 

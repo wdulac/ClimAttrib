@@ -1,3 +1,16 @@
+"""
+Metric extraction from the attribution xarray.Dataset.
+
+``build_metrics(stats, t)`` selects all attribution variables at a given year ``t``
+from the result ``xr.Dataset``, wraps each in a ``CIValue``, converts temperature
+variables from Kelvin to °C, computes the inverse PR (used for "X times less likely"
+phrasing), and returns a ``Metrics`` object ready for use in the template context.
+
+Helpers: ``extract_ci(ds, var, t)`` extracts a single variable's three quantiles;
+``invert_ci(ci)`` computes the reciprocal of a ``CIValue``, correctly swapping QL
+and QU.
+"""
+
 from .__data_models import CIValue, Metrics
 
 

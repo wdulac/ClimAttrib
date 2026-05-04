@@ -1,3 +1,24 @@
+"""
+Redis cache layer — DB 1.
+
+Wraps a Redis client connected to DB 1 (separate from the Celery broker on DB 0) and
+provides helpers for storing and retrieving attribution results.
+
+Cache entries are pickled Python dicts with a ``'status'`` key (``'ok'`` or
+``'timeout'``) and, for successful results, a ``'result'`` key containing an
+``xarray.Dataset``.
+
+Public API:
+
+- ``make_cache_key(event)`` — SHA-256 of the JSON-sorted event dict; same event always
+  produces the same key.
+- ``set_cache(key, value, ttl)`` — pickle and store with expiry (default 48 h).
+- ``get_cache(key)`` — retrieve, unpickle, and reset TTL; returns ``None`` if missing.
+- ``cache_exists(*keys)`` — returns True only if all supplied keys are present.
+- ``delete_cache(key)`` — remove a single entry.
+- ``redis_client`` — the raw ``redis.Redis`` instance, used directly by admin routes.
+"""
+
 import hashlib, json, pickle, os
 import redis
 import xarray

@@ -1,3 +1,27 @@
+"""
+Plotly figure builders for the attribution results charts.
+
+All four functions take an ``xr.Dataset`` (the attribution result) and a ``cache_key``
+string (embedded in the figure metadata for the CSV download button), and return a
+``go.Figure``.
+
+- ``plot_probability(stats, cache_key)`` — time series of pF and pC (factual and
+  counterfactual probability). The y-axis uses a non-linear link function (arctan of
+  log) so that the full range from near-zero to near-one is visible. A secondary y-axis
+  shows the equivalent return period.
+- ``plot_PR_FAR(stats, cache_key)`` — time series of the probability ratio (PR) with
+  a secondary y-axis showing the fraction of attributable risk (FAR). Also uses a
+  non-linear link function.
+- ``plot_intensity(stats, cache_key)`` — time series of IF and IC (factual and
+  counterfactual intensity), in °C (converted from Kelvin in-place before plotting).
+- ``plot_intensity_change(stats, cache_key)`` — time series of dI (change in intensity
+  due to human influence), in °C.
+
+All figures include a vertical line marking the event year, a shaded confidence
+interval band (QL–QU), and a median line (BE). Figure dimensions follow a 16:11 aspect
+ratio at 180 mm width.
+"""
+
 # For typing
 import sys
 import numpy as np

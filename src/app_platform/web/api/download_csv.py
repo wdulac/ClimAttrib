@@ -1,3 +1,22 @@
+"""
+HTTP endpoint: download attribution results as CSV.
+
+Route: ``GET {URL_PREFIX}/api/download_csv``
+Query parameters:
+
+- ``key`` — Redis cache key identifying the desired result.
+- ``variables`` — one of the variable group names: ``pF_pC``, ``PR``, ``IF_IC``,
+  or ``dI``.
+
+Retrieves the cached ``xarray.Dataset``, selects the requested variables, unstacks
+the quantile dimension into separate columns (``<var>_QL``, ``<var>_BE``,
+``<var>_QU``), prepends a human-readable comment header describing the variables,
+and returns the result as a downloadable ``text/csv`` file.
+
+Response codes: 400 if parameters are missing, 500 if the cache entry signals a
+timeout or the dataset conversion fails.
+"""
+
 from flask import request, Response
 import io
 

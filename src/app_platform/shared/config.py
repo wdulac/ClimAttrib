@@ -1,3 +1,22 @@
+"""
+Runtime configuration loader.
+
+Loads the ``.env`` file from the project root (via ``python-dotenv``) and exports
+typed settings used across the application:
+
+- ``APP_HOST``, ``APP_PORT``, ``APP_DEBUG`` — Flask/Dash server binding parameters.
+- ``APP_SHOW_DASH_DEV_TOOLS`` — enables Dash's hot-reload overlay and debug panel.
+- ``URL_PREFIX`` — URL path prefix for all routes (e.g. ``/eventtest``), empty string
+  when the app is served at the root.
+- ``URL_PREFIX_DASH`` — same prefix formatted for Dash's ``url_base_pathname``
+  (always ends with ``/``).
+- ``PRODUCTION`` — when True, enables the ProxyFix WSGI middleware in ``app.py``
+  to correctly handle headers set by a reverse proxy.
+
+This module must be imported early. Celery workers import it as their first import
+so that ``.env`` variables are loaded before any other module reads ``os.getenv``.
+"""
+
 import os
 from .paths import ROOT
 from dotenv import load_dotenv

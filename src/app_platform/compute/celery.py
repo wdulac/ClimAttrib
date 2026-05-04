@@ -1,3 +1,23 @@
+"""
+Celery application and background task definitions.
+
+Configures a Celery instance using Redis DB 0 as its task broker. Defines two tasks:
+
+- ``attribution`` — the main computation task. Calls ``attribute_event()`` from
+  ``science.attribution``, stores the result in the Redis cache (DB 1) under the
+  event's cache key. Applies a 2-minute soft time limit and a 2.5-minute hard limit.
+  On soft timeout, writes a ``{'status': 'timeout'}`` sentinel to the cache with a
+  5-second TTL so the polling callback on the analysis page can detect and report
+  the failure.
+
+- ``compilation`` — compiles a Stan model (GEV or Normal) using the ANKIALE library.
+  Dispatched by the admin ``/stan-compile`` endpoint; chained so both models compile
+  sequentially on a single worker when both are missing.
+
+The ``celery_app`` object is imported by ``pages/analysis.py`` to retrieve and queue
+the ``attribution`` task.
+"""
+
 import app_platform.shared.config # So that celery workers load env variables from .env
 
 from celery import Celery

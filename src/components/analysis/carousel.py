@@ -1,3 +1,31 @@
+"""
+Results carousel — main display component on the analysis page.
+
+``results_carousel(stats, event, cache_key)`` assembles a vertical ``dmc.Carousel``
+from up to four slides:
+
+1. **Text slide** — automated text from ``sentence_generator.automated_text()``.
+2. **Probability slide** — factual/counterfactual probability (pF/pC) time series
+   chart and probability ratio/FAR chart, placed side by side.
+3. **Intensity slide** — factual/counterfactual intensity (IF/IC) chart and intensity
+   change (dI) chart, placed side by side.
+4. **Observations slide** — annual extrema timeseries with estimated return levels,
+   and the daily temperature for the event year against the climatology.
+
+When ``pF == 1.0`` at the event year (meaning the event is too common to be detected
+by the model), the probability and intensity slides are omitted.
+
+Client-side callbacks (in ``assets/js/carousel.js``):
+
+- ``carousel.toggleBounce`` — adds a bounce animation to the nav controls when a new
+  slide becomes active, hinting that the carousel is scrollable.
+- ``carousel.showHint`` — shows a scroll hint the first time the carousel loads.
+- ``carousel.addTooltips`` — attaches tooltips to confidence-interval markers in the
+  text slide.
+- ``carousel.blockSwiper`` — prevents the Swiper library from intercepting mouse/touch
+  events inside plot containers and the text slide.
+"""
+
 from dash import clientside_callback, callback, ClientsideFunction, Input, Output
 from dash_iconify import DashIconify
 import dash_mantine_components as dmc

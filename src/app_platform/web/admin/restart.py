@@ -1,3 +1,18 @@
+"""
+Admin endpoint: restart the application.
+
+Route: ``POST {URL_PREFIX}/admin/restart``
+Required headers: ``Timestamp``, ``Signature`` (see ``__signature.py``).
+
+Performs a graceful restart in two steps:
+
+1. Broadcasts a Celery ``shutdown`` control command to all workers.
+2. Sends ``SIGHUP`` to the gunicorn master process, triggering a graceful worker
+   reload without dropping in-flight requests.
+
+Returns 403 if the signature is missing or invalid.
+"""
+
 from flask import request, abort, jsonify
 
 from app_platform.web.admin import admin_bp

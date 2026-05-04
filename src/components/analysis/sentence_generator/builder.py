@@ -1,3 +1,35 @@
+"""
+Automated text generator — public entry point of the sentence generator sub-module.
+
+``automated_text(event, stats, lang)`` selects a Jinja2 template based on the nature
+of the event, fills it with formatted metric values extracted from the attribution
+result, and returns a ``html.Div`` containing the rendered Markdown text.
+
+## Template selection
+
+Templates live under ``sentence_generator/templates/en/``:
+
+- ``extreme/{method}/{extreme_type}`` — used when ``pF < 80%`` (rare event) or the
+  event intensity is within 1 K of the annual maximum.
+- ``non_extreme/very_common`` — used when the event is common (``pF >= 80%``) and
+  not close to the annual maximum.
+- ``non_extreme/out_of_bound`` — used when ``pF == 1.0`` (the event is below the
+  model's detection threshold).
+
+## Template context
+
+The template receives pre-formatted strings for three time horizons:
+
+- **then** — the year of the event.
+- **today** — the current year (omitted when the event happened in the current year).
+- **future** — 2050.
+
+For each horizon the context includes: probability (pF, pC), return periods (RP_F,
+RP_C), intensity shift (dI), counterfactual intensity (IC), a PR/FAR attribution
+phrase, and ratio phrases comparing consecutive horizons. All values include their
+90% confidence interval formatted in IPCC bracket notation (e.g. ``4 [2 to 8] times``).
+"""
+
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from datetime import datetime
 import xarray as xr

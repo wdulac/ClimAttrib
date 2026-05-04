@@ -1,3 +1,18 @@
+"""
+Plotly ``customdata`` array builders for hover text in attribution charts.
+
+Each function extracts the relevant quantiles from the attribution dataset, formats
+them using ``formatting.metrics`` functions (with IPCC bracket notation), and returns
+a 2D NumPy array of shape ``(n_time, n_columns)`` suitable for Plotly's
+``customdata`` parameter.
+
+- ``customdata_prob(stats, var)`` — probability + return period (two columns).
+- ``customdata_PR(stats, var)`` — probability ratio + FAR (two columns).
+- ``customdata_intensity(stats, var)`` — temperature in °C (one column).
+- ``customdata_intensity_change(stats, var)`` — signed temperature change in °C
+  (one column).
+"""
+
 import numpy as np
 
 from formatting import UNITS

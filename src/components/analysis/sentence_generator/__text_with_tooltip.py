@@ -1,3 +1,16 @@
+"""
+Text renderer with inline confidence-interval tooltips (not used in the main flow).
+
+``render_text_with_tooltips(paragraph)`` scans a string for ``[[CI:<label>|<display>]]``
+tokens using a regex, replaces each token with a ``dmc.Tooltip`` that shows the full
+confidence interval on hover, and returns a ``dmc.Text`` element mixing plain text
+and tooltip elements.
+
+This was an earlier design for displaying confidence intervals in the generated text.
+The current implementation uses ``dcc.Markdown`` with CI values inlined as plain text
+in IPCC bracket notation.
+"""
+
 import re
 import dash_mantine_components as dmc
 

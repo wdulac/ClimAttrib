@@ -1,3 +1,21 @@
+"""
+Phrase-building functions for the sentence generator.
+
+Assembles the natural-language fragments that cannot be expressed as static template
+text because they depend on the sign of a metric:
+
+- ``attribution_then``, ``attribution_today``, ``attribution_future`` — produce the
+  PR/FAR attribution phrase for each time horizon. When ``PR >= 1`` the phrase reads
+  "X times more likely" and includes the FAR; when ``PR < 1`` it reads "X times less
+  likely" using the inverse PR, with no FAR.
+- ``ratio_phrase(ratio, ratio_inv, fmt, past_tense)`` — produces the
+  "increased/decreased by X" phrase comparing two consecutive time horizons.
+- ``impossible_sentence(pC)`` — returns a caveat sentence if the lower confidence
+  bound of the counterfactual probability reaches zero.
+- ``event_definition_phrase(duration, To, extreme_type)`` — produces the event
+  description opening (e.g. "having a two-day average temperature of 42.3 °C or higher").
+"""
+
 import numpy as np
 from .__data_models import CIValue
 

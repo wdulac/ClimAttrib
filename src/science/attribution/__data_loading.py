@@ -1,3 +1,23 @@
+"""
+Data loading helpers for the attribution algorithm.
+
+- ``_load_prior(extreme_type, computation_method, start_date, stop_date, duration)``
+  — selects the correct NetCDF file from ``data/prior/{method}/`` based on the event
+  parameters, loads it as an ANKIALE ``Climatology`` object, and returns a dict of
+  arrays needed by ``attribute_event``: hyperparameters (``hpar``, ``hcov``),
+  projection matrices (``projF``, ``projC``), a period smoother, the statistical law
+  class (``cnslaw``), and metadata (``time``, ``bper``, ``side``).
+
+- ``_load_obs(lat, lon, extreme_type, computation_method, start_date, stop_date, duration)``
+  — reads the annual extreme temperature timeseries (Yo) for the given grid point from
+  ``data/Yo/``, converts the time axis to integer years, and returns an
+  ``xr.DataArray`` with dimension ``time`` (years).
+
+Variable naming convention: ``tmx{N}d`` for hot N-day maxima, ``tmn{N}d`` for cold
+N-day minima; a ``15w_{doy_start:03d}-{doy_end:03d}`` suffix is appended for the
+calendar method to identify the comparison window.
+"""
+
 import xarray as xr
 import datetime as dt
 

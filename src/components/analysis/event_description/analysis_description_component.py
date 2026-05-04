@@ -1,3 +1,18 @@
+"""
+Event description banner — displayed above the results carousel on the analysis page.
+
+``event_description_component(event)`` returns a styled panel (``dmc.Paper``) with:
+
+- A row of key-figure cards from ``__event_key_figures.key_figures(event)``
+  summarising location (lat/lon + reverse-geocoded place name), duration and date
+  range, observed intensity in °C, computation method, and (for the calendar method)
+  the ±1-week seasonal comparison window.
+- A "Back to event selection" button that navigates back to the home page.
+
+The back button is disabled while computation is in progress (driven by the
+``is-loading`` store) and re-enabled once results are available.
+"""
+
 from dash import html, callback, Input, Output
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc

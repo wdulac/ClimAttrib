@@ -1,3 +1,26 @@
+"""
+Metric formatting functions for chart labels and hover text.
+
+Converts raw floating-point attribution metrics into human-readable strings with
+consistent significant figures, boundary handling (soft min/max), and optional units.
+All functions handle the edge cases 0, ∞, and NaN.
+
+- ``format_probability(x)`` — probability in [0, 1] → percentage string.
+  Soft bounds: values below ``PROB_SOFT_MIN`` show "< X", above ``PROB_SOFT_MAX``
+  show "> X".
+- ``format_return_period(x)`` — return period in [1, ∞] → year count string.
+  Supports compact notation (e.g. "1.2k") and a soft max.
+- ``format_probability_ratio(x)`` — probability ratio in [0, ∞] → dimensionless
+  string with soft min and soft max.
+- ``format_fraction_of_attributable_risk(x)`` — FAR in [0, 1] → percentage string.
+  Uses more significant figures above 99% and a soft max at 99.9%.
+- ``format_temperature(x)`` — temperature or temperature difference → °C string.
+  Supports optional forced one-decimal format and signed notation for deltas.
+
+Formatting thresholds and defaults are in ``__settings.py``. Low-level rounding and
+string conversion utilities are in ``__numbers.py``.
+"""
+
 import numpy as np
 
 from .__numbers import (

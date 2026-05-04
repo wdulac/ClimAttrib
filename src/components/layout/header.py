@@ -1,3 +1,18 @@
+"""
+Application header component.
+
+Exports a ``header`` element (``html.Header``) that spans the top of every page.
+The left column contains the application title "WeatherAttrib" as a link to the home
+page. The right column groups three modal-opening buttons — "How to use" (quick guide
+and results interpretation tabs), "About" (project description and partner logos), and
+"Disclaimer" — and a GitHub icon link.
+
+Modals are opened and closed by a single pattern-matching callback (``toggle_modal``)
+that matches on ``{"type": "modal-button", "name": MATCH}`` and
+``{"type": "modal-content", "name": MATCH}``. Modal text content is loaded at import
+time from Markdown files via ``components.resources``.
+"""
+
 from dash import html, dcc
 from dash import Output, Input, State, callback, MATCH
 from dash_iconify import DashIconify

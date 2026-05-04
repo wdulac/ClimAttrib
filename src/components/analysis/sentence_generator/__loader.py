@@ -1,3 +1,14 @@
+"""
+Jinja2 template loader for the sentence generator.
+
+Initialises a Jinja2 ``Environment`` pointing at the ``templates/`` directory adjacent
+to this file, with ``trim_blocks=True`` and ``lstrip_blocks=True`` for clean Markdown
+output. The environment is cached by language with ``lru_cache``.
+
+``render_template(name, variables, lang)`` loads ``templates/{lang}/{name}.tmpl`` and
+renders it with the supplied context dict. Templates follow the Jinja2 syntax.
+"""
+
 from functools import lru_cache
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader

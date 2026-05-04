@@ -1,3 +1,22 @@
+"""
+Dash wrappers around the science visualisation figure builders.
+
+Each function calls a figure builder from ``science.visualisation``, wraps the
+resulting ``dcc.Graph`` in an ``html.Div`` with a pattern-matching id
+(``{'type': 'plot-container', 'name': '...'}``), and returns the container.
+
+The pattern-matching ids enable two client-side callbacks:
+
+- ``carousel.blockSwiper`` — prevents the carousel's touch/drag from interfering
+  with Plotly interactions inside a plot.
+- ``plotly_extras.addButtonsToModebar`` — injects a custom "Download CSV" button
+  into each plot's toolbar.
+
+Exported functions: ``probability_plot``, ``PR_FAR_plot``, ``intensity_plot``,
+``intensity_change_plot``, ``observed_Yo_with_return_levels_plot``,
+``annual_cycle_with_daily_obs_plot``.
+"""
+
 from dash import html, dcc, clientside_callback, ClientsideFunction, Input, Output
 from dash import MATCH
 from science.visualisation import (

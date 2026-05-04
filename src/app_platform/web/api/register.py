@@ -1,3 +1,13 @@
+"""
+Registers the public API blueprint on the Flask server.
+
+Importing ``geojson_tiles`` and ``download_csv`` has the side-effect of registering
+their routes on ``api_bp``. The blueprint is then attached at ``{URL_PREFIX}/api``.
+Flask-Compress is also configured here to gzip-compress API responses.
+
+Called once from ``app.py`` during application startup.
+"""
+
 from app_platform.web.api import api_bp
 from app_platform.shared.config import URL_PREFIX
 

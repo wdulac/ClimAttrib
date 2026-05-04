@@ -1,3 +1,23 @@
+"""
+Adaptive metric formatters for the sentence generator.
+
+Provides scalar formatting functions tuned for use in natural-language sentences
+rather than chart axes: soft bounds use words ("less than 0.01%"), values near the
+upper end of the range use higher significant figures, and units are attached to the
+formatted string.
+
+These are distinct from ``formatting.metrics``, which is used for chart labels and
+hovertexts.
+
+Compound formatters that produce IPCC bracket notation (value [low to high] unit):
+``prob_with_CI``, ``return_period_with_CI``, ``PR_with_CI``, ``FAR_with_CI``,
+``intensity_with_CI``.
+
+Underlying scalar formatters: ``format_prob_adaptive``,
+``format_return_period_adaptive``, ``format_ratio_adaptive``,
+``format_far_adaptive``, ``format_intensity_adaptive``.
+"""
+
 import math
 import sys
 

@@ -1,3 +1,20 @@
+"""
+Application entry point.
+
+Creates the Flask server and the Dash application that sits on top of it, assembles
+the top-level page layout (header, footer, disclaimer, page container), then registers
+API routes, admin routes, and URL redirect rules on the Flask server.
+
+The module-level ``server`` object (a Flask instance) is the WSGI callable used by
+production servers (e.g. ``gunicorn --bind 0.0.0.0:8000 src.app:server``).
+For development, run directly with ``python src/app.py`` (settings are read from
+``.env`` via ``app_platform.shared.config``).
+
+Import order matters: the ``app_platform.web`` modules must be imported after the
+Flask ``server`` object is created, and ``register_disclaimer_callbacks`` must be
+called before ``application.layout`` is assigned.
+"""
+
 # Utils imports
 from app_platform.shared.config import (
     APP_HOST,

@@ -1,3 +1,23 @@
+"""
+Analysis results page (route: ``/analysis``).
+
+Receives the event token from the ``p`` URL query parameter, decodes and verifies it,
+then renders the analysis layout in one of two modes:
+
+**Cached result available**: retrieves the result from Redis DB 1 and renders the full
+results carousel immediately. If the cached status is ``'timeout'`` (a previously
+failed computation), deletes the entry and asks the user to reload.
+
+**No cached result**: queues a Celery ``attribution`` task (expires if not started
+within 5 minutes), renders a loading skeleton, and starts a ``dcc.Interval`` firing
+every second. The ``update_results`` callback checks Redis on each tick; once the
+cache entry appears it replaces the skeleton with the carousel and stops the interval.
+After 300 ticks with no result, displays a saturation message.
+
+The event description banner and Back button are always rendered immediately regardless
+of loading state.
+"""
+
 from dash import register_page, html, dcc, callback, Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
