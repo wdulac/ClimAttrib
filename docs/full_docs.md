@@ -489,6 +489,8 @@ Performs a graceful restart in two steps:
 2. Sends ``SIGHUP`` to the gunicorn master process, triggering a graceful worker
    reload without dropping in-flight requests.
 
+Note that Redis doesn't need to be restarted as it is a standalone component.
+
 Returns 403 if the signature is missing or invalid.
 
 
@@ -729,8 +731,9 @@ Client-side callbacks (in ``assets/js/carousel.js``):
 - ``carousel.showHint`` — shows a scroll hint the first time the carousel loads.
 - ``carousel.addTooltips`` — attaches tooltips to confidence-interval markers in the
   text slide.
-- ``carousel.blockSwiper`` — prevents the Swiper library from intercepting mouse/touch
-  events inside plot containers and the text slide.
+- ``carousel.blockSwiper`` — Prevents mouse drag from inside set containers from
+  propagating back to the carousel, and therefore allows safe mouse interaction
+  on text and plots without triggering a carousel swipe.
 
 
 ---
@@ -747,8 +750,8 @@ The pattern-matching ids enable two client-side callbacks:
 
 - ``carousel.blockSwiper`` — prevents the carousel's touch/drag from interfering
   with Plotly interactions inside a plot.
-- ``plotly_extras.addButtonsToModebar`` — injects a custom "Download CSV" button
-  into each plot's toolbar.
+- ``plotly_extras.addButtonsToModebar`` — injects custom buttons ("Download CSV"
+   and "Fullscreen")into each plot's toolbar.
 
 Exported functions: ``probability_plot``, ``PR_FAR_plot``, ``intensity_plot``,
 ``intensity_change_plot``, ``observed_Yo_with_return_levels_plot``,
@@ -757,17 +760,29 @@ Exported functions: ``probability_plot``, ``PR_FAR_plot``, ``intensity_plot``,
 
 ---
 
+# Module `src/components/analysis/event_description/`
+
+Sub-package for the event description banner displayed above the results carousel.
+
+Exports:
+- ``event_description_component`` — the main banner component.
+
+Internal modules:
+- ``__event_key_figures`` — builds the row of summary cards (location, date
+  range, observed intensity, computation method).
+- ``__reverse_geocode`` — resolves lat/lon to a human-readable place name.
+- ``__temperature_plot`` — legacy component, not used in the current flow.
+
+
+---
+
 # Module `src/components/analysis/event_description/analysis_description_component.py`
 
-Event description banner — displayed above the results carousel on the analysis page.
+Event description banner component.
 
-``event_description_component(event)`` returns a styled panel (``dmc.Paper``) with:
-
-- A row of key-figure cards from ``__event_key_figures.key_figures(event)``
-  summarising location (lat/lon + reverse-geocoded place name), duration and date
-  range, observed intensity in °C, computation method, and (for the calendar method)
-  the ±1-week seasonal comparison window.
-- A "Back to event selection" button that navigates back to the home page.
+``event_description_component(event)`` returns a ``dmc.Paper`` panel containing
+a row of key-figure cards summarising the event (location, date range, intensity,
+method) and a "Back to event selection" button.
 
 The back button is disabled while computation is in progress (driven by the
 ``is-loading`` store) and re-enabled once results are available.
