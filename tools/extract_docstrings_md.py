@@ -49,6 +49,7 @@ ORDERED_MODULES = [
     "components/analysis/event_description/__event_key_figures.py",
     "components/analysis/event_description/__reverse_geocode.py",
     "components/analysis/event_description/__temperature_plot.py",
+    "components/analysis/sentence_generator/__init__.py",
     "components/analysis/sentence_generator/builder.py",
     "components/analysis/sentence_generator/__data_models.py",
     "components/analysis/sentence_generator/__metrics.py",
