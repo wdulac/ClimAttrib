@@ -1,5 +1,6 @@
 """
-Plotly figure builders for the science slides of the results carousel.
+Pure Plotly figure builders. Wrapping in Dash UI elements is then done in
+``src/components/analysis/__plotly_plots.py``.
 
 Two public modules:
 
