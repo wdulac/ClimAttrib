@@ -10,7 +10,7 @@ The pattern-matching ids enable two client-side callbacks:
 - ``carousel.blockSwiper`` — prevents the carousel's touch/drag from interfering
   with Plotly interactions inside a plot.
 - ``plotly_extras.addButtonsToModebar`` — injects custom buttons ("Download CSV"
-   and "Fullscreen")into each plot's toolbar.
+   and "Fullscreen") into each plot's toolbar.
 
 Exported functions: ``probability_plot``, ``PR_FAR_plot``, ``intensity_plot``,
 ``intensity_change_plot``, ``observed_Yo_with_return_levels_plot``,
