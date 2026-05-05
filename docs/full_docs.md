@@ -1060,6 +1060,25 @@ Scientific computation modules.
 
 ---
 
+# Module `src/science/attribution/`
+
+Core attribution algorithm sub-package.
+
+``attribute_event(event)`` (from ``event_attribution``) is the only public
+entry point; its full pipeline is documented in ``event_attribution.py``.
+
+Internal modules:
+
+- ``__settings`` — scientific parameters (number of MCMC samples, chain size,
+  confidence interval level, active scenario, Stan mode, master seed).
+- ``__data_loading`` — reads prior distributions from ``data/prior/`` and
+  observation timeseries from ``data/Yo/``.
+- ``__calendar_utils`` — day-of-year helpers using the application's DOY
+  convention (DOY 60 permanently reserved for Feb 29).
+
+
+---
+
 # Module `src/science/attribution/event_attribution.py`
 
 Core attribution algorithm.
@@ -1167,6 +1186,28 @@ is valid for all years (it maps to December 31 in non-leap years after a shift).
   the 15-day comparison window (aligned to a 5-day grid) that best centres the
   event. Returns the window as ``(start_doy, end_doy)``. Used to select the
   matching prior file for the calendar computation method.
+
+
+---
+
+# Module `src/science/visualisation/`
+
+Plotly figure builders for the science slides of the results carousel.
+
+Two public modules:
+
+- ``attribution_plots`` — time series charts built from the attribution
+  ``xr.Dataset``: probabilities (pF/pC), PR/FAR, intensities (IF/IC), and
+  intensity change (ΔI).
+- ``climatology_plots`` — observational context charts: the Yo annual-extrema
+  timeseries and the daily annual cycle.
+
+Internal modules:
+
+- ``__plotly`` — generic figure builder shared by all attribution charts
+  (confidence bands, scenario axis, reference lines).
+- ``__customdata`` — builds the Plotly ``customdata`` arrays that populate
+  hover tooltips with formatted confidence intervals.
 
 
 ---
