@@ -261,7 +261,8 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     PR_samples = pF / pC # PR à partir des samples clippés entre e et 1-e
 
-    # On réintroduit les bornes e et 1/e et inf en fonction de pF et pC
+    # On réintroduit les bornes e et 1/e et inf en fonction de pF et pC car la
+    # division a supprimé cette information
     PR_samples = np.where(pC == e, 1/e, PR_samples)
     PR_samples = np.where(pF == e, e, PR_samples)
     PR_samples = np.where((pC == e) & (pF == e), 1, PR_samples)
@@ -269,7 +270,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     # Calcul des quantiles sur le PR clippé et correctement borné entre e et 1/e
     PR_q = np.quantile(PR_samples, [CI/2, 0.5, 1-CI/2], axis=-1, method="median_unbiased").transpose((1,2,0))
 
-    # On remplace les bornes e et 1/e par respectivement 0 et infini
+    # Enfin on peut remplacer les bornes e et 1/e par respectivement 0 et infini
     PR_q = np.where(PR_q == 1/e, np.inf, PR_q)
     PR_q = np.where(PR_q == e, 0.0, PR_q)
 
@@ -306,6 +307,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     dataset.attrs['time'] = int(event['date'].year)
     dataset['bias'] = bias
 
+    # Pour du débuggage éventuel : passer :save_to_disk: à True dans la signature et ne pas oublier de redémarrer Celery.
     if save_to_disk:
         if event['method'] == 'yearmax':
             if event['extreme_type'] == 'hot':
