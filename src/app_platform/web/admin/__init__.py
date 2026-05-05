@@ -3,7 +3,8 @@ Flask Blueprint for protected admin endpoints.
 
 All routes defined here require a valid ``ADMIN_SECRET`` HMAC signature
 (checked by ``__signature.py``). The Blueprint is registered on the Flask app
-by ``register_admin_routes`` (called from ``web/__init__.py``).
+by ``register_admin_routes`` defined in
+``src/app_platform/web/admin/register.py`` and called from ``app.py``.
 """
 
 from flask import Blueprint
