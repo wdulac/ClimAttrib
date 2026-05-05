@@ -12,8 +12,7 @@ from up to four slides:
 4. **Observations slide** — annual extrema timeseries with estimated return levels,
    and the daily temperature for the event year against the climatology.
 
-When ``pF == 1.0`` at the event year (meaning the event is too common to be detected
-by the model), the probability and intensity slides are omitted.
+When ``pF == 1.0`` at the event year, the probability and intensity slides are omitted.
 
 Client-side callbacks (in ``assets/js/carousel.js``):
 
