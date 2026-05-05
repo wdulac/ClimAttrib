@@ -44,6 +44,7 @@ ORDERED_MODULES = [
     "components/analysis/__init__.py",
     "components/analysis/carousel.py",
     "components/analysis/__plotly_plots.py",
+    "components/analysis/event_description/__init__.py",
     "components/analysis/event_description/analysis_description_component.py",
     "components/analysis/event_description/__event_key_figures.py",
     "components/analysis/event_description/__reverse_geocode.py",
