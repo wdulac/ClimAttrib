@@ -86,6 +86,11 @@ def extract_docstring(py_path: Path) -> str | None:
 
 
 def format_module(rel_path: str, doc: str) -> str:
+
+    # Exclude __init__.py from module name when docstring comes from a top-level dir
+    if rel_path.split('/')[-1] == "__init__.py":
+        rel_path = '/'.join(rel_path.split('/')[:-1]) + "/"
+
     return f"# Module `src/{rel_path}`\n\n{doc.strip()}\n"
 
 
