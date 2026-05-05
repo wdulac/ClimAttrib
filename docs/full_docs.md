@@ -837,7 +837,7 @@ context are documented in ``builder.py``.
 
 Exports:
 
-- ``automated_text`` — The fully automated textual attribution analysis.
+- ``automated_text`` — the fully automated textual attribution analysis.
 
 Internal modules:
 
