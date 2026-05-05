@@ -22,8 +22,9 @@ Client-side callbacks (in ``assets/js/carousel.js``):
 - ``carousel.showHint`` — shows a scroll hint the first time the carousel loads.
 - ``carousel.addTooltips`` — attaches tooltips to confidence-interval markers in the
   text slide.
-- ``carousel.blockSwiper`` — prevents the Swiper library from intercepting mouse/touch
-  events inside plot containers and the text slide.
+- ``carousel.blockSwiper`` — Prevents mouse drag from inside set containers from
+  propagating back to the carousel, and therefore allows safe mouse interaction
+  on text and plots without triggering a carousel swipe.
 """
 
 from dash import clientside_callback, callback, ClientsideFunction, Input, Output

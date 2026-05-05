@@ -10,6 +10,8 @@ Performs a graceful restart in two steps:
 2. Sends ``SIGHUP`` to the gunicorn master process, triggering a graceful worker
    reload without dropping in-flight requests.
 
+Note that Redis doesn't need to be restarted as it is a standalone component.
+
 Returns 403 if the signature is missing or invalid.
 """
 
