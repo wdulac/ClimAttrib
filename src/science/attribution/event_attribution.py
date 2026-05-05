@@ -280,6 +280,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     with np.errstate(divide='ignore', invalid='ignore'):
         FAR_q = 1 - 1 / PR_q
 
+    # On assigne nan au FAR lorsque PR < 1 pour éviter des FAR négatifs (FAR non défini)
     FAR_q = np.where(PR_q < 1.0, np.nan, FAR_q)
 
     result_dict["FAR"] = FAR_q
