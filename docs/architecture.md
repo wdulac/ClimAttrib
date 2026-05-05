@@ -28,7 +28,7 @@ The attribution calculation takes ~20 seconds and involves CPU-intensive scienti
 
 **Celery** is a task queue system: the web server places a computation request (a "task") into a queue, and a separate Celery worker process picks it up and executes it independently. The web server immediately returns control to the browser, which then polls for the result.
 
-The worker configuration is in `src/app_platform/compute/celery.py`.
+On a local development machine, celery worker(s) can be started via `./scripts/start_celery.sh`. The worker configuration is in `src/app_platform/compute/celery.py`.
 
 ### 3. Shared memory (Redis)
 
@@ -37,7 +37,7 @@ The worker configuration is in `src/app_platform/compute/celery.py`.
 - **DB 0 — task queue**: used by Celery as the communication channel between the web server (which enqueues tasks) and the workers (which dequeue and execute them).
 - **DB 1 — result cache**: once a worker finishes computing an attribution result, it serialises the result (as a Python object) and writes it to Redis DB 1 with a 48-hour expiry. The web server reads from this cache when displaying results, and also checks it first to avoid recomputing results that are already available.
 
-Redis is configured in `redis.conf` (port 6380).
+On a local development machine, Redis can be started via `./scripts/start_redis.sh`. Redis is configured in `redis.conf`.
 
 ---
 
@@ -100,7 +100,7 @@ The Celery `attribution` task (`src/app_platform/compute/celery.py`) calls `attr
 
 Once the cache entry is found, the polling callback replaces the loading skeleton with a results carousel (`src/components/analysis/carousel.py`) containing four slides:
 
-1. **Automated text** (`src/components/analysis/sentence_generator/`): a structured paragraph generated from Jinja2-like templates filled with formatted metric values. Three time horizons are covered: the event year, the current year, and 2050.
+1. **Automated text** (`src/components/analysis/sentence_generator/`): a structured text generated from Jinja2 templates filled with formatted metric values. Three time horizons are covered: the event year, the current year, and 2050.
 2. **Probability charts**: `pF` and `pC` time series (factual and counterfactual probabilities), and PR/FAR.
 3. **Intensity charts**: `IF` and `IC` time series (factual and counterfactual intensities), and ΔI.
 4. **Observations**: the historical Yo timeseries with estimated return levels, and the local annual cycle.
@@ -134,10 +134,10 @@ src/
 │   │   └── location_selector.py        Interactive map component + point selection callbacks
 │   ├── analysis/
 │   │   ├── carousel.py                 Results carousel (assembles all slides)
-│   │   ├── __plotly_plots.py           Plotly figure builders (called by carousel)
+│   │   ├── __plotly_plots.py           Dash element builders for Plotly figures (called by carousel)
 │   │   ├── event_description/          Banner above carousel (event summary + back button)
 │   │   └── sentence_generator/         Automated text generation from attribution results
-│   ├── layout/                 Header, footer, disclaimer (page chrome)
+│   ├── layout/                 Header, footer, disclaimer (Common to all pages)
 │   └── resources/              Markdown strings for tooltips and help text
 ├── science/
 │   ├── attribution/            Core attribution algorithm (event_attribution.py + helpers)
