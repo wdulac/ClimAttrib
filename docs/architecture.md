@@ -4,7 +4,7 @@
 
 WeatherAttrib is a web application that performs **climate event attribution**: given an observed extreme temperature event (a heatwave, a cold snap) defined by a location, a date range, and a measured intensity, it estimates how much more or less likely that event is to occur in today's climate compared to a pre-industrial baseline. The results include probability ratios, return periods, intensity shifts, and a confidence interval on each, presented as both charts and automatically generated explanatory text.
 
-The application is designed for interactive, on-demand use: a scientist or analyst selects an event in the browser and receives results within ~20 seconds.
+The application is designed for interactive, on-demand use: a user selects an event in the browser and receives results within ~20 seconds.
 
 ---
 
