@@ -700,7 +700,7 @@ Exports:
   charts, intensity charts, observation plots.
 - ``event_description_component`` — banner above the carousel summarising the
   event (location, dates, intensity, anomaly) with a back button.
-- ``automated_text`` — human-readable attribution paragraph generated from
+- ``automated_text`` — human-readable attribution analysis generated from
   Jinja2 templates.
 
 
@@ -828,7 +828,7 @@ not referenced by the current carousel or event description components.
 
 # Module `src/components/analysis/sentence_generator/`
 
-Sub-package for generating the automated attribution text paragraph.
+Sub-package for generating the automated attribution text.
 
 ``automated_text(event, stats, lang)`` (from ``builder``) is the only public
 entry point. The template selection logic and the structure of the template

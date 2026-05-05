@@ -6,7 +6,7 @@ Exports:
   charts, intensity charts, observation plots.
 - ``event_description_component`` — banner above the carousel summarising the
   event (location, dates, intensity, anomaly) with a back button.
-- ``automated_text`` — human-readable attribution paragraph generated from
+- ``automated_text`` — human-readable attribution analysis generated from
   Jinja2 templates.
 """
 

@@ -1,5 +1,5 @@
 """
-Sub-package for generating the automated attribution text paragraph.
+Sub-package for generating the automated attribution text.
 
 ``automated_text(event, stats, lang)`` (from ``builder``) is the only public
 entry point. The template selection logic and the structure of the template
