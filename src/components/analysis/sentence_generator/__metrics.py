@@ -11,6 +11,7 @@ Helpers: ``extract_ci(ds, var, t)`` extracts a single variable's three quantiles
 and QU.
 """
 
+import numpy as np
 from .__data_models import CIValue, Metrics
 
 
@@ -27,7 +28,12 @@ def extract_ci(ds, var, t):
 
 
 def safe_inv(x: float) -> float:
-    return float('nan') if x is None or x == 0 else 1.0 / x
+    if x is None:
+        return float('nan')
+    elif x == 0:
+        return np.inf
+    else:
+        return 1.0 / x
 
 
 def invert_ci(ci: CIValue):
