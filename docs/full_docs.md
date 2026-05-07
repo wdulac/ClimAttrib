@@ -237,8 +237,8 @@ These are read by the application's own Python code.
   production.
 - **`ADMIN_SECRET`** — secret used to authenticate requests to the protected
   admin endpoints (`/admin/clear_cache`, `/admin/restart`, `/admin/stan_compile`).
-  **Required** — the application will crash at the first admin request if this
-  variable is not set (no default).
+  If absent, all admin endpoints return 403 — they
+  are effectively disabled.
 
 ### Scientific computation
 
@@ -580,7 +580,8 @@ Admin requests must include two HTTP headers:
 ``verify_signature(extra, timestamp, signature, max_age=30)`` returns True only if
 the timestamp is within ``max_age`` seconds of now and the signature matches. The
 route name (``extra``) is included in the signed payload to prevent a valid signature
-for one endpoint from being replayed on another.
+for one endpoint from being replayed on another. If ``ADMIN_SECRET`` is not set,
+the function always returns False, making all admin endpoints unreachable.
 
 
 ---

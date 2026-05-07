@@ -82,8 +82,8 @@ These are read by the application's own Python code.
   production.
 - **`ADMIN_SECRET`** — secret used to authenticate requests to the protected
   admin endpoints (`/admin/clear_cache`, `/admin/restart`, `/admin/stan_compile`).
-  **Required** — the application will crash at the first admin request if this
-  variable is not set (no default).
+  If absent, all admin endpoints return 403 — they
+  are effectively disabled.
 
 ### Scientific computation
 
