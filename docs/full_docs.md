@@ -157,9 +157,10 @@ data/                           Large NetCDF files (not versioned, assumed prese
 
 ## Purpose
 
-The `.env` file at the project root is the primary mechanism for passing
-configuration to the application on the production server, where environment
-variables cannot be set interactively. It is loaded at startup by
+The `.env` file at the project root is a mechanism for passing
+configuration to the application, whether it is running on a development
+machine or on a production server. Variables defined there
+are then set as environement variables. The file is loaded at startup by
 `python-dotenv` (called in `src/app_platform/shared/config.py`).
 
 Most variables are exposed to the rest of the application as typed constants
