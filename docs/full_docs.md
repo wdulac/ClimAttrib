@@ -578,8 +578,7 @@ Admin requests must include two HTTP headers:
 ``verify_signature(extra, timestamp, signature, max_age=30)`` returns True only if
 the timestamp is within ``max_age`` seconds of now and the signature matches. The
 route name (``extra``) is included in the signed payload to prevent a valid signature
-for one endpoint from being replayed on another. If ``ADMIN_SECRET`` is not set,
-the function always returns False, making all admin endpoints unreachable.
+for one endpoint from being replayed on another.
 
 
 ---
