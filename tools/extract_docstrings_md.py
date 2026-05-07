@@ -12,6 +12,7 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT_DIR / "src"
 ARCH_DOC = ROOT_DIR / "docs" / "architecture.md"
+ENV_DOC = ROOT_DIR / "docs" / "env_configuration.md"
 
 # Modules are emitted in this order; files not listed here are appended alphabetically.
 ORDERED_MODULES = [
@@ -104,6 +105,10 @@ def main():
     # --- Level 1: architecture document ---
     if ARCH_DOC.exists():
         parts.append(ARCH_DOC.read_text(encoding="utf-8").strip())
+
+    # --- Level 1b: environment configuration ---
+    if ENV_DOC.exists():
+        parts.append(ENV_DOC.read_text(encoding="utf-8").strip())
 
     # --- Level 2: module docstrings in declared order ---
     seen = set()
