@@ -229,8 +229,8 @@ These are read by the application's own Python code.
 
 | Variable | Default | Read directly in |
 |---|---|---|
-| `URL_SIG_SECRET_KEY` | random (insecure) | `app_platform/shared/tokens.py` |
-| `ADMIN_SECRET` | *(none — required)* | `app_platform/web/admin/__signature.py` |
+| `URL_SIG_SECRET_KEY` | *(none)* | `app_platform/shared/tokens.py` |
+| `ADMIN_SECRET` | *(none)* | `app_platform/web/admin/__signature.py` |
 
 - **`URL_SIG_SECRET_KEY`** — HMAC-SHA256 key used to sign the event URL token
   (`?p=<token>`). If absent, a random key is generated at startup, which means
