@@ -1,5 +1,5 @@
 """
-Documentation generator: combines docs/architecture.md with module-level docstrings
+Documentation generator: combines docs/APP_ARCHITECTURE.md with module-level docstrings
 extracted from src/ into a single Markdown file.
 
 Usage (from the project root):
@@ -11,8 +11,8 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SRC_DIR = ROOT_DIR / "src"
-ARCH_DOC = ROOT_DIR / "docs" / "architecture.md"
-ENV_DOC = ROOT_DIR / "docs" / "env_configuration.md"
+ARCH_DOC = ROOT_DIR / "docs" / "APP_ARCHITECTURE.md"
+ENV_DOC = ROOT_DIR / "docs" / "CONFIGURATION.md"
 
 # Modules are emitted in this order; files not listed here are appended alphabetically.
 ORDERED_MODULES = [
