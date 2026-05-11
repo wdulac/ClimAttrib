@@ -267,10 +267,10 @@ by the application.
 
 | Variable | Consumed by |
 |---|---|
-| `CMDSTAN` | `cmdstanpy` — path to the CmdStan installation directory. Must point to a compiled CmdStan release (e.g. `~/.cmdstan/cmdstan-2.36.0`). If absent, `cmdstanpy` cannot find the Stan compiler and MCMC will fail. |
+| `CMDSTAN` | `cmdstanpy` — path to the CmdStan installation directory. Must point to a compiled CmdStan release (e.g. `~/.cmdstan/cmdstan-2.36.0`). If absent, `cmdstanpy` might not be able to find the Stan compiler and MCMC might fail. |
 | `MPLBACKEND` | `matplotlib` — selects the rendering backend. Set to `Agg` (non-interactive, no display) to prevent crashes on headless servers where no graphical display is available. |
 | `MPLCONFIGDIR` | `matplotlib` — directory where matplotlib writes its cache (font cache, style cache). On production servers running as `www-data`, the default cache location (`~/.config/matplotlib`) is not writable. Set this to a directory where `www-data` has write permission to avoid startup warnings or failures. |
-| `ESMKFILE` | `xesmf` — path to the `esmf.mk` makefile fragment that describes the ESMF installation (library paths, binaries). Required at **runtime**: `xesmf` reads this file to locate the ESMF shared libraries and executables. Typically found inside a conda environment, e.g. `$CONDA_PREFIX/lib/esmf.mk`. If absent or incorrect, imports of `xesmf` (imported by ANKIALE) will fail. |
+| `ESMKFILE` | `xesmf` — path to the `esmf.mk` makefile fragment that describes the ESMF installation (library paths, binaries). Required at **runtime**: `xesmf` reads this file to locate the ESMF shared libraries and executables. Typically found inside a conda environment, e.g. `$CONDA_PREFIX/lib/esmf.mk`. If absent or incorrect, imports of `xesmf` (imported by ANKIALE) might fail. |
 
 ---
 
