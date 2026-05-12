@@ -46,8 +46,6 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
     clim_file = DATA / 'prior' / computation_method / f"{var}_CONSTRAIN_X.nc"
 
     clim = ank.Climatology.init_from_file(clim_file)
-    # Set forcings to CMIP5 (CMIP5 XN file replaced by EBM response to CMIP6 forcings...)
-    clim.cconfig.vXN = 'CMIP5'
     # Initialize CmdStan local work directory
     clim.cnslaw().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
     # Matrices de projection factuel / contre-factuel
