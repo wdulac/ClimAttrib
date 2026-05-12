@@ -167,7 +167,7 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
     To = event['intensity'] - bias # idem
     projF = prior['projF'].sel(name='GMST').values
     projC = prior['projC'].sel(name='GMST').values
-    idx_event = int(np.argwhere(prior['time'] == event['date'].year).ravel())
+    idx_event = int(np.argwhere(prior['time'] == event['date'].year).ravel()[0])
 
     ## Construction de la covariable dans le monde factuel et contre-factuel
     n_sample = N_SAMPLES_COV*SIZE_CHAIN
