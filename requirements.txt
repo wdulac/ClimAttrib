@@ -11,9 +11,3 @@ geopandas
 celery
 redis
 gunicorn
-
-toml
-
-./libraries/SDFC-python
-./libraries/zxarray
-./libraries/ANKIALE
