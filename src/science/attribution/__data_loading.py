@@ -51,7 +51,8 @@ def _load_prior(extreme_type: str, computation_method: str, start_date: dt.datet
     # Initialize CmdStan local work directory
     clim.cnslaw().init_stan(tmp=STAN_WORK_DIR, force_compile=False)
     # Matrices de projection factuel / contre-factuel
-    projF, projC = clim.projection()
+    projF = clim.projection(world="Factual")
+    projC = clim.projection(world="Counterfactual")
     nper = projF.shape[1]
     # Lissage
     mps = MPeriodSmoother(

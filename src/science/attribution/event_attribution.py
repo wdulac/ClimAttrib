@@ -88,8 +88,8 @@ def attribute_event(event:dict, save_to_disk=False, n_process=4) -> xr.Dataset:
 
     # Lecture du prior contraint par la covariable
     prior = _load_prior(event['extreme_type'], event['method'], event['start_date'], event['stop_date'], event['duration'])
-    hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
-    hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True)
+    hpar_CX = prior['hpar'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True).values
+    hcov_CX = prior['hcov'].sel(lat=event['lat'], lon=event['lon'] % 360, drop=True).values
 
     # Lecture des observations
     Yo = _load_obs(event['lat'], event['lon'],
