@@ -92,7 +92,7 @@ typed settings used across the application:
 
 - ``APP_HOST``, ``APP_PORT``, ``APP_DEBUG`` — Flask/Dash server binding parameters.
 - ``APP_SHOW_DASH_DEV_TOOLS`` — enables Dash's hot-reload overlay and debug panel.
-- ``URL_PREFIX`` — URL path prefix for all routes (e.g. ``/eventtest``), empty string
+- ``URL_PREFIX`` — URL path prefix for all routes (e.g. ``/event-attribution``), empty string
   when the app is served at the root.
 - ``URL_PREFIX_DASH`` — same prefix formatted for Dash's ``url_base_pathname``
   (always ends with ``/``).
@@ -162,7 +162,7 @@ Provides two small utilities that prepend the configured URL prefix
 
 Used when constructing ``src`` attributes for images and ``href`` attributes for
 links that must remain correct whether the app is served at the root or at a
-sub-path (e.g. ``/eventtest/``).
+sub-path (e.g. ``/event-attribution/``).
 
 
 ---

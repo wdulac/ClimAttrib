@@ -9,7 +9,7 @@ Provides two small utilities that prepend the configured URL prefix
 
 Used when constructing ``src`` attributes for images and ``href`` attributes for
 links that must remain correct whether the app is served at the root or at a
-sub-path (e.g. ``/eventtest/``).
+sub-path (e.g. ``/event-attribution/``).
 """
 
 from app_platform.shared.config import URL_PREFIX, URL_PREFIX_DASH

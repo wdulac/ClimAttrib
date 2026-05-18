@@ -6,7 +6,7 @@ typed settings used across the application:
 
 - ``APP_HOST``, ``APP_PORT``, ``APP_DEBUG`` — Flask/Dash server binding parameters.
 - ``APP_SHOW_DASH_DEV_TOOLS`` — enables Dash's hot-reload overlay and debug panel.
-- ``URL_PREFIX`` — URL path prefix for all routes (e.g. ``/eventtest``), empty string
+- ``URL_PREFIX`` — URL path prefix for all routes (e.g. ``/event-attribution``), empty string
   when the app is served at the root.
 - ``URL_PREFIX_DASH`` — same prefix formatted for Dash's ``url_base_pathname``
   (always ends with ``/``).
@@ -35,7 +35,7 @@ if not _url_raw:
     URL_PREFIX = ""               # pour concaténation
     URL_PREFIX_DASH = "/"         # pour Dash
 else:
-    URL_PREFIX = f"/{_url_raw}"       # "/eventtest"
-    URL_PREFIX_DASH = f"/{_url_raw}/" # "/eventtest/"
+    URL_PREFIX = f"/{_url_raw}"       # "/event-attribution"
+    URL_PREFIX_DASH = f"/{_url_raw}/" # "/event-attribution/"
 
 PRODUCTION=os.getenv("PRODUCTION", "False").upper() == "TRUE"
