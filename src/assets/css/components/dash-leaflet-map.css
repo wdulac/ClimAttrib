@@ -28,3 +28,9 @@
     border-radius: 2rem;
     padding: .5rem 1rem;
 }
+
+
+/* Invisibilise le drapeau dans le bandeau d'attribution Leaflet*/
+.leaflet-attribution-flag {
+    display: none !important;
+}
