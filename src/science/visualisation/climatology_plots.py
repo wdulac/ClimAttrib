@@ -436,6 +436,8 @@ def plot_annual_cycle(
     # Daily temperature (year)
     # ------------------------------------------------------------------
 
+    daily_temp_legend_year = f"{year}" if not isShifted(event) else f"{year}-{year+1}"
+
     fig.add_trace(
         go.Scatter(
             x=dates_x,
@@ -443,7 +445,7 @@ def plot_annual_cycle(
             customdata=daily_doy.time.dt.strftime("%B %d, %Y"),
             mode="lines",
             line=dict(color="black", width=1.5),
-            name=f"{year} daily temperature",
+            name=daily_temp_legend_year + " daily temp.",
             hovertemplate=_daily_temperature_hover(year=year),
         )
     )
