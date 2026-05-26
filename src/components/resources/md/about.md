@@ -18,7 +18,7 @@ Ribes, A., Thao, S. et Cattiaux, J. (2020) « Describing the Relationship betwee
 
 Qasmi, S. et al. (2026) « An Automatic Procedure for the Attribution of Extreme Events at the Global Scale: A Proof of Concept for Heat Waves », *Bulletin of the American Meteorological Society*, 107(1), p. E190‑E201. Available at: <https://doi.org/10.1175/BAMS-D-24-0265.1>.
 
-Robin, Y. et al. (2025) « A Bayesian statistical method to estimate the climatology of extreme temperature under multiple scenarios: the ANKIALE package », *EGUsphere* \[preprint\], p. 1‑41. Available at: <https://doi.org/10.5194/egusphere-2025-1121>.
+Robin, Y. et al. (2026) « A Bayesian statistical method to estimate the climatology of extreme temperature under multiple scenarios: the ANKIALE package », *Geoscientific Model Development*, 19(6), p. 2349–2372. Available at: <https://doi.org/10.5194/gmd-19-2349-2026>.
 
 Cattiaux, J. and Ribes, A. (2018) “Defining Single Extreme Weather Events in a Climate Perspective,” *Bulletin of the American Meteorological Society*, 99(8), pp. 1557–1568. Available at: <https://doi.org/10.1175/BAMS-D-17-0281.1>.
 
